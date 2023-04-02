@@ -1,6 +1,6 @@
 <template>
-    <div>
-      <p>{{ msg }}</p>
+    <div class="container">
+        <button type="button" class="btn btn-primary">{{ msg }}</button>
     </div>
 </template>
   
@@ -32,3 +32,9 @@ export default {
   },
 };
 </script>
+
+<style>
+#app {
+  margin-top: 60px
+}
+</style>
