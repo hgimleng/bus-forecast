@@ -34,6 +34,7 @@
         </div>
       </div>
     </div>
+    <hr v-if="step >= 2" />
     <div v-if="step >= 2" class="row justify-content-center">
       <div class="col text-center">
         <h5>Select Direction:</h5>
@@ -46,13 +47,14 @@
               'btn-primary',
               selectedDirection === direction ? 'active' : '',
             ]"
-            @click="selectDirection(direction)"
+            @click="selectDirection(index)"
           >
             {{ direction }}
           </button>
         </div>
       </div>
     </div>
+    <hr v-if="step >= 3" />
     <div v-if="step >= 3" class="row justify-content-center">
       <div class="col text-center">
         <h5>Select Bus Stop:</h5>
@@ -68,6 +70,7 @@
         </div>
       </div>
     </div>
+    <hr v-if="step >= 4" />
     <div v-if="step === 4" class="row justify-content-center">
       <div class="col-auto">
         <h5>Bus Arrival Timing:</h5>
