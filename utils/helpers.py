@@ -12,6 +12,9 @@ class BusStop:
 
     def set_next_stop(self, next_stop):
         self.next_stop = next_stop
+    
+    def __str__ (self):
+        return f"Bus Stop {self.id} ({self.name})"
 
 
 class Timing:
@@ -28,3 +31,6 @@ class Timing:
 
     def set_next_timing(self, next_timing):
         self.next_timing = next_timing
+    
+    def __str__(self):
+        return f"Duration {self.duration} (next{self.bus_seq}) for {str(self.bus_stop)}"

@@ -74,7 +74,9 @@
     <div v-if="step === 4" class="row justify-content-center">
       <div class="col-auto">
         <h5>Bus Arrival Timing:</h5>
-        <p>{{ busArrivalTiming }}</p>
+        <li v-for="timing in busArrivalTiming">
+          {{ timing }}
+        </li>
       </div>
     </div>
   </div>
@@ -133,26 +135,14 @@ export default {
         
         if (response.status === 200) {
           const data = response.data;
-          this.busArrivalTiming = data.arrivalTime;
+          // this.busArrivalTiming = data.arrivalTime;
+          this.busArrivalTiming = data;
         } else {
           throw new Error('Not found');
         }
       } catch (error) {
         console.error('Error fetching bus arrival timing:', error);
       }
-      // try {
-      //   // Replace this URL with your backend API endpoint
-      //   // const response = await fetch(
-      //   //   `/api/bus/${this.busNumber}/direction/${this.selectedDirection}/stop/${stop.id}`
-      //   // );
-      //   // const data = await response.json();
-      //   const data = {
-      //     "arrivalTime": "11:30 AM"
-      //   }
-      //   this.busArrivalTiming = data.arrivalTime;
-      // } catch (error) {
-      //   console.error('Error fetching bus arrival timing:', error);
-      // }
     },
   },
 };

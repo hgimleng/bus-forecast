@@ -1,5 +1,10 @@
+import asyncio
+import httpx
+from typing import List
+
 from flask import Flask, jsonify
 from flask_cors import CORS
+from utils.helpers import BusStop, Timing
 
 # configuration
 DEBUG = True
@@ -32,15 +37,14 @@ def get_bus_info(bus_number):
 @app.route('/api/bus/<busNumber>/direction/<direction>/stop/<stopId>', methods=['GET'])
 def get_bus_arrival_timing(busNumber, direction, stopId):
     # Fetch arrival timings based on the provided parameters
-    # Replace the following line with your actual data fetching logic
-    arrival_timing = fetch_arrival_timing(busNumber, direction, stopId)
+    arrival_timing = asyncio.run(fetch_arrival_timing(busNumber, direction, stopId))
 
     if arrival_timing is not None:
         return jsonify(arrival_timing)
     else:
         return jsonify({'error': 'Bus arrival timing not found'}), 404
 
-def fetch_arrival_timing(busNumber, direction, stopId):
+async def fetch_arrival_timing(busNumber: str, direction: str, stopId: str) -> List[str]:
     # Fetch bus arrival timings from external source for current and prev stops
     bus_info = sample_data.get(busNumber)['stops'][direction]
     target_stop_sequence = None
@@ -48,9 +52,78 @@ def fetch_arrival_timing(busNumber, direction, stopId):
         if str(stop["id"]) == stopId:
             target_stop_sequence = stop["stopSequence"]
             break
-    bus_info = [stop for stop in bus_info if stop["stopSequence"] <= target_stop_sequence]
-    return bus_info
+    stops = [
+        BusStop(stop["id"], stop["name"], stop["stopSequence"])
+        for stop in bus_info
+        if stop["stopSequence"] <= target_stop_sequence
+    ]
+    timings = await asyncio.gather(
+        *[get_timings_from_bus_stop(stop, busNumber) for stop in stops]
+    )
+    flattened_timings = [t for sublist in timings for t in sublist]
+
+    return [str(t) for t in flattened_timings]
+    # return [str(x) for x in stops]
     # return {'arrivalTime': '11:30 AM'}
+
+async def get_timings_from_bus_stop(bus_stop: BusStop, bus_num: str) -> List[Timing]:
+    url = f'https://arrivelah2.busrouter.sg/?id={bus_stop.id}'
+    timings = []
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+                service = next(
+                    (service for service in data["services"] if service["no"] == bus_num),
+                    None,
+                )
+
+                if service:
+                    durations = [service["next"]["duration_ms"]]
+                    if service['next2']:
+                        durations.append(service['next2']['duration_ms'])
+                        if service['next3']:
+                            durations.append(service['next3']['duration_ms'])
+
+                    timings = [
+                        Timing(bus_stop, duration / 1000, idx + 1)
+                        for idx, duration in enumerate(durations)
+                    ]
+
+        return timings
+    except httpx.RequestError as e:
+        print(f"Error fetching data from external API: {e}")
+        return timings
+
+    try:
+        response = requests.get(url)
+
+        if response.status_code == 200:
+            data = response.json()
+            for service in data['services']:
+                if service['no'] == bus_num:
+                    # Extract duration_ms values for 'next', 'next2', and 'next3'
+                    durations = [service['next']['duration_ms']]
+                    
+                    # Check if next2 and next3 are not null before accessing the duration_ms key
+                    if service['next2']:
+                        durations.append(service['next2']['duration_ms'])
+                        if service['next3']:
+                            durations.append(service['next3']['duration_ms'])
+
+                    # Create timing objects
+                    for idx, duration in enumerate(durations):
+                        timings.append(Timing(bus_stop, duration/1000, idx+1))
+
+                    # Break the loop if the bus number is found
+                    break
+            return timings
+    except requests.RequestException as e:
+        print(f"Error fetching data from external API: {e}")
+        return timings
 
 # sanity check route
 @app.route('/test', methods=['GET'])
