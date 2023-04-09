@@ -4,7 +4,7 @@ from typing import List
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from utils.helpers import BusStop, Timing
+from utils.helpers import Bus, BusStop, Timing
 
 # configuration
 DEBUG = True
@@ -45,28 +45,81 @@ def get_bus_arrival_timing(busNumber, direction, stopId):
         return jsonify({'error': 'Bus arrival timing not found'}), 404
 
 async def fetch_arrival_timing(busNumber: str, direction: str, stopId: str) -> List[str]:
-    # Fetch bus arrival timings from external source for current and prev stops
+    # Fetch arrivals for all stops
     bus_info = sample_data.get(busNumber)['stops'][direction]
-    target_stop_sequence = None
+    cur_stop = None
+    tasks = []
+    buses = []
+
     for stop in bus_info:
-        if str(stop["id"]) == stopId:
-            target_stop_sequence = stop["stopSequence"]
+        new_stop = BusStop(stop["id"], stop["name"], stop["stopSequence"])
+
+        # Fetch bus arrival timings from external source
+        tasks.append(update_bus_stop_timing(new_stop, busNumber))
+
+        new_stop.set_prev_stop(cur_stop)
+        if cur_stop:
+            cur_stop.set_next_stop(new_stop)
+        cur_stop = new_stop
+        if str(cur_stop.id) == stopId:
             break
-    stops = [
-        BusStop(stop["id"], stop["name"], stop["stopSequence"])
-        for stop in bus_info
-        if stop["stopSequence"] <= target_stop_sequence
-    ]
-    timings = await asyncio.gather(
-        *[get_timings_from_bus_stop(stop, busNumber) for stop in stops]
-    )
-    flattened_timings = [t for sublist in timings for t in sublist]
+    selected_stop = cur_stop
 
-    return [str(t) for t in flattened_timings]
-    # return [str(x) for x in stops]
-    # return {'arrivalTime': '11:30 AM'}
+    # Run tasks concurrently
+    await asyncio.gather(*tasks)
 
-async def get_timings_from_bus_stop(bus_stop: BusStop, bus_num: str) -> List[Timing]:
+    # Set timings for selected stop as earliest buses
+    for timing in cur_stop.timings:
+        bus = Bus()
+        timing.set_bus(bus)
+        buses.append(bus)
+    
+    # Iterate through stops backwards to assign bus to timings
+    while cur_stop.prev_stop:
+        next_stop = cur_stop
+        cur_stop = cur_stop.prev_stop
+
+        num_timings = len(cur_stop.timings)
+        if len(next_stop.timings) == 3:
+            # All timings for cur_stop have same buses as timings for next_stop
+            if num_timings == 3 and all(x.has_same_bus(y) for x, y in zip(cur_stop.timings, next_stop.timings)):
+                cur_stop.timings[0].set_bus(next_stop.timings[0].bus)
+                cur_stop.timings[1].set_bus(next_stop.timings[1].bus)
+                cur_stop.timings[2].set_bus(next_stop.timings[2].bus)
+            elif num_timings >= 2 and cur_stop.timings[0].has_same_bus(next_stop.timings[1]) and cur_stop.timings[1].has_same_bus(next_stop.timings[2]):
+                # First 2 buses of cur_stop are the same as 2nd and 3rd bus of next_stop
+                cur_stop.timings[0].set_bus(next_stop.timings[1].bus)
+                cur_stop.timings[1].set_bus(next_stop.timings[2].bus)
+            elif num_timings >= 1 and cur_stop.timings[0].has_same_bus(next_stop.timings[2]):
+                # First bus of cur_stop is the same as 3rd bus of next_stop
+                cur_stop.timings[0].set_bus(next_stop.timings[2].bus)
+        elif len(next_stop.timings) == 2:
+            if num_timings >= 2 and cur_stop.timings[0].has_same_bus(next_stop.timings[0]) and cur_stop.timings[1].has_same_bus(next_stop.timings[1]):
+                cur_stop.timings[0].set_bus(next_stop.timings[0].bus)
+                cur_stop.timings[1].set_bus(next_stop.timings[1].bus)
+            elif num_timings >= 1 and cur_stop.timings[0].has_same_bus(next_stop.timings[1]):
+                cur_stop.timings[0].set_bus(next_stop.timings[1].bus)
+        elif len(next_stop.timings) == 1:
+            if num_timings >= 1 and cur_stop.timings[0].has_same_bus(next_stop.timings[0]):
+                cur_stop.timings[0].set_bus(next_stop.timings[0].bus)
+        # Set the remaining timings to be new buses
+        for timing in cur_stop.timings:
+            if not timing.bus:
+                bus = Bus()
+                timing.set_bus(bus)
+                buses.append(bus)
+
+    cur_stop = selected_stop
+    res = []
+    for bus1, bus2 in zip(buses[:-1], buses[1:]):
+        res.append(f"{bus1.id} to {bus2.id}: {str(bus2.get_bus_diff(bus1))}");
+    # while cur_stop:
+    #     res.append(f"{str(cur_stop)} {[str(x) for x in cur_stop.timings]}")
+    #     cur_stop = cur_stop.prev_stop
+
+    return res
+
+async def update_bus_stop_timing(bus_stop: BusStop, bus_num: str) -> List[Timing]:
     url = f'https://arrivelah2.busrouter.sg/?id={bus_stop.id}'
     timings = []
 
@@ -98,32 +151,6 @@ async def get_timings_from_bus_stop(bus_stop: BusStop, bus_num: str) -> List[Tim
         print(f"Error fetching data from external API: {e}")
         return timings
 
-    try:
-        response = requests.get(url)
-
-        if response.status_code == 200:
-            data = response.json()
-            for service in data['services']:
-                if service['no'] == bus_num:
-                    # Extract duration_ms values for 'next', 'next2', and 'next3'
-                    durations = [service['next']['duration_ms']]
-                    
-                    # Check if next2 and next3 are not null before accessing the duration_ms key
-                    if service['next2']:
-                        durations.append(service['next2']['duration_ms'])
-                        if service['next3']:
-                            durations.append(service['next3']['duration_ms'])
-
-                    # Create timing objects
-                    for idx, duration in enumerate(durations):
-                        timings.append(Timing(bus_stop, duration/1000, idx+1))
-
-                    # Break the loop if the bus number is found
-                    break
-            return timings
-    except requests.RequestException as e:
-        print(f"Error fetching data from external API: {e}")
-        return timings
 
 # sanity check route
 @app.route('/test', methods=['GET'])
