@@ -70,8 +70,16 @@ class Bus:
         self.timings[timing.bus_stop.stopSequence] = timing
 
     def get_bus_diff(self, other_bus):
-        duration_diff = {key: self.timings[key].duration - other_bus.timings[key].duration for key in self.timings.keys() & other_bus.timings.keys()}
-        return duration_diff
+        common_stops = set(self.timings.keys()) & set(other_bus.timings.keys())
+        if common_stops:
+            max_common_stop = max(common_stops)
+            return abs(self.timings[max_common_stop].duration - other_bus.timings[max_common_stop].duration)
+        else:
+            return None
+
+    @classmethod
+    def reset_id_counter(cls):
+        cls._next_id = 1
 
     def __str__(self):
         return f"Bus {self.id} with timings at {[str(v) for k, v in self.timings.items()]}"

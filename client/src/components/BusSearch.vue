@@ -7,12 +7,12 @@
           <input
             type="text"
             class="form-control"
-            placeholder="Bus number"
+            placeholder="Bus no."
             aria-label="Bus number"
             aria-describedby="search-button"
             v-model="busNumber"
             maxlength="4"
-            style="width: 60px; min-width: 60px;"
+            style="width: 80px; min-width: 80px;"
           />
           <div class="input-group-append">
             <button

@@ -6,6 +6,8 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from utils.helpers import Bus, BusStop, Timing
 
+from datetime import datetime, timedelta
+
 # configuration
 DEBUG = True
 
@@ -46,6 +48,7 @@ def get_bus_arrival_timing(busNumber, direction, stopId):
 
 async def fetch_arrival_timing(busNumber: str, direction: str, stopId: str) -> List[str]:
     # Fetch arrivals for all stops
+    Bus.reset_id_counter()
     bus_info = sample_data.get(busNumber)['stops'][direction]
     cur_stop = None
     tasks = []
@@ -109,13 +112,16 @@ async def fetch_arrival_timing(busNumber: str, direction: str, stopId: str) -> L
                 timing.set_bus(bus)
                 buses.append(bus)
 
+    date = datetime.now()
     cur_stop = selected_stop
-    res = []
-    for bus1, bus2 in zip(buses[:-1], buses[1:]):
-        res.append(f"{bus1.id} to {bus2.id}: {str(bus2.get_bus_diff(bus1))}");
-    # while cur_stop:
-    #     res.append(f"{str(cur_stop)} {[str(x) for x in cur_stop.timings]}")
-    #     cur_stop = cur_stop.prev_stop
+    prev_bus = buses[0]
+    next_duration = prev_bus.timings[selected_stop.stopSequence].duration
+    res = [f"Bus {prev_bus.id}: {(date + timedelta(seconds=next_duration)).strftime('%H:%M:%S')}"]
+    
+    for bus in buses[1:]:
+        next_duration = next_duration + bus.get_bus_diff(prev_bus)
+        res.append(f"Bus {bus.id}: {(date + timedelta(seconds=next_duration)).strftime('%H:%M:%S')}")
+        prev_bus = bus
 
     return res
 
