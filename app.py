@@ -158,10 +158,5 @@ async def update_bus_stop_timing(bus_stop: BusStop, bus_num: str) -> List[Timing
         return timings
 
 
-# sanity check route
-@app.route('/test', methods=['GET'])
-def ping_pong():
-    return jsonify('hi!')
-
 if __name__ == '__main__':
     app.run()
