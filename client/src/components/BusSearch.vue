@@ -1,59 +1,8 @@
-<!-- BusSearch.vue -->
 <template>
   <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-auto">
-        <div class="input-group mb-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Bus no."
-            aria-label="Bus number"
-            aria-describedby="search-button"
-            v-model="busNumber"
-            maxlength="4"
-            style="width: 80px; min-width: 80px;"
-          />
-          <div class="input-group-append">
-            <button
-              class="btn btn-success"
-              type="button"
-              id="search-button"
-              @click="fetchDirectionsAndStops"
-            >
-              Find
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div v-if="errorMessage" class="row justify-content-center">
-      <div class="col-auto">
-        <div class="alert alert-danger" role="alert">
-          {{ errorMessage }}
-        </div>
-      </div>
-    </div>
-    <hr v-if="step >= 2" />
-    <div v-if="step >= 2" class="row justify-content-center">
-      <div class="col text-center">
-        <h5>Select Direction:</h5>
-        <div class="btn-group" role="group">
-          <button
-            v-for="(direction, index) in directions"
-            :key="index"
-            class="btn"
-            :class="[
-              'btn-primary',
-              selectedDirection === direction ? 'active' : '',
-            ]"
-            @click="selectDirection(index)"
-          >
-            {{ direction }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <SearchForm @search="fetchDirectionsAndStops" />
+    <ErrorMessage v-if="errorMessage" :message="errorMessage" />
+    <DirectionSelector v-if="step >= 2" :directions="directions" @direction="selectDirection" />
     <hr v-if="step >= 3" />
     <div v-if="step >= 3" class="row justify-content-center">
       <div class="col text-center">
@@ -84,8 +33,16 @@
 
 <script>
 import axios from 'axios';
+import SearchForm from './SearchForm.vue';
+import ErrorMessage from './ErrorMessage.vue';
+import DirectionSelector from './DirectionSelector.vue';
 
 export default {
+  components: {
+    SearchForm,
+    ErrorMessage,
+    DirectionSelector,
+  },
   data() {
     return {
       busNumber: '',
@@ -99,9 +56,10 @@ export default {
     };
   },
   methods: {
-    async fetchDirectionsAndStops() {
+    async fetchDirectionsAndStops(busNumber) {
+      this.busNumber = busNumber;
       try {
-        const path = `http://localhost:5000/api/bus/${this.busNumber}`;
+        const path = `http://localhost:5000/api/bus/${busNumber}`;
         const response = await axios.get(path);
         
         if (response.status === 200) {
@@ -115,7 +73,7 @@ export default {
         }
       } catch (error) {
         console.error('Error fetching directions and stops:', error);
-        this.errorMessage = `Bus '${this.busNumber}' not found`;
+        this.errorMessage = `Bus '${busNumber}' not found`;
         this.step = 1;
       }
     },
@@ -135,7 +93,6 @@ export default {
         
         if (response.status === 200) {
           const data = response.data;
-          // this.busArrivalTiming = data.arrivalTime;
           this.busArrivalTiming = data;
         } else {
           throw new Error('Not found');
