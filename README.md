@@ -29,3 +29,5 @@
 - Update readme
 
 - Add indicator for whether timing displayed is original or predicted, departed or yet to depart
+
+- Error handling
