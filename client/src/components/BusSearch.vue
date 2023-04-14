@@ -3,31 +3,8 @@
     <SearchForm @search="fetchDirectionsAndStops" />
     <ErrorMessage v-if="errorMessage" :message="errorMessage" />
     <DirectionSelector v-if="step >= 2" :directions="directions" @direction="selectDirection" />
-    <hr v-if="step >= 3" />
-    <div v-if="step >= 3" class="row justify-content-center">
-      <div class="col text-center">
-        <h5>Select Bus Stop:</h5>
-        <div class="list-group" style="max-height: 300px; overflow-y: auto; width: 300px; margin: 0 auto;">
-          <button
-            v-for="stop in selectedDirectionStops"
-            :key="stop.id"
-            class="list-group-item list-group-item-action text-center"
-            @click="selectStop(stop)"
-          >
-            {{ stop.name }}
-          </button>
-        </div>
-      </div>
-    </div>
-    <hr v-if="step >= 4" />
-    <div v-if="step === 4" class="row justify-content-center">
-      <div class="col-auto">
-        <h5>Bus Arrival Timing:</h5>
-        <li v-for="timing in busArrivalTiming">
-          {{ timing }}
-        </li>
-      </div>
-    </div>
+    <BusStopSelector v-if="step >= 3" :selectedDirectionStops="stops[selectedDirection]" @stop="fetchBusArrivalTiming" />
+    <BusArrivalTiming v-if="step >= 4" :busArrivalTiming="busArrivalTiming" />
   </div>
 </template>
 
@@ -36,12 +13,16 @@ import axios from 'axios';
 import SearchForm from './SearchForm.vue';
 import ErrorMessage from './ErrorMessage.vue';
 import DirectionSelector from './DirectionSelector.vue';
+import BusStopSelector from './BusStopSelector.vue';
+import BusArrivalTiming from './BusArrivalTiming.vue';
 
 export default {
   components: {
     SearchForm,
     ErrorMessage,
     DirectionSelector,
+    BusStopSelector,
+    BusArrivalTiming,
   },
   data() {
     return {
@@ -50,7 +31,6 @@ export default {
       directions: [],
       stops: {},
       selectedDirection: '',
-      selectedDirectionStops: [],
       busArrivalTiming: '',
       errorMessage: '',
     };
@@ -79,21 +59,17 @@ export default {
     },
     selectDirection(direction) {
       this.selectedDirection = direction;
-      this.selectedDirectionStops = this.stops[direction];
       this.step = 3;
     },
-    selectStop(stop) {
-      this.fetchBusArrivalTiming(stop);
-      this.step = 4;
-    },
-    async fetchBusArrivalTiming(stop) {
+    async fetchBusArrivalTiming(stopSeq) {
       try {
-        const path = `http://localhost:5000/api/bus/${this.busNumber}/direction/${this.selectedDirection}/stop/${stop.id}`;
+        const path = `http://localhost:5000/api/bus/${this.busNumber}/direction/${this.selectedDirection}/stop/${stopSeq}`;
         const response = await axios.get(path);
         
         if (response.status === 200) {
           const data = response.data;
           this.busArrivalTiming = data;
+          this.step = 4;
         } else {
           throw new Error('Not found');
         }

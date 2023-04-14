@@ -36,17 +36,17 @@ def get_bus_info(bus_number):
     else:
         return jsonify({'error': 'Bus number not found'}), 404
 
-@app.route('/api/bus/<busNumber>/direction/<direction>/stop/<stopId>', methods=['GET'])
-def get_bus_arrival_timing(busNumber, direction, stopId):
+@app.route('/api/bus/<busNumber>/direction/<direction>/stop/<stopSeq>', methods=['GET'])
+def get_bus_arrival_timing(busNumber, direction, stopSeq):
     # Fetch arrival timings based on the provided parameters
-    arrival_timing = asyncio.run(fetch_arrival_timing(busNumber, direction, stopId))
+    arrival_timing = asyncio.run(fetch_arrival_timing(busNumber, direction, stopSeq))
 
     if arrival_timing is not None:
         return jsonify(arrival_timing)
     else:
         return jsonify({'error': 'Bus arrival timing not found'}), 404
 
-async def fetch_arrival_timing(busNumber: str, direction: str, stopId: str) -> List[str]:
+async def fetch_arrival_timing(busNumber: str, direction: str, stopSeq: str) -> List[str]:
     # Fetch arrivals for all stops
     Bus.reset_id_counter()
     bus_info = sample_data.get(busNumber)['stops'][direction]
@@ -64,7 +64,7 @@ async def fetch_arrival_timing(busNumber: str, direction: str, stopId: str) -> L
         if cur_stop:
             cur_stop.set_next_stop(new_stop)
         cur_stop = new_stop
-        if str(cur_stop.id) == stopId:
+        if str(cur_stop.stopSequence) == stopSeq:
             break
     selected_stop = cur_stop
 
