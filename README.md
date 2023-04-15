@@ -16,6 +16,10 @@
 
 - Table view? With bus stop/bus id as row/column and timing as cell value
 
+- Add loading indicator
+
+- Add no bus indicator
+
 ## Backend
 
 - Remove hardcoding of bus search (implement database)
