@@ -12,9 +12,11 @@
 
 - Add toggle between duration and arrival time
 
+- Table view? With bus stop/bus id as row/column and timing as cell value
+
 ## Backend
 
-- Remove hardcoding of bus search
+- Remove hardcoding of bus search (implement database)
 
 - Implement other bus services (single and double direction)
 
@@ -24,10 +26,10 @@
 
 ## Others
 
-- Refactor code
+- ~~Refactor code~~
 
 - Update readme
 
-- Add indicator for whether timing displayed is original or predicted, departed or yet to depart
+- Add indicator for whether timing displayed is original or predicted, departed or yet to depart, and current stop
 
-- Error handling
+- Error handling and logging
