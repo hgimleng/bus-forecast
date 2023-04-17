@@ -33,9 +33,6 @@ def update_bus_routes():
         for record in fetch_all_records(URL_ROUTES, headers)
     ]
 
-    # print(len(bus_routes))
-    # print((bus_stops))
-
     # Connect to mysql to update database
     connection = pymysql.connect(host=host,
                                  user=user,
@@ -62,9 +59,12 @@ def update_bus_routes():
             cursor.execute("TRUNCATE TABLE routes_table;")
 
             # Insert data into the table
-            insert_data_query = """
-            INSERT INTO routes_table (bus_num, direction, stop_seq, stop_code, stop_name, distance) VALUES (%s, %s, %s, %s, %s, %s);
-            """
+            insert_data_query = (
+                "INSERT INTO routes_table "
+                "(bus_num, direction, stop_seq, "
+                "stop_code, stop_name, distance) "
+                "VALUES (%s, %s, %s, %s, %s, %s);"
+            )
 
             cursor.executemany(insert_data_query, bus_routes)
 
