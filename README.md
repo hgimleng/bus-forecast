@@ -22,9 +22,9 @@
 
 ## Backend
 
-- Remove hardcoding of bus search (implement database)
+- ~~Remove hardcoding of bus search (implement database)~~
 
-- Implement other bus services (single and double direction)
+- ~~Implement other bus services (single and double direction)~~
 
 - Modify `has_same_bus` to cross verify with other attributes
 

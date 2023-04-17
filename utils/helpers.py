@@ -142,3 +142,44 @@ class Bus:
             f"Bus {self.id} with timings at "
             f"{[str(v) for k, v in self.timings.items()]}"
         )
+
+
+def transform_route_records(records):
+    """
+    Transforms list of route records to dictionary.
+    """
+    bus_info = {
+        "directions": {},
+        "stops": {}
+    }
+
+    for record in records:
+        direction = record["direction"]
+        stop_seq = record["stop_seq"]
+        stop_code = record["stop_code"]
+        stop_name = record["stop_name"]
+        distance = record["distance"]
+
+        if direction not in bus_info["stops"]:
+            bus_info["stops"][direction] = []
+
+        if stop_seq != 1:
+            bus_info["stops"][direction].append({
+                "id": stop_code,
+                "stopSequence": stop_seq,
+                "name": stop_name,
+                "distance": distance,
+            })
+
+    # Add destination stop for each direction
+    # Ensure stopSequence is sequential without gaps and remove last stop
+    for direction in bus_info["stops"]:
+        stops = bus_info["stops"][direction]
+        stops.sort(key=lambda x: x["stopSequence"])
+        bus_info["directions"][direction] = f"To {stops[-1]['name']}"
+
+        for i, stop in enumerate(stops):
+            stop["stopSequence"] = i+2
+        bus_info["stops"][direction] = stops[:-1]
+
+    return bus_info
