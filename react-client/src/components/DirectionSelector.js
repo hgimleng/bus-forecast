@@ -1,15 +1,16 @@
-function DirectionSelector({ directions }) {
+function DirectionSelector({ directions, onClick, selectedDirection }) {
     return (
     <>
         <hr />
-        <div class="row justify-content-center">
-            
-            <div class="col text-center">
+        <div className='row justify-content-center'>
+            <div className='col text-center'>
                 <h5>Select Direction:</h5>
-                <div class="btn-group" role="group">
-                    {directions.map(direction => (
+                <div className='btn-group' role='group'>
+                    {Object.entries(directions).map(([key, direction]) => (
                         <button
-                        className='btn btn-primary'
+                        key={key}
+                        className={`btn btn-primary${selectedDirection === key ? ' active' : ''}`}
+                        onClick={() => onClick(key)}
                         >
                             {direction}
                         </button>
