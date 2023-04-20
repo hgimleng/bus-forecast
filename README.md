@@ -4,6 +4,8 @@
 
 ## Frontend
 
+- ~~Migrate to react~~
+
 - Make bus stop selection clearer
 
 - Make bus arrival timing display prettier
