@@ -12,6 +12,7 @@ function App() {
   const [busNum, setBusNum] = useState('')
   const [routes, setRoutes] = useState({'directions': {}, 'stops': {}})
   const [selectedDirection, setSelectedDirection] = useState('')
+  const [selectedStop, setSelectedStop] = useState('')
   const [arrivalData, setArrivalData] = useState([])
 
   // Fetch directions, stops, and update busNum, step and routes
@@ -37,6 +38,7 @@ function App() {
 
   function selectDirection(direction) {
     setSelectedDirection(direction)
+    setSelectedStop('')
     setStep(3)
   }
 
@@ -46,6 +48,7 @@ function App() {
       
       if (response.status === 200) {
         const data = response.data
+        setSelectedStop(stopSequence)
         setArrivalData(data)
         setStep(4)
       } else {
@@ -61,7 +64,7 @@ function App() {
       <SearchForm onFind={fetchDirectionsAndStops} />
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
-      {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} />}
+      {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} />}
       {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} />}
     </div>
   );

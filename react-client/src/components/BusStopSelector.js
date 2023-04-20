@@ -1,4 +1,4 @@
-function BusStopSelector({ stops, selectStop }) {
+function BusStopSelector({ stops, selectStop, selectedStop }) {
     return (
     <>
         <hr />
@@ -11,7 +11,7 @@ function BusStopSelector({ stops, selectStop }) {
                         <button
                         key={stop.stopSequence}
                         onClick={() => selectStop(stop.stopSequence)}
-                        className="list-group-item list-group-item-action text-center">
+                        className={`list-group-item ${stop.stopSequence === selectedStop ? 'active' : ''} list-group-item-action text-center`}>
                             { stop.name }
                         </button>
                     ))}
