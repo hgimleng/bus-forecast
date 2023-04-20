@@ -1,7 +1,9 @@
 function DirectionSelector({ directions }) {
     return (
+    <>
+        <hr />
         <div class="row justify-content-center">
-            <hr />
+            
             <div class="col text-center">
                 <h5>Select Direction:</h5>
                 <div class="btn-group" role="group">
@@ -15,6 +17,7 @@ function DirectionSelector({ directions }) {
                 </div>
             </div>
         </div>
+    </>
     )
 }
 
