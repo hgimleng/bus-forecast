@@ -61,7 +61,7 @@ function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData }) {
                 className='btn btn-success'
                 onClick={handleRefresh}
                 disabled={refreshCountdown > 0}>
-                    Refresh{refreshCountdown > 0 ? `(${refreshCountdown}s)` : ''}
+                    Refresh{refreshCountdown > 0 ? ` (${refreshCountdown}s)` : ''}
                 </button>
             </div>
         </div>
