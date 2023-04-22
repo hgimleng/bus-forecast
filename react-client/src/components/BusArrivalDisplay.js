@@ -16,7 +16,7 @@ function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData }) {
               }
               return prevSeconds - 1;
             });
-          }, 1000);
+          }, 1000)
     }
 
     return (

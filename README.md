@@ -12,11 +12,11 @@
 
 - ~~Add refresh button~~
 
-- Search by pressing enter
+- ~~Search by pressing enter~~
 
 - Table view? With bus stop/bus id as row/column and timing as cell value
 
-- Add loading indicator
+- ~~Add loading indicator~~
 
 - Add no bus indicator
 

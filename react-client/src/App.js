@@ -5,6 +5,8 @@ import BusStopSelector from "./components/BusStopSelector";
 import DirectionSelector from "./components/DirectionSelector";
 import ErrorMessage from "./components/ErrorMessage";
 import SearchForm from "./components/SearchForm";
+import CircularProgress from "@mui/material/CircularProgress";
+import Box from "@mui/material/Box";
 
 function App() {
   const [step, setStep] = useState(1)
@@ -15,11 +17,14 @@ function App() {
   const [selectedStop, setSelectedStop] = useState('')
   const [arrivalData, setArrivalData] = useState([])
   const [updateTime, setUpdateTime] = useState('')
+  const [isFetching, setIsFetching] = useState(false)
 
   // Fetch directions, stops, and update busNum, step and routes
   async function fetchDirectionsAndStops(findNum) {
     try {
+      setIsFetching(true)
       const response = await api.get(`/bus/${findNum}`)
+      setIsFetching(false)
       if (response.status === 200) {
         const data = response.data
         setRoutes(data)
@@ -45,8 +50,10 @@ function App() {
 
   async function fetchArrivalData(stopSequence) {
     try {
+      setIsFetching(true)
       const response = await api.get(`/bus/${busNum}/direction/${selectedDirection}/stop/${stopSequence}`)
-      
+      setIsFetching(false)
+
       if (response.status === 200) {
         const data = response.data
         setSelectedStop(stopSequence)
@@ -66,8 +73,9 @@ function App() {
   }
 
   return (
-    <div className='container mt-4 mb-4' >
+    <div className='container mt-4 mb-4 text-center' >
       <SearchForm onFind={fetchDirectionsAndStops} />
+      {isFetching && <CircularProgress />}
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
       {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} />}

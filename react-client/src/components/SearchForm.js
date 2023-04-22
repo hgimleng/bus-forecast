@@ -3,10 +3,15 @@ import { useState } from 'react'
 function SearchForm({ onFind }) {
     const [text, setText] = useState('')
 
+    const handleSubmit = (e) => {
+        e.preventDefault()
+        onFind(text)
+    }
+
     return (
         <div className='row justify-content-center'>
             <div className='col-auto'>
-                <div className='input-group mb-3'>
+                <form onSubmit={handleSubmit} className='input-group mb-3'>
                     <input 
                     type='text'
                     className='form-control'
@@ -17,10 +22,10 @@ function SearchForm({ onFind }) {
                     />
                     <button
                     className='btn btn-success'
-                    onClick={() => onFind(text)}>
+                    type='submit'>
                         Find
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     )
