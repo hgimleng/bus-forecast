@@ -14,6 +14,7 @@ function App() {
   const [selectedDirection, setSelectedDirection] = useState('')
   const [selectedStop, setSelectedStop] = useState('')
   const [arrivalData, setArrivalData] = useState([])
+  const [updateTime, setUpdateTime] = useState('')
 
   // Fetch directions, stops, and update busNum, step and routes
   async function fetchDirectionsAndStops(findNum) {
@@ -49,7 +50,8 @@ function App() {
       if (response.status === 200) {
         const data = response.data
         setSelectedStop(stopSequence)
-        setArrivalData(data)
+        setArrivalData(data['timing'])
+        setUpdateTime(data['updateTime'])
         setStep(4)
       } else {
         throw new Error('Not found')
@@ -59,13 +61,17 @@ function App() {
     }
   }
 
+  function refreshData() {
+    fetchArrivalData(selectedStop)
+  }
+
   return (
-    <div className='container' style={{'marginTop': '60px'}}>
+    <div className='container mt-4 mb-4' >
       <SearchForm onFind={fetchDirectionsAndStops} />
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
       {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} />}
-      {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} />}
+      {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} stopName={routes['stops'][selectedDirection].filter(s => s['stopSequence'] === selectedStop)[0]['name']} updateTime={updateTime} refreshData={refreshData} />}
     </div>
   );
 }

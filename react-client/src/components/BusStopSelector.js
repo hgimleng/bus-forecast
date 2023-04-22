@@ -5,8 +5,8 @@ function BusStopSelector({ stops, selectStop, selectedStop }) {
         <div className='row justify-content-center'>
             <div className='col text-center'>
                 <h5>Select Bus Stop:</h5>
-                <div className='list-group'
-                style={{'maxHeight': '300px', 'overflowY': 'auto', 'width': '300px', 'margin': '0 auto'}}>
+                <div className='list-group overflow-scroll mx-auto col-md-3'
+                style={{'maxHeight': '300px'}}>
                     {stops.map(stop => (
                         <button
                         key={stop.stopSequence}

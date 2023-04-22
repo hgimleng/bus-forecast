@@ -8,13 +8,11 @@
 
 - ~~Make bus stop selection clearer~~
 
-- Make bus arrival timing display prettier
+- ~~Make bus arrival timing display prettier~~
 
-- Add refresh button
+- ~~Add refresh button~~
 
 - Search by pressing enter
-
-- Add toggle between duration and arrival time
 
 - Table view? With bus stop/bus id as row/column and timing as cell value
 

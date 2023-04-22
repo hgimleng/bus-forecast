@@ -21,6 +21,7 @@ async def fetch_arrival_timing(
 
     Returns:
         List[str]: A list of arrival timings for bus number at target stop.
+        datetime: The datetime when data was fetched.
     """
     # Initialise variables
     Bus.reset_id_counter()
@@ -98,9 +99,14 @@ async def fetch_arrival_timing(
     date = datetime.now()
     res = []
     for timing in selected_stop.timings:
-        res.append(f"Bus {timing.bus.id}: {timing.get_arrival_time(date)}")
+        res.append({
+            "bus": timing.bus.id + 1,
+            "time": timing.get_arrival_time(date),
+            "currentLoc": "Unknown",
+            "isOriginal": timing.from_api,
+            })
 
-    return res
+    return res, date.strftime('%H:%M:%S')
 
 
 async def update_bus_stop_timing(
