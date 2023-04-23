@@ -4,7 +4,7 @@ from typing import List
 import asyncio
 import httpx
 
-from utils.helpers import Bus, BusStop, Timing
+from utils.helpers import BusStop, RouteSchedule, StopSchedule, Timing
 
 ARRIVAL_API_URL = "https://arrivelah2.busrouter.sg"
 
@@ -24,15 +24,16 @@ async def fetch_arrival_timing(
         datetime: The datetime when data was fetched.
     """
     # Initialise variables
-    Bus.reset_id_counter()
     cur_stop = None
     tasks = []
-    buses = []
+    route_schedule = RouteSchedule()
+    all_stops = []
 
     # Create BusStop objects and fetch bus arrival timings
     for stop in stops_info:
         new_stop = BusStop(stop["id"], stop["name"], stop["stopSequence"])
         tasks.append(update_bus_stop_timing(new_stop, bus_num))
+        all_stops.append(new_stop)
 
         new_stop.set_prev_stop(cur_stop)
         if cur_stop:
@@ -40,72 +41,19 @@ async def fetch_arrival_timing(
         cur_stop = new_stop
         if str(cur_stop.stop_seq) == stop_seq:
             break
-    selected_stop = cur_stop
 
     # Run tasks concurrently
-    await asyncio.gather(*tasks)
+    all_timings = await asyncio.gather(*tasks)
 
-    # Set timings for target stop to be the first few buses
-    for timing in cur_stop.timings:
-        bus = Bus()
-        timing.set_bus(bus)
-        buses.append(bus)
-
-    # Iterate through stops backwards to assign bus to timings
-    while cur_stop.prev_stop:
-        next_stop = cur_stop
-        cur_stop = cur_stop.prev_stop
-
-        if len(next_stop.timings) < 3:
-            # All timings for cur_stop are for different buses from next_stop
-            for timing in cur_stop.timings:
-                if not timing.bus:
-                    timing.set_bus(Bus())
-                    buses.append(timing.bus)
-        else:
-            # Some timings for cur_stop may be for same bus as next_stop
-            next_stop_timings = next_stop.timings[:]
-            for cur_stop_timing in cur_stop.timings:
-                # Find the earliest timing at next_stop that matches
-                for next_stop_timing in next_stop_timings:
-                    next_stop_timings.remove(next_stop_timing)
-                    if (cur_stop_timing.has_matching_bus(next_stop_timing)):
-                        cur_stop_timing.set_bus(next_stop_timing.bus)
-                        break
-                # If there are no more timings at next stop to allocate,
-                # timing for cur_stop will be treated as new bus
-                if len(next_stop_timings) == 0 and cur_stop_timing.bus is None:
-                    cur_stop_timing.set_bus(Bus())
-                    buses.append(cur_stop_timing.bus)
+    for bus_stop, timings in zip(reversed(all_stops), reversed(all_timings)):
+        stop_schedule = StopSchedule(bus_stop, timings)
+        route_schedule.add_stop_schedule(stop_schedule)
 
     # Forecast timing based on time difference between buses
-    last_timing = selected_stop.timings[-1]
-    last_duration = last_timing.duration
-    while not last_timing.bus.is_last_bus():
-        next_bus = buses[last_timing.bus.id + 1]
-        bus_duration_diff = next_bus.get_bus_diff(last_timing.bus)
-        if bus_duration_diff is None:
-            break
-        last_duration = last_duration + bus_duration_diff
-        forecast_timing = Timing(
-            selected_stop,
-            last_duration,
-            len(selected_stop.timings) + 1,
-            False
-        )
-        forecast_timing.set_bus(next_bus)
-        last_timing = selected_stop.timings[-1]
+    route_schedule.forecast_new_timings()
 
     date = datetime.now()
-    res = []
-    for timing in selected_stop.timings:
-        res.append({
-            "bus": timing.bus.id + 1,
-            "time": timing.get_arrival_time(date),
-            "currentLoc": timing.bus.get_location(),
-            "isOriginal": timing.from_api,
-            "allTimings": timing.bus.get_all_timings(date),
-            })
+    res = route_schedule.get_all_timings(date)
 
     return res, date.strftime('%H:%M:%S')
 
@@ -139,7 +87,7 @@ async def update_bus_stop_timing(
 
                 if service:
                     timings = [
-                        Timing(bus_stop, service[key]["duration_ms"]/1000, i+1)
+                        Timing(service[key]["duration_ms"]/1000, i+1)
                         for i, key in enumerate(["next", "next2", "next3"])
                         if service.get(key) is not None
                     ]

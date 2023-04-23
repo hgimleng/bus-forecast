@@ -36,6 +36,8 @@
 
 - Update readme
 
-- Add indicator for whether timing displayed is original or predicted, departed or yet to depart, and current stop
+- ~~Add indicator for whether timing displayed is original or predicted, departed or yet to depart, and current stop~~
 
 - Error handling and logging
+
+- Testing for different types of buses

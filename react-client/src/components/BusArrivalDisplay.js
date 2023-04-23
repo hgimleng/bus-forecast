@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData }) {
+function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData, selectedStop }) {
     const [listView, setListView] = useState(true)
     const [refreshCountdown, setRefreshCountdown] = useState(0)
 
@@ -39,10 +39,10 @@ function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData }) {
                     </thead>
                     <tbody>
                         {arrivalData.map((item, index) => (
-                        <tr scope='row' class={item['isOriginal'] ? 'table-success' : 'table-warning'}>
-                            <td>{ item['bus'] }</td>
-                            <td>{ item['time'] }</td>
-                            <td>{ item['currentLoc'] }</td>
+                        <tr scope='row' class={item['busTimings'][selectedStop]['isForecasted'] ? 'table-success' : 'table-warning'}>
+                            <td>{ item['busId'] }</td>
+                            <td>{ item['busTimings'][selectedStop]['time'] }</td>
+                            <td>{ item['busLocation'] }</td>
                         </tr>
                         ))}
                     </tbody>
