@@ -102,8 +102,9 @@ async def fetch_arrival_timing(
         res.append({
             "bus": timing.bus.id + 1,
             "time": timing.get_arrival_time(date),
-            "currentLoc": "Unknown",
+            "currentLoc": timing.bus.get_location(),
             "isOriginal": timing.from_api,
+            "allTimings": timing.bus.get_all_timings(date),
             })
 
     return res, date.strftime('%H:%M:%S')

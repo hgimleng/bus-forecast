@@ -133,6 +133,27 @@ class Bus:
         """
         return self.id == Bus._next_id - 1
 
+    def get_location(self):
+        """
+        Returns the predicted location of bus from timing
+        """
+        # Take the earliest bus stop with timing for the bus
+        earliest_seq = min(int(key) for key in self.timings.keys())
+        return self.timings[earliest_seq].bus_stop.name
+
+    def get_all_timings(self, current_datetime):
+        """
+        Returns all the timings for the bus as an object with
+        stop sequence as key and stop name and time as value
+        """
+        all_timings = {}
+        for (seq, timing) in self.timings.items():
+            all_timings[seq] = {
+                "name": timing.bus_stop.name,
+                "time": timing.get_arrival_time(current_datetime),
+            }
+        return all_timings
+
     @classmethod
     def reset_id_counter(cls):
         cls._next_id = 0
