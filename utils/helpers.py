@@ -38,18 +38,17 @@ class Timing:
     def __init__(self,
                  duration: float,
                  arrival_seq: int,
-                 from_api=True):
+                 is_forecasted=False):
         """
         Initializes a new Timing object.
 
         duration: Duration in seconds for the bus to reach the stop.
         arrival_seq: Sequence in which bus for this timing arrives at the stop.
-        from_api: Indicates if the timing is obtained directly from the API
-                  (default: True).
+        is_forecasted: Indicates if the timing is forecasted. (default: True)
         """
         self.duration = duration
         self.arrival_seq = arrival_seq
-        self.from_api = from_api
+        self.is_forecasted = is_forecasted
 
     def get_arrival_time(self, current_datetime):
         return (current_datetime +
@@ -123,7 +122,7 @@ class StopSchedule:
         while next_bus in bus_diff:
             self.add_timing(Timing(last_timing.duration + bus_diff[next_bus],
                                    last_timing.arrival_seq,
-                                   False))
+                                   True))
             self.buses.append(next_bus)
             next_bus += 1
 
@@ -174,7 +173,7 @@ class RouteSchedule:
                 timings[schedule.get_stop_seq()] = {
                     "time": schedule.timings[bus_idx].get_arrival_time(
                         current_datetime),
-                    "isForecasted": schedule.timings[bus_idx].from_api,
+                    "isForecasted": schedule.timings[bus_idx].is_forecasted,
                 }
         return timings
 
@@ -188,7 +187,7 @@ class RouteSchedule:
         all_timings = []
         for bus in sorted(self.bus_location.keys()):
             all_timings.append({
-                "busId": bus,
+                "busId": bus + 1,
                 "busLocation": self.bus_location[bus],
                 "busTimings": self.get_timings_from_bus(bus, current_datetime),
             })

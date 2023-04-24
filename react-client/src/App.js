@@ -79,7 +79,7 @@ function App() {
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
       {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} />}
-      {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} stopName={routes['stops'][selectedDirection].filter(s => s['stopSequence'] === selectedStop)[0]['name']} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} />}
+      {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} stopName={routes['stops'][selectedDirection].filter(s => s['stopSequence'] === selectedStop)[0]['name']} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} />}
     </div>
   );
 }

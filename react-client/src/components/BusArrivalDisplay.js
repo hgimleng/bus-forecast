@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
+import ArrivalListView from './ArrivalListView'
+import ArrivalTableView from './ArrivalTableView'
 
-function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData, selectedStop }) {
+function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData, selectedStop, stops }) {
     const [listView, setListView] = useState(true)
     const [refreshCountdown, setRefreshCountdown] = useState(0)
 
@@ -24,29 +26,9 @@ function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData, sel
             <hr />
             <div className='col-auto text-center'>
                 <h5>Arrivals for <u>{ stopName }</u></h5>
-                <table className='table table-striped table-bordered'>
-                    <caption>
-                        Last Updated: { updateTime }
-                        <br />
-                        Orange rows are forecasted and may be inaccurate.
-                    </caption>
-                    <thead>
-                        <tr>
-                            <th scope='col'>Bus</th>
-                            <th scope='col'>Time</th>
-                            <th scope='col'>Current Location</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {arrivalData.map((item, index) => (
-                        <tr scope='row' class={item['busTimings'][selectedStop]['isForecasted'] ? 'table-success' : 'table-warning'}>
-                            <td>{ item['busId'] }</td>
-                            <td>{ item['busTimings'][selectedStop]['time'] }</td>
-                            <td>{ item['busLocation'] }</td>
-                        </tr>
-                        ))}
-                    </tbody>
-                </table>
+                {listView 
+                    ? <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} /> 
+                    : <ArrivalTableView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} stops={stops} /> }
                 <button
                 className={`btn ${listView ? 'btn-primary active' : 'btn-outline-primary'} me-2`}
                 onClick={() => setListView(true)}>
