@@ -31,7 +31,10 @@ async def fetch_arrival_timing(
 
     # Create BusStop objects and fetch bus arrival timings
     for stop in stops_info:
-        new_stop = BusStop(stop["id"], stop["name"], stop["stopSequence"])
+        new_stop = BusStop(stop["id"],
+                           stop["name"],
+                           stop["stopSequence"],
+                           stop["distance"])
         tasks.append(update_bus_stop_timing(new_stop, bus_num))
         all_stops.append(new_stop)
 
@@ -44,6 +47,10 @@ async def fetch_arrival_timing(
 
     # Run tasks concurrently
     all_timings = await asyncio.gather(*tasks)
+
+    # Check if all of the timings are empty
+    if all(not timings for timings in all_timings):
+        return None, None
 
     for bus_stop, timings in zip(reversed(all_stops), reversed(all_timings)):
         stop_schedule = StopSchedule(bus_stop, timings)
@@ -81,13 +88,18 @@ async def update_bus_stop_timing(
             if response.status_code == 200:
                 data = response.json()
                 service = next(
-                    (service for service in data["services"] if service["no"] == bus_num),
+                    (service
+                     for service in data["services"]
+                     if service["no"] == bus_num),
                     None,
                 )
 
                 if service:
                     timings = [
-                        Timing(service[key]["duration_ms"]/1000, i+1)
+                        Timing(service[key]["duration_ms"]/1000,
+                               i+1,
+                               type=service[key]["type"],
+                               origin=service[key]["origin_code"])
                         for i, key in enumerate(["next", "next2", "next3"])
                         if service.get(key) is not None
                     ]

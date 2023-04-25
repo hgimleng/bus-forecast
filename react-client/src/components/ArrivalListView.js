@@ -14,8 +14,10 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop }) {
                 </tr>
             </thead>
             <tbody>
-                {arrivalData.map((item) => (
-                <tr scope='row' key={item['busId']} class={item['busTimings'][selectedStop]['isForecasted'] ? 'table-success' : 'table-warning'}>
+                {arrivalData
+                .filter((item) => item['busTimings'][selectedStop])
+                .map((item) => (
+                <tr scope='row' key={item['busId']} class={item['busTimings'][selectedStop]['isForecasted'] ? 'table-warning' : 'table-success'}>
                     <td>{ item['busId'] }</td>
                     <td>{ item['busTimings'][selectedStop]['time'] }</td>
                     <td>{ item['busLocation'] }</td>

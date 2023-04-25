@@ -14,11 +14,11 @@
 
 - ~~Search by pressing enter~~
 
-- Table view? With bus stop/bus id as row/column and timing as cell value
+- ~~Table view? With bus stop/bus id as row/column and timing as cell value~~
 
 - ~~Add loading indicator~~
 
-- Add no bus indicator
+- ~~Add no bus indicator~~
 
 ## Backend
 
@@ -26,7 +26,7 @@
 
 - ~~Implement other bus services (single and double direction)~~
 
-- Modify `has_same_bus` to cross verify with other attributes
+- ~~Modify `has_same_bus` to cross verify with other attributes~~
 
 - Relook into logic for long distance buses and special departure buses
 

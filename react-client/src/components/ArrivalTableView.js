@@ -3,14 +3,14 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
         if (!busTimings[stopSequence]) {
           return ''
         }
-        return busTimings[stopSequence]['isForecasted'] ? 'table-success' : 'table-warning'
+        return busTimings[stopSequence]['isForecasted'] ? 'table-warning' : 'table-success'
     }
 
     function getBusTiming(busTimings, stopSequence) {
         if (!busTimings[stopSequence]) {
             return '-'
         }
-        return busTimings[stopSequence]['time'].slice(0, -3)
+        return busTimings[stopSequence]['time']
     }
 
     return (

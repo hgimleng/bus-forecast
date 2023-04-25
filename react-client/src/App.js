@@ -6,7 +6,6 @@ import DirectionSelector from "./components/DirectionSelector";
 import ErrorMessage from "./components/ErrorMessage";
 import SearchForm from "./components/SearchForm";
 import CircularProgress from "@mui/material/CircularProgress";
-import Box from "@mui/material/Box";
 
 function App() {
   const [step, setStep] = useState(1)
@@ -52,7 +51,6 @@ function App() {
     try {
       setIsFetching(true)
       const response = await api.get(`/bus/${busNum}/direction/${selectedDirection}/stop/${stopSequence}`)
-      setIsFetching(false)
 
       if (response.status === 200) {
         const data = response.data
@@ -65,6 +63,11 @@ function App() {
       }
     } catch (error) {
       console.error('Error fetching bus arrival timing:', error)
+      // Go back to step 1 and show error message
+      setErrorMsg(`No timings found for bus '${busNum}'`)
+      setStep(1)
+    } finally {
+      setIsFetching(false)
     }
   }
 
@@ -79,7 +82,7 @@ function App() {
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
       {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} />}
-      {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} stopName={routes['stops'][selectedDirection].filter(s => s['stopSequence'] === selectedStop)[0]['name']} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} />}
+      {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} />}
     </div>
   );
 }

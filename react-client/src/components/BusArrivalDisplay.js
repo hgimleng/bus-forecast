@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import ArrivalListView from './ArrivalListView'
 import ArrivalTableView from './ArrivalTableView'
 
-function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData, selectedStop, stops }) {
+function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop, stops }) {
     const [listView, setListView] = useState(true)
     const [refreshCountdown, setRefreshCountdown] = useState(0)
 
@@ -25,7 +25,7 @@ function BusArrivalDisplay({ arrivalData, stopName, updateTime, refreshData, sel
         <div className='row justify-content-center'>
             <hr />
             <div className='col-auto text-center'>
-                <h5>Arrivals for <u>{ stopName }</u></h5>
+                <h5>Arrivals for <u>{ stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }</u></h5>
                 {listView 
                     ? <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} /> 
                     : <ArrivalTableView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} stops={stops} /> }
