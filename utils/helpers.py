@@ -146,12 +146,16 @@ class StopSchedule:
                 if not all(type_origin):
                     # Skip if type or origin is different
                     continue
-                # Check if all travel time is near estimated duration
-                if all(abs(t-estimated_duration) < estimated_duration*1.4 + 120
-                       for t in travel_time):
+                # Check if all travel time is near estimated duration if
+                # estimated duration is more than 2 mins
+                if (estimated_duration < 120
+                    or all(abs(t-estimated_duration) < estimated_duration*1.4 + 120
+                           for t in travel_time)):
                     # Assign same buses as next stop
                     self.buses = next_stop_schedule.buses[offset:]
                     break
+                else:
+                    print(f"Travel time not near estimated duration: {self.bus_stop.name}")
 
             # Assign new buses if some are not allocated
             while len(self.buses) < len(self.timings):
@@ -202,9 +206,6 @@ class RouteSchedule:
             for i, bus in enumerate(schedule.buses):
                 # Update location of bus
                 self.bus_location[bus] = schedule.bus_stop.name
-                # Update duration difference between bus and bus - 1
-                # if i > 0 and bus not in self.bus_diff:
-                #     self.bus_diff[bus] = schedule.get_bus_diff(bus)
 
     def forecast_new_timings(self):
         self.update_bus_info()
@@ -261,9 +262,6 @@ def transform_route_records(records):
 
         if direction not in bus_info["stops"]:
             bus_info["stops"][direction] = []
-
-        # if stop_seq == 1:
-        #     continue
 
         bus_info["stops"][direction].append({
             "id": stop_code,
