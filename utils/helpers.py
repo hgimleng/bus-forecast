@@ -1,12 +1,20 @@
 from datetime import timedelta
+import logging
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] - %(message)s',
+    handlers=[
+        logging.StreamHandler()  # Output logs to the console
+    ]
+)
 
 
 class BusStop:
     """
     Represents a bus stop with relevant information about arrivals to the stop.
     """
-
-    AVG_SPEED = 1  # km/min
 
     def __init__(self, id: str, name: str, stop_seq: str, distance: float):
         """
@@ -30,13 +38,14 @@ class BusStop:
     def set_next_stop(self, next_stop):
         self.next_stop = next_stop
 
-    def get_duration(self):
+    def get_distance(self):
         """
-        Get estimated duration in seconds for bus to reach this stop
-        from previous stop.
+        Get distance between this stop and previous stop
         """
-        distance = self.distance - self.prev_stop.distance
-        return (distance / self.AVG_SPEED) * 60
+        if self.prev_stop:
+            return self.distance - self.prev_stop.distance
+        else:
+            return self.distance
 
     def __str__(self):
         return f"Bus Stop {self.id} ({self.name})"
@@ -52,6 +61,9 @@ class Timing:
                  arrival_seq: int,
                  type: str = None,
                  origin: str = None,
+                 load: str = None,
+                 lng: float = None,
+                 lat: float = None,
                  is_forecasted=False):
         """
         Initializes a new Timing object.
@@ -60,21 +72,71 @@ class Timing:
         arrival_seq: Sequence in which bus for this timing arrives at the stop.
         type: Type of bus, single, double, or bendy (default: None).
         origin: Origin bus stop code of bus (default: None).
+        load: Load of bus, SEA, SDA, LSD, or EMPTY (default: None).
+        lng: Longitude of bus (default: None).
+        lat: Latitude of bus (default: None).
         is_forecasted: Indicates if the timing is forecasted. (default: True)
         """
         self.duration = duration
         self.arrival_seq = arrival_seq
         self.type = type
         self.origin = origin
+        self.load = load
+        self.lng = lng
+        self.lat = lat
         self.is_forecasted = is_forecasted
 
     def get_arrival_time(self, current_datetime):
         return (current_datetime +
                 timedelta(seconds=self.duration)).strftime('%H:%M:%S')
 
-    def has_same_type_origin(self, other_timing):
+    def has_same_profile(self, other_timing):
+        """
+        Checks if two timings have same bus type and origin
+        """
         return (self.type == other_timing.type
                 and self.origin == other_timing.origin)
+
+    def is_special_departure(self, first_stop_id):
+        """
+        Check if bus is a special departure based on origin.
+        """
+        if self.origin and self.origin != first_stop_id:
+            return True
+        else:
+            return False
+
+    def get_load(self):
+        """
+        Get load of bus based on load.
+        """
+        if self.load == "SEA":
+            return "Low"
+        elif self.load == "SDA":
+            return "Medium"
+        elif self.load == "LSD":
+            return "High"
+        else:
+            return "NA"
+
+    def get_latlng(self):
+        """
+        Get latitude and longitude of bus.
+        """
+        return (self.lat, self.lng)
+
+    def get_bus_type(self):
+        """
+        Get bus type.
+        """
+        if self.type == "SD":
+            return "Single Deck"
+        elif self.type == "DD":
+            return "Double Deck"
+        elif self.type == "BD":
+            return "Bendy"
+        else:
+            return "NA"
 
     def __str__(self):
         return (
@@ -124,39 +186,72 @@ class StopSchedule:
             # Assign new buses for first stop schedule
             self.buses = [i for i in range(len(self.timings))]
         else:
-            next_stop_timings = next_stop_schedule.timings[:]
-            estimated_duration = next_stop_schedule.bus_stop.get_duration()
-            for offset in range(len(next_stop_timings)):
+            def is_different(this_stop_timings, next_stop_timings,
+                             dist, check_range=True):
+                """
+                Checks if any of the timings are significantly different
+                """
                 travel_time = [
-                    t2.duration - t1.duration
-                    for t1, t2 in zip(self.timings,
-                                      next_stop_timings[offset:])
+                    t2.duration - t1.duration + 1e-9
+                    for t1, t2 in zip(this_stop_timings, next_stop_timings)
                 ]
-                type_origin = [
-                    t2.has_same_type_origin(t1)
-                    for t1, t2 in zip(self.timings,
-                                      next_stop_timings[offset:])
+                profiles = [
+                    t2.has_same_profile(t1)
+                    for t1, t2 in zip(this_stop_timings, next_stop_timings)
                 ]
+                average_speed = [dist/(t/3600) for t in travel_time]
                 if min(travel_time) < -120:
                     # Skip if travel time is beyond negative threshold
-                    continue
-                if max(travel_time) - min(travel_time) > 120:
-                    # Skip if range of travel time is beyond 2 mins
-                    continue
-                if not all(type_origin):
+                    logging.debug(f"{self.bus_stop.name} negative skip")
+                    return True
+                if check_range and max(travel_time) - min(travel_time) > 180:
+                    # Skip if range of travel time is beyond 3 mins
+                    logging.debug(f"{self.bus_stop.name} max range skip")
+                    return True
+                if not all(profiles):
                     # Skip if type or origin is different
+                    logging.debug(f"{self.bus_stop.name} profile skip")
+                    return True
+                if (dist > 4 and
+                        any(speed > 60 for speed in average_speed)):
+                    # Skip if long distance and speed is more than 60km/h
+                    logging.debug(f"{self.bus_stop.name} high speed skip")
+                    return True
+                if any(0 < speed < 2 for speed in average_speed):
+                    # Skip if speed is less than 2km/h and non negative
+                    logging.debug(f"{self.bus_stop.name} low speed skip")
+                    return True
+                logging.debug(f"{self.bus_stop.name} speed: {average_speed}")
+                return False
+
+            # Assign buses based on next stop schedule
+            # Get timings for next stop excluding special departures
+            next_stop_timings = [t for t in next_stop_schedule.timings
+                                 if t.origin != next_stop_schedule.bus_stop.id]
+            distance = next_stop_schedule.bus_stop.get_distance()
+            for offset in range(len(next_stop_timings)):
+                if is_different(self.timings, next_stop_timings[offset:],
+                                distance):
                     continue
-                # Check if all travel time is near estimated duration if
-                # estimated duration is more than 2 mins
-                if (estimated_duration < 120
-                    or all(abs(t-estimated_duration) < estimated_duration*1.4 + 120
-                           for t in travel_time)):
-                    # Assign same buses as next stop
+
+                # Assign same buses as next stop
+                self.buses = next_stop_schedule.buses[offset:]
+                break
+            # Check with offset on current stop timings
+            if (len(self.buses) == 0 and not is_different(
+                    self.timings[1:], next_stop_timings, distance)):
+                self.buses = [bus - 1 for bus in next_stop_schedule.buses]
+            # If still no buses and distance is less than 2km
+            # check for difference without range check
+            if (len(self.buses) == 0 and distance < 2):
+                logging.debug(f"{self.bus_stop.name} no initial match")
+                for offset in range(len(next_stop_timings)):
+                    if is_different(self.timings,
+                                    next_stop_timings[offset:],
+                                    distance, check_range=False):
+                        continue
                     self.buses = next_stop_schedule.buses[offset:]
                     break
-                else:
-                    print(f"Travel time not near estimated duration: {self.bus_stop.name}")
-
             # Assign new buses if some are not allocated
             while len(self.buses) < len(self.timings):
                 if self.buses:
@@ -193,7 +288,6 @@ class RouteSchedule:
         stop_schedule.assign_buses(self.schedules.get(schedule_stop_seq + 1))
         # Update bus diff
         for bus in stop_schedule.buses[1:]:
-            # if bus != 1 and bus not in self.bus_diff:
             self.bus_diff[bus] = stop_schedule.get_bus_diff(bus)
 
     def update_bus_info(self):
@@ -203,9 +297,12 @@ class RouteSchedule:
         """
         for stop_seq in sorted(self.schedules, reverse=True):
             schedule = self.schedules[stop_seq]
-            for i, bus in enumerate(schedule.buses):
+            for bus in schedule.buses:
                 # Update location of bus
-                self.bus_location[bus] = schedule.bus_stop.name
+                if schedule.bus_stop.stop_seq == 2:
+                    self.bus_location[bus] = "Yet to depart"
+                else:
+                    self.bus_location[bus] = schedule.bus_stop.name
 
     def forecast_new_timings(self):
         self.update_bus_info()
@@ -220,10 +317,18 @@ class RouteSchedule:
         for schedule in self.schedules.values():
             if bus in schedule.buses:
                 bus_idx = schedule.buses.index(bus)
+                bus_timing = schedule.timings[bus_idx]
+                # Get stop schedule with smallest key
+                first_stop_id = min(self.schedules.values(),
+                                    key=lambda x: x.get_stop_seq()).bus_stop.id
                 timings[schedule.get_stop_seq()] = {
-                    "time": schedule.timings[bus_idx].get_arrival_time(
-                        current_datetime),
-                    "isForecasted": schedule.timings[bus_idx].is_forecasted,
+                    "time": bus_timing.get_arrival_time(current_datetime),
+                    "isForecasted": bus_timing.is_forecasted,
+                    "isSpecial": bus_timing.is_special_departure(
+                        first_stop_id),
+                    "load": bus_timing.get_load(),
+                    "latlng": bus_timing.get_latlng(),
+                    "busType": bus_timing.get_bus_type(),
                 }
         return timings
 

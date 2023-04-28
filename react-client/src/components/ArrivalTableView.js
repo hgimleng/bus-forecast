@@ -13,6 +13,22 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
         return busTimings[stopSequence]['time']
     }
 
+    function getBusType(busTimings, stopSequence) {
+        return busTimings[stopSequence] ? busTimings[stopSequence]['busType'] : ''
+    }
+
+    function getBusLoad(busTimings, stopSequence) {
+        return busTimings[stopSequence] ? busTimings[stopSequence]['load'] : ''
+    }
+
+    function getBusLatlng(busTimings, stopSequence) {
+        return busTimings[stopSequence] ? busTimings[stopSequence]['latlng'].join(', ') : ''
+    }
+
+    function getIsSpecial(busTimings, stopSequence) {
+        return busTimings[stopSequence] ? busTimings[stopSequence]['isSpecial'] : ''
+    }
+
     function timeDiff(time1, time2) {
         const parseTime = (timeStr) => {
             const [hours, minutes, seconds] = timeStr.split(':').map(Number);
@@ -73,8 +89,21 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
                     <tr scope='row' key={stop['stopSequence']}>
                         <td>{ stop['name'] }</td>
                         {arrivalData.map(bus => (
-                            <td class={getCellColour(bus['busTimings'], stop['stopSequence'])}>
+                            <td className={getCellColour(bus['busTimings'], stop['stopSequence'])}>
                                 {getBusTiming(bus['busTimings'], stop['stopSequence'])}
+                                {process.env.REACT_APP_DEBUG_MODE === 'true' &&
+                                 bus['busTimings'][stop['stopSequence']] &&
+                                 !bus['busTimings'][stop['stopSequence']]['isForecasted'] && (
+                                    <>
+                                    <br />
+                                    {getBusType(bus['busTimings'], stop['stopSequence'])}
+                                    <br />
+                                    {getBusLoad(bus['busTimings'], stop['stopSequence'])}
+                                    <br />
+                                    {getBusLatlng(bus['busTimings'], stop['stopSequence'])}
+                                    {getIsSpecial(bus['busTimings'], stop['stopSequence']) && <><br /><b>Special</b></>}
+                                    </>
+                                )}
                             </td>
                         ))}
                         <td>{ getTravelTimeRange(stop['stopSequence'], stop['stopSequence']-1) }</td>

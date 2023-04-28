@@ -99,7 +99,10 @@ async def update_bus_stop_timing(
                         Timing(service[key]["duration_ms"]/1000,
                                i+1,
                                type=service[key]["type"],
-                               origin=service[key]["origin_code"])
+                               origin=service[key]["origin_code"],
+                               load=service[key]["load"],
+                               lng=service[key]["lng"],
+                               lat=service[key]["lat"])
                         for i, key in enumerate(["next", "next2", "next3"])
                         if service.get(key) is not None
                     ]

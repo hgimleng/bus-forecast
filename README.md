@@ -28,7 +28,7 @@
 
 - ~~Modify `has_same_bus` to cross verify with other attributes~~
 
-- Relook into logic for long distance buses and special departure buses
+- ~~Relook into logic for long distance buses and special departure buses~~
 
 ## Others
 
