@@ -19,7 +19,7 @@ function App() {
   const [arrivalData, setArrivalData] = useState([])
   const [updateTime, setUpdateTime] = useState('')
   const [isFetching, setIsFetching] = useState(false)
-  const [unsupportedBuses, setUnsupportedBuses] = useState(['160', '170', '170x', '170X', '975'])
+  const [unsupportedBuses, setUnsupportedBuses] = useState(['160', '170', '170x', '170X', '177', '975'])
 
   // Fetch directions, stops, and update busNum, step and routes
   async function fetchDirectionsAndStops(findNum) {
@@ -31,7 +31,7 @@ function App() {
       const data = response.data
       setRoutes(data)
       setErrorMsg('')
-      setDisclaimerMsg(unsupportedBuses.includes(findNum) ? `Bus '${findNum}' is not supported at the moment.` : '')
+      setDisclaimerMsg(unsupportedBuses.includes(findNum) ? `Bus '${findNum}' is not fully supported at the moment.` : '')
       setStep(2)
       setBusNum(findNum)
       setSelectedDirection('')

@@ -2,7 +2,7 @@ function BusStopSelector({ stops, selectStop, selectedStop }) {
     return (
     <>
         <hr />
-        <div className='row justify-content-center'>
+        <div className='row justify-content-center mb-3'>
             <div className='col text-center'>
                 <h5>Select Bus Stop:</h5>
                 <div className='list-group overflow-scroll mx-auto col-md-3'
