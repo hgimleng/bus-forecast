@@ -1,43 +1,18 @@
-# bus-forecast
+# Bus Forecast
 
-# Todos
+Bus Forecast is a web app that not only displays bus arrival timings in Singapore from [LTA's DataMall](https://datamall.lta.gov.sg/content/datamall/en.html), but also forecast future arrivals based on timings from the previous stops.
 
-## Frontend
+## Features
 
-- ~~Migrate to react~~
+- Search for bus services by bus number
 
-- ~~Make bus stop selection clearer~~
+- View directions and stops for the selected bus service
 
-- ~~Make bus arrival timing display prettier~~
+- Check current arrival timings and forecasted ones, with additional information such as estimated location, bus type, and crowd level
 
-- ~~Add refresh button~~
+- Switch to table view and check the estimated arrival timings for current and previous stops, as well as travel time between stops
 
-- ~~Search by pressing enter~~
+## Credits
 
-- ~~Table view? With bus stop/bus id as row/column and timing as cell value~~
-
-- ~~Add loading indicator~~
-
-- ~~Add no bus indicator~~
-
-## Backend
-
-- ~~Remove hardcoding of bus search (implement database)~~
-
-- ~~Implement other bus services (single and double direction)~~
-
-- ~~Modify `has_same_bus` to cross verify with other attributes~~
-
-- ~~Relook into logic for long distance buses and special departure buses~~
-
-## Others
-
-- ~~Refactor code~~
-
-- Update readme
-
-- ~~Add indicator for whether timing displayed is original or predicted, departed or yet to depart, and current stop~~
-
-- Error handling and logging
-
-- Testing for different types of buses
+- Data is from [LTA](https://datamall.lta.gov.sg/content/datamall/en.html)
+- API used for fetching arrival times is [ArriveLah](https://github.com/cheeaun/arrivelah) 
