@@ -11,7 +11,7 @@ function BusStopSelector({ stops, selectStop, selectedStop }) {
                         <button
                         key={stop.stopSequence}
                         onClick={() => selectStop(stop.stopSequence)}
-                        className={`list-group-item ${stop.stopSequence === selectedStop ? 'active' : ''} list-group-item-action text-center`}>
+                        className={`list-group-item ${stop.stopSequence === selectedStop ? 'active disabled' : ''} list-group-item-action text-center`}>
                             { stop.name }
                         </button>
                     ))}

@@ -10,11 +10,45 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop }) {
 
     function getBusLoad(busTimings) {
         // Loop through all bus timings and find first non 'NA' bus load
+        const colourMap = {'Low': 'text-success', 'Medium': 'text-primary', 'High': 'text-danger', 'NA': ''}
         for (const stopSequence in busTimings) {
             if (busTimings[stopSequence]['load'] != 'NA') {
-                return busTimings[stopSequence]['load']
+                const load = busTimings[stopSequence]['load']
+                return (<span className={colourMap[load]}>{load}</span>)
             }
         }
+    }
+
+    function mapWithTiming(item) {
+        return (
+            <tr scope='row' key={item['busId']} class={item['busTimings'][selectedStop]['isForecasted'] ? 'table-warning' : 'table-success'}>
+                <td>{ item['busId'] }</td>
+                <td>{ item['busTimings'][selectedStop]['time'] }</td>
+                <td>
+                    { item['busLocation'] }
+                    <br />
+                    <small>
+                    ({ getBusType(item['busTimings']) }, { getBusLoad(item['busTimings']) } crowd)
+                    </small>
+                </td>
+            </tr>
+        )
+    }
+
+    function mapWithoutTiming(item) {
+        return (
+            <tr scope='row' key={item['busId']} class='table-warning'>
+                <td>{ item['busId'] }</td>
+                <td>-</td>
+                <td>
+                    { item['busLocation'] }
+                    <br />
+                    <small>
+                    ({ getBusType(item['busTimings']) }, { getBusLoad(item['busTimings']) } crowd)
+                    </small>
+                </td>
+            </tr>
+        )
     }
 
     return (
@@ -33,20 +67,7 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop }) {
             </thead>
             <tbody>
                 {arrivalData
-                .filter((item) => item['busTimings'][selectedStop])
-                .map((item) => (
-                <tr scope='row' key={item['busId']} class={item['busTimings'][selectedStop]['isForecasted'] ? 'table-warning' : 'table-success'}>
-                    <td>{ item['busId'] }</td>
-                    <td>{ item['busTimings'][selectedStop]['time'] }</td>
-                    <td>
-                        { item['busLocation'] }
-                        <br />
-                        <small>
-                        ({ getBusType(item['busTimings']) }, { getBusLoad(item['busTimings']) } crowd)
-                        </small>
-                    </td>
-                </tr>
-                ))}
+                .map((item) => item['busTimings'][selectedStop] ? mapWithTiming(item) : mapWithoutTiming(item))}
             </tbody>
         </table>
     )

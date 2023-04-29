@@ -19,7 +19,7 @@ function App() {
   const [arrivalData, setArrivalData] = useState([])
   const [updateTime, setUpdateTime] = useState('')
   const [isFetching, setIsFetching] = useState(false)
-  const [unsupportedBuses, setUnsupportedBuses] = useState(['160', '170', '170x', '170X', '177', '975'])
+  const [unsupportedBuses, setUnsupportedBuses] = useState(['11', '123', '123m', '123M', '125', '160', '170', '170x', '170X', '177', '182', '265', '291', '293', '315', '317', '35', '358', '359', '60', '73', '812', '883', '883m', '883M', '950', '98', '975'])
 
   // Fetch directions, stops, and update busNum, step and routes
   async function fetchDirectionsAndStops(findNum) {
@@ -54,15 +54,11 @@ function App() {
       setIsFetching(true)
       const response = await api.get(`/bus/${busNum}/direction/${selectedDirection}/stop/${stopSequence}`)
 
-      if (response.status === 200) {
-        const data = response.data
-        setSelectedStop(stopSequence)
-        setArrivalData(data['timing'])
-        setUpdateTime(data['updateTime'])
-        setStep(4)
-      } else {
-        throw new Error('Not found')
-      }
+      const data = response.data
+      setSelectedStop(stopSequence)
+      setArrivalData(data['timing'])
+      setUpdateTime(data['updateTime'])
+      setStep(4)
     } catch (error) {
       console.error('Error fetching bus arrival timing:', error)
       // Go back to step 1 and show error message
