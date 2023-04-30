@@ -358,6 +358,8 @@ def transform_route_records(records):
         "stops": {}
     }
 
+    unique_dists = []
+
     for record in records:
         direction = record["direction"]
         stop_seq = record["stop_seq"]
@@ -368,12 +370,14 @@ def transform_route_records(records):
         if direction not in bus_info["stops"]:
             bus_info["stops"][direction] = []
 
-        bus_info["stops"][direction].append({
-            "id": stop_code,
-            "stopSequence": stop_seq,
-            "name": stop_name,
-            "distance": distance,
-        })
+        if distance not in unique_dists:
+            unique_dists.append(distance)
+            bus_info["stops"][direction].append({
+                "id": stop_code,
+                "stopSequence": stop_seq,
+                "name": stop_name,
+                "distance": distance,
+            })
 
     # Add destination stop for each direction
     # Ensure stopSequence is sequential without gaps and remove last stop
