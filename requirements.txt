@@ -1,6 +1,7 @@
 Flask
 Flask-Cors
 flask-sqlalchemy
+gunicorn
 httpx
 psycopg2
 python-dotenv
