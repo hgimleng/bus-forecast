@@ -1,8 +1,10 @@
+import csv
+import io
 import os
 from typing import Dict
 
 from dotenv import load_dotenv
-import pymysql
+import psycopg2
 import requests
 
 load_dotenv()
@@ -34,10 +36,10 @@ def update_bus_routes():
     ]
 
     # Connect to mysql to update database
-    connection = pymysql.connect(host=host,
-                                 user=user,
-                                 password=password,
-                                 database=database)
+    connection = psycopg2.connect(host=host,
+                                  user=user,
+                                  password=password,
+                                  database=database)
 
     try:
         with connection.cursor() as cursor:
@@ -58,15 +60,20 @@ def update_bus_routes():
             # Empty data in table
             cursor.execute("TRUNCATE TABLE routes_table;")
 
-            # Insert data into the table
-            insert_data_query = (
-                "INSERT INTO routes_table "
+            # Create a temporary file with the data in CSV format
+            csv_file = io.StringIO()
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerows(bus_routes)
+            csv_file.seek(0)
+
+            # Use COPY command to load data from the file to the database
+            copy_command = (
+                "COPY routes_table "
                 "(bus_num, direction, stop_seq, "
                 "stop_code, stop_name, distance) "
-                "VALUES (%s, %s, %s, %s, %s, %s);"
+                "FROM STDIN WITH CSV"
             )
-
-            cursor.executemany(insert_data_query, bus_routes)
+            cursor.copy_expert(copy_command, csv_file)
 
             # Commit the changes
             connection.commit()
@@ -87,6 +94,7 @@ def fetch_all_records(url: str, headers: Dict[str, str]):
             response = requests.get(url+str(skip), headers=headers)
             new_records = response.json().get("value")
             if len(new_records) == 0:
+                print(f"Fetched {len(records)} records from {url}")
                 return records
             else:
                 records.extend(new_records)

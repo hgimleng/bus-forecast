@@ -1,6 +1,6 @@
 Flask
 Flask-Cors
-flask-mysql
 flask-sqlalchemy
 httpx
+psycopg2
 python-dotenv
