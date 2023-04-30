@@ -1,6 +1,6 @@
 from datetime import timedelta
 import logging
-
+from typing import List
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -149,7 +149,7 @@ class StopSchedule:
     Schedule of arrival timings and buses for specific stop
     """
 
-    def __init__(self, bus_stop: BusStop, timings: list[Timing]):
+    def __init__(self, bus_stop: BusStop, timings: List[Timing]):
         self.bus_stop = bus_stop
         self.timings = timings
         self.buses = []
