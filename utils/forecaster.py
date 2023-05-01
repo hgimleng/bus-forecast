@@ -1,12 +1,17 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
+import os
 
 import asyncio
+from dotenv import load_dotenv
 import httpx
 
 from utils.helpers import BusStop, RouteSchedule, StopSchedule, Timing
 
-ARRIVAL_API_URL = "https://arrivelah2.busrouter.sg"
+# load env variables
+load_dotenv()
+timezone_offset = int(os.getenv("TIMEZONE_OFFSET"))
+arrival_api_url = os.getenv("ARRIVAL_API_URL")
 
 
 async def fetch_arrival_timing(
@@ -59,7 +64,7 @@ async def fetch_arrival_timing(
     # Forecast timing based on time difference between buses
     route_schedule.forecast_new_timings()
 
-    date = datetime.now()
+    date = datetime.now() + timedelta(hours=timezone_offset)
     res = route_schedule.get_all_timings(date)
 
     return res, date.strftime('%H:%M:%S')
@@ -77,7 +82,7 @@ async def update_bus_stop_timing(
     Returns:
         List[Timing]: A list of Timing objects for the given stop and bus num.
     """
-    url = f'{ARRIVAL_API_URL}/?id={bus_stop.id}'
+    url = f'{arrival_api_url}/?id={bus_stop.id}'
     timings = []
 
     try:
