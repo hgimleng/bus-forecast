@@ -304,8 +304,10 @@ class RouteSchedule:
                 # Update location of bus
                 if schedule.bus_stop.stop_seq == 2:
                     self.bus_location[bus] = "Yet to depart"
-                elif schedule.get_timing(bus).duration < 0:
-                    # Ignore stops with negative duration
+                elif (schedule.get_timing(bus).duration < 0 and
+                      bus in self.bus_location):
+                    # Ignore stops with negative duration if
+                    # bus is already in the dict
                     continue
                 else:
                     self.bus_location[bus] = schedule.bus_stop.name
