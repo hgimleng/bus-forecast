@@ -18,8 +18,9 @@ function App() {
   const [selectedStop, setSelectedStop] = useState('')
   const [arrivalData, setArrivalData] = useState([])
   const [updateTime, setUpdateTime] = useState('')
+  const [busDiff, setBusDiff] = useState({})
   const [isFetching, setIsFetching] = useState(false)
-  const [unsupportedBuses, setUnsupportedBuses] = useState(['11', '123', '123m', '123M', '125', '160', '170', '170x', '170X', '177', '182', '265', '291', '293', '315', '317', '35', '358', '359', '60', '73', '812', '883', '883m', '883M', '950', '98', '975'])
+  const [unsupportedBuses, setUnsupportedBuses] = useState(['11', '123', '123M', '125', '160', '170', '170X', '177', '182', '265', '291', '293', '315', '317', '35', '358', '359', '60', '73', '812', '883', '883M', '950', '98', '975'])
 
   // Fetch directions, stops, and update busNum, step and routes
   async function fetchDirectionsAndStops(findNum) {
@@ -29,6 +30,9 @@ function App() {
       setIsFetching(false)
 
       const data = response.data
+      if (Object.keys(data['directions']).length === 0){
+        throw new Error('No directions found')
+      }
       setRoutes(data)
       setErrorMsg('')
       setDisclaimerMsg(unsupportedBuses.includes(findNum) ? `Bus '${findNum}' is not fully supported at the moment.` : '')
@@ -58,6 +62,7 @@ function App() {
       setSelectedStop(stopSequence)
       setArrivalData(data['timing'])
       setUpdateTime(data['updateTime'])
+      setBusDiff(data['busDiff'])
       setStep(4)
     } catch (error) {
       console.error('Error fetching bus arrival timing:', error)
@@ -81,7 +86,7 @@ function App() {
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
       {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} />}
-      {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} />}
+      {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} busDiff={busDiff} />}
     </div>
   );
 }

@@ -66,8 +66,9 @@ async def fetch_arrival_timing(
 
     date = datetime.now() + timedelta(hours=timezone_offset)
     res = route_schedule.get_all_timings(date)
+    bus_diff = route_schedule.bus_diff
 
-    return res, date.strftime('%H:%M:%S')
+    return date.strftime('%H:%M:%S'), res, bus_diff
 
 
 async def update_bus_stop_timing(

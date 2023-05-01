@@ -163,6 +163,9 @@ class StopSchedule:
     def get_bus(self, timing: Timing):
         return self.buses[self.timings.index(timing)]
 
+    def get_timing(self, bus: int):
+        return self.timings[self.buses.index(bus)]
+
     def get_last_bus(self):
         return max(self.buses)
 
@@ -301,6 +304,9 @@ class RouteSchedule:
                 # Update location of bus
                 if schedule.bus_stop.stop_seq == 2:
                     self.bus_location[bus] = "Yet to depart"
+                elif schedule.get_timing(bus).duration < 0:
+                    # Ignore stops with negative duration
+                    continue
                 else:
                     self.bus_location[bus] = schedule.bus_stop.name
 
@@ -358,7 +364,7 @@ def transform_route_records(records):
         "stops": {}
     }
 
-    unique_dists = []
+    unique_dists = {1: [], 2: []}
 
     for record in records:
         direction = record["direction"]
@@ -370,8 +376,8 @@ def transform_route_records(records):
         if direction not in bus_info["stops"]:
             bus_info["stops"][direction] = []
 
-        if distance not in unique_dists:
-            unique_dists.append(distance)
+        if distance not in unique_dists[direction]:
+            unique_dists[direction].append(distance)
             bus_info["stops"][direction].append({
                 "id": stop_code,
                 "stopSequence": stop_seq,

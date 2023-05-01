@@ -5,7 +5,7 @@ function SearchForm({ onFind }) {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        onFind(text)
+        onFind(text.toUpperCase())
     }
 
     return (

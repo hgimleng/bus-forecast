@@ -1,4 +1,4 @@
-function ArrivalListView({ arrivalData, updateTime, selectedStop }) {
+function ArrivalListView({ arrivalData, updateTime, selectedStop, busDiff }) {
     function getBusType(busTimings) {
         // Loop through all bus timings and find first non 'NA' bus type
         for (const stopSequence in busTimings) {
@@ -19,11 +19,22 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop }) {
         }
     }
 
+    function formatTimeDiff(seconds) {
+        const minutes = Math.floor(seconds / 60)
+        const remainingSeconds = Math.floor(seconds % 60)
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+    }
+
     function mapWithTiming(item) {
         return (
             <tr scope='row' key={item['busId']} class={item['busTimings'][selectedStop]['isForecasted'] ? 'table-warning' : 'table-success'}>
                 <td>{ item['busId'] }</td>
-                <td>{ item['busTimings'][selectedStop]['time'] }</td>
+                <td>
+                    { item['busTimings'][selectedStop]['time'] }
+                    {busDiff[item['busId']-1] && <><br />
+                    <small>+{ formatTimeDiff(busDiff[item['busId']-1]) }</small>
+                    </>}
+                </td>
                 <td>
                     { item['busLocation'] }
                     <br />
@@ -39,7 +50,12 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop }) {
         return (
             <tr scope='row' key={item['busId']} class='table-warning'>
                 <td>{ item['busId'] }</td>
-                <td>-</td>
+                <td>
+                    -
+                    {busDiff[item['busId']-1] && <><br />
+                    <small>+{ formatTimeDiff(busDiff[item['busId']-1]) }</small>
+                    </>}
+                </td>
                 <td>
                     { item['busLocation'] }
                     <br />
