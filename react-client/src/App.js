@@ -81,12 +81,14 @@ function App() {
   return (
     <div className='container mt-4 mb-4 text-center' >
       <SearchForm onFind={fetchDirectionsAndStops} />
-      {isFetching && <CircularProgress />}
+      {isFetching && step===1 && <CircularProgress />}
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
       {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} />}
+      {isFetching && step===3 && <CircularProgress />}
       {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} busDiff={busDiff} />}
+      {isFetching && step===4 && <CircularProgress />}
     </div>
   );
 }

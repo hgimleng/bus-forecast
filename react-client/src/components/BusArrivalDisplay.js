@@ -24,7 +24,7 @@ function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop,
     return (
         <div className='row justify-content-center'>
             <hr />
-            <div className='col-auto text-center'>
+            <div className='col-auto text-center mb-1'>
                 <h5>Arrivals for <u>{ stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }</u></h5>
                 {listView 
                     ? <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} busDiff={busDiff} /> 
