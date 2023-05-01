@@ -66,7 +66,7 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
 
     return (
         <div className='table-responsive'>
-        <table className='table table-striped table-bordered'>
+        <table className='table table-striped table-bordered table-sm'>
             <caption>
                 Last Updated: { updateTime }
                 <br />
@@ -87,7 +87,7 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
                 .sort((a, b) => b['stopSequence'] - a['stopSequence'])
                 .map(stop => (
                     <tr scope='row' key={stop['stopSequence']}>
-                        <td>{ stop['name'] }</td>
+                        <td style={{'white-space': 'nowrap'}}>{ stop['name'] }</td>
                         {arrivalData.map(bus => (
                             <td className={getCellColour(bus['busTimings'], stop['stopSequence'])}>
                                 {getBusTiming(bus['busTimings'], stop['stopSequence'])}
@@ -106,7 +106,7 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
                                 )}
                             </td>
                         ))}
-                        <td>{ getTravelTimeRange(stop['stopSequence'], stop['stopSequence']-1) }</td>
+                        <td style={{'white-space': 'nowrap'}}>{ getTravelTimeRange(stop['stopSequence'], stop['stopSequence']-1) }</td>
                     </tr>
                   ))
             }
