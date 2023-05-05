@@ -264,10 +264,18 @@ class StopSchedule:
                 self.buses.append(last_bus + 1)
 
     def forecast_new_timings(self, bus_diff):
+        def find_median(arr):
+            arr = sorted(arr)
+            if len(arr) % 2 == 0:
+                return (arr[len(arr)//2 - 1] + arr[len(arr)//2])/2
+            else:
+                return arr[len(arr)//2]
+
         next_bus = self.buses[-1] + 1
         while next_bus in bus_diff:
             last_timing = self.timings[-1]
-            self.add_timing(Timing(last_timing.duration+bus_diff[next_bus][-1],
+            new_duration = last_timing.duration+find_median(bus_diff[next_bus])
+            self.add_timing(Timing(new_duration,
                                    last_timing.arrival_seq,
                                    is_forecasted=True))
             self.buses.append(next_bus)
