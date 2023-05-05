@@ -19,10 +19,24 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop, busDiff }) {
         }
     }
 
-    function formatTimeDiff(seconds) {
-        const minutes = Math.floor(seconds / 60)
-        const remainingSeconds = Math.floor(seconds % 60)
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+    function formatTimeDiff(secondsArr) {
+        function secondsToStr(seconds) {
+            const minutes = Math.floor(seconds / 60)
+            const remainingSeconds = Math.floor(seconds % 60)
+            return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+        }
+
+        function findMedian(arr) {
+            arr.sort((a, b) => a - b)
+            const middle = Math.floor(arr.length / 2)
+            return arr.length % 2 === 1 ? arr[middle] : (arr[middle - 1] + arr[middle]) / 2;
+        }
+        
+        if (process.env.REACT_APP_DEBUG_MODE === 'true') {
+            return secondsArr.map(s => secondsToStr(s)).join(', ')
+        } else {
+            return secondsToStr(findMedian(secondsArr))
+        }
     }
 
     function mapWithTiming(item) {

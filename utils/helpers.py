@@ -267,7 +267,7 @@ class StopSchedule:
         next_bus = self.buses[-1] + 1
         while next_bus in bus_diff:
             last_timing = self.timings[-1]
-            self.add_timing(Timing(last_timing.duration + bus_diff[next_bus],
+            self.add_timing(Timing(last_timing.duration+bus_diff[next_bus][-1],
                                    last_timing.arrival_seq,
                                    is_forecasted=True))
             self.buses.append(next_bus)
@@ -291,7 +291,9 @@ class RouteSchedule:
         stop_schedule.assign_buses(self.schedules.get(schedule_stop_seq + 1))
         # Update bus diff
         for bus in stop_schedule.buses[1:]:
-            self.bus_diff[bus] = stop_schedule.get_bus_diff(bus)
+            if bus not in self.bus_diff:
+                self.bus_diff[bus] = []
+            self.bus_diff[bus].append(stop_schedule.get_bus_diff(bus))
 
     def update_bus_info(self):
         """
