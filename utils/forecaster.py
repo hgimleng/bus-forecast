@@ -55,7 +55,7 @@ async def fetch_arrival_timing(
 
     # Check if all of the timings are empty
     if all(not timings for timings in all_timings):
-        return None, None
+        return None, None, None
 
     for bus_stop, timings in zip(reversed(all_stops), reversed(all_timings)):
         stop_schedule = StopSchedule(bus_stop, timings)
@@ -96,7 +96,7 @@ async def update_bus_stop_timing(
                 service = next(
                     (service
                      for service in data["services"]
-                     if service["no"] == bus_num),
+                     if service["no"].upper() == bus_num),
                     None,
                 )
 
