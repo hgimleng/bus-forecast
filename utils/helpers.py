@@ -185,6 +185,10 @@ class StopSchedule:
         """
         Compare with scheule of next stop and assign buses to self
         """
+        # If no timings, return
+        if self.get_num_timings() == 0:
+            return
+
         if next_stop_schedule is None:
             # Assign new buses for first stop schedule
             self.buses = [i for i in range(len(self.timings))]
@@ -264,6 +268,10 @@ class StopSchedule:
                 self.buses.append(last_bus + 1)
 
     def forecast_new_timings(self, bus_diff):
+        # If no timings, return
+        if self.get_num_timings() == 0:
+            return
+
         def find_median(arr):
             arr = sorted(arr)
             if len(arr) % 2 == 0:
