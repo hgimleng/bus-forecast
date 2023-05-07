@@ -32,12 +32,13 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
     function timeDiff(time1, time2) {
         const parseTime = (timeStr) => {
             const [hours, minutes, seconds] = timeStr.split(':').map(Number);
-            return new Date(0, 0, 0, hours, minutes, seconds);
+            const day = hours < 4 ? 1 : 0;
+            return new Date(0, 0, day, hours, minutes, seconds);
         };
     
         const date1 = parseTime(time1);
         const date2 = parseTime(time2);
-        const diffMins = Math.abs(date1 - date2) / 60000;
+        const diffMins = Math.max((date2 - date1) / 60000, 0);
 
         // Round off to 1 decimal place
         return Math.round(diffMins * 10) / 10
