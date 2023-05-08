@@ -322,6 +322,10 @@ class RouteSchedule:
                 # Update location of bus
                 if schedule.bus_stop.stop_seq == 2:
                     self.bus_location[bus] = "Yet to depart"
+                elif (schedule.bus_stop.stop_seq < 5 and
+                      all(t.get_latlng() == (0, 0) for t in schedule.timings)):
+                    # Check if all timing of bus has no location
+                    self.bus_location[bus] = "Yet to depart"
                 elif (schedule.get_timing(bus).duration < 0 and
                       bus in self.bus_location):
                     # Ignore stops with negative duration if
