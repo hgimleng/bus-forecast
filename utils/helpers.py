@@ -167,7 +167,7 @@ class StopSchedule:
         return self.timings[self.buses.index(bus)]
 
     def get_last_bus(self):
-        return max(self.buses)
+        return max(self.buses, default=0)
 
     def get_bus_diff(self, bus: int):
         """
@@ -185,6 +185,10 @@ class StopSchedule:
         """
         Compare with scheule of next stop and assign buses to self
         """
+        # If no timings, return
+        if self.get_num_timings() == 0:
+            return
+
         if next_stop_schedule is None:
             # Assign new buses for first stop schedule
             self.buses = [i for i in range(len(self.timings))]
@@ -239,6 +243,7 @@ class StopSchedule:
 
                 # Assign same buses as next stop
                 self.buses = next_stop_schedule.buses[offset:]
+                self.buses = self.buses[:len(self.timings)]
                 break
             # Check with offset on current stop timings
             if (len(self.buses) == 0 and not is_different(
@@ -255,19 +260,42 @@ class StopSchedule:
                         continue
                     self.buses = next_stop_schedule.buses[offset:]
                     break
+            # If no buses assigned and speed is very low, remove
+            # last timing which may be an anomaly
+            speed_est = distance/(next_stop_timings[-1].duration/3600)
+            if (len(self.buses) == 0 and speed_est < 2 and
+                    len(self.timings) == 3):
+                logging.warning(
+                    f"{self.bus_stop.name} low speed, remove last timing"
+                    f" speed: {speed_est}"
+                    f" buses: {self.buses}"
+                    )
+                self.timings = self.timings[:-1]
+                self.assign_buses(next_stop_schedule)
+                return
             # Assign new buses if some are not allocated
             while len(self.buses) < len(self.timings):
-                if self.buses:
-                    last_bus = self.buses[-1]
-                else:
-                    last_bus = next_stop_schedule.get_last_bus()
+                last_bus = max(self.get_last_bus(),
+                               next_stop_schedule.get_last_bus())
                 self.buses.append(last_bus + 1)
 
     def forecast_new_timings(self, bus_diff):
+        # If no timings, return
+        if self.get_num_timings() == 0:
+            return
+
+        def find_median(arr):
+            arr = sorted(arr)
+            if len(arr) % 2 == 0:
+                return (arr[len(arr)//2 - 1] + arr[len(arr)//2])/2
+            else:
+                return arr[len(arr)//2]
+
         next_bus = self.buses[-1] + 1
         while next_bus in bus_diff:
             last_timing = self.timings[-1]
-            self.add_timing(Timing(last_timing.duration + bus_diff[next_bus],
+            new_duration = last_timing.duration+find_median(bus_diff[next_bus])
+            self.add_timing(Timing(new_duration,
                                    last_timing.arrival_seq,
                                    is_forecasted=True))
             self.buses.append(next_bus)
@@ -291,7 +319,9 @@ class RouteSchedule:
         stop_schedule.assign_buses(self.schedules.get(schedule_stop_seq + 1))
         # Update bus diff
         for bus in stop_schedule.buses[1:]:
-            self.bus_diff[bus] = stop_schedule.get_bus_diff(bus)
+            if bus not in self.bus_diff:
+                self.bus_diff[bus] = []
+            self.bus_diff[bus].append(stop_schedule.get_bus_diff(bus))
 
     def update_bus_info(self):
         """
@@ -303,6 +333,10 @@ class RouteSchedule:
             for bus in schedule.buses:
                 # Update location of bus
                 if schedule.bus_stop.stop_seq == 2:
+                    self.bus_location[bus] = "Yet to depart"
+                elif (schedule.bus_stop.stop_seq < 5 and
+                      all(t.get_latlng() == (0, 0) for t in schedule.timings)):
+                    # Check if all timing of bus has no location
                     self.bus_location[bus] = "Yet to depart"
                 elif (schedule.get_timing(bus).duration < 0 and
                       bus in self.bus_location):
