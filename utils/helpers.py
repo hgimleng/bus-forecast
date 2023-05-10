@@ -167,7 +167,7 @@ class StopSchedule:
         return self.timings[self.buses.index(bus)]
 
     def get_last_bus(self):
-        return max(self.buses)
+        return max(self.buses, default=0)
 
     def get_bus_diff(self, bus: int):
         """
@@ -243,6 +243,7 @@ class StopSchedule:
 
                 # Assign same buses as next stop
                 self.buses = next_stop_schedule.buses[offset:]
+                self.buses = self.buses[:len(self.timings)]
                 break
             # Check with offset on current stop timings
             if (len(self.buses) == 0 and not is_different(
@@ -259,12 +260,23 @@ class StopSchedule:
                         continue
                     self.buses = next_stop_schedule.buses[offset:]
                     break
+            # If no buses assigned and speed is very low, remove
+            # last timing which may be an anomaly
+            speed_est = distance/(next_stop_timings[-1].duration/3600)
+            if (len(self.buses) == 0 and speed_est < 2 and
+                    len(self.timings) == 3):
+                logging.warning(
+                    f"{self.bus_stop.name} low speed, remove last timing"
+                    f" speed: {speed_est}"
+                    f" buses: {self.buses}"
+                    )
+                self.timings = self.timings[:-1]
+                self.assign_buses(next_stop_schedule)
+                return
             # Assign new buses if some are not allocated
             while len(self.buses) < len(self.timings):
-                if self.buses:
-                    last_bus = self.buses[-1]
-                else:
-                    last_bus = next_stop_schedule.get_last_bus()
+                last_bus = max(self.get_last_bus(),
+                               next_stop_schedule.get_last_bus())
                 self.buses.append(last_bus + 1)
 
     def forecast_new_timings(self, bus_diff):
