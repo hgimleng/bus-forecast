@@ -30,7 +30,7 @@ function App() {
       setIsFetching(false)
 
       const data = response.data
-      if (Object.keys(data['directions']).length === 0){
+      if (Object.keys(data['directions']).length === 0) {
         throw new Error('No directions found')
       }
       setRoutes(data)
@@ -38,7 +38,12 @@ function App() {
       setDisclaimerMsg(unsupportedBuses.includes(findNum) ? `Bus '${findNum}' is not fully supported at the moment.` : '')
       setStep(2)
       setBusNum(findNum)
-      setSelectedDirection('')
+      // if 1 direction, select it
+      if (Object.keys(data['directions']).length === 1) {
+        selectDirection(Object.keys(data['directions'])[0])
+      } else {
+        setSelectedDirection('')
+      }
     } catch (error) {
       setErrorMsg(`Bus '${findNum}' not found`)
       setDisclaimerMsg('')
