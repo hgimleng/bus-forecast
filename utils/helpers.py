@@ -185,103 +185,110 @@ class StopSchedule:
         """
         Compare with scheule of next stop and assign buses to self
         """
-        # If no timings, return
-        if self.get_num_timings() == 0:
-            return
-
         if next_stop_schedule is None:
             # Assign new buses for first stop schedule
             self.buses = [i for i in range(len(self.timings))]
-        else:
-            def is_different(this_stop_timings, next_stop_timings,
-                             dist, check_range=True):
-                """
-                Checks if any of the timings are significantly different
-                """
-                travel_time = [
-                    t2.duration - t1.duration + 1e-9
-                    for t1, t2 in zip(this_stop_timings, next_stop_timings)
-                ]
-                profiles = [
-                    t2.has_same_profile(t1)
-                    for t1, t2 in zip(this_stop_timings, next_stop_timings)
-                ]
-                average_speed = [dist/(t/3600) for t in travel_time]
-                if min(travel_time) < -120:
-                    # Skip if travel time is beyond negative threshold
-                    logging.debug(f"{self.bus_stop.name} negative skip")
-                    return True
-                if check_range and max(travel_time) - min(travel_time) > 180:
-                    # Skip if range of travel time is beyond 3 mins
-                    logging.debug(f"{self.bus_stop.name} max range skip")
-                    return True
-                if not all(profiles):
-                    # Skip if type or origin is different
-                    logging.debug(f"{self.bus_stop.name} profile skip")
-                    return True
-                if (dist > 4 and
-                        any(speed > 60 for speed in average_speed)):
-                    # Skip if long distance and speed is more than 60km/h
-                    logging.debug(f"{self.bus_stop.name} high speed skip")
-                    return True
-                if any(0 < speed < 2 for speed in average_speed):
-                    # Skip if speed is less than 2km/h and non negative
-                    logging.debug(f"{self.bus_stop.name} low speed skip")
-                    return True
-                logging.debug(f"{self.bus_stop.name} speed: {average_speed}")
-                return False
+            return
 
-            # Assign buses based on next stop schedule
-            # Get timings for next stop excluding special departures
-            next_stop_timings = [t for t in next_stop_schedule.timings
-                                 if t.origin != next_stop_schedule.bus_stop.id]
-            distance = next_stop_schedule.bus_stop.get_distance()
+        # If no timings, return
+        if (self.get_num_timings() == 0 or
+                next_stop_schedule.get_num_timings() == 0):
+            return
+        # Look for timings that match
+        def is_different(this_stop_timings, next_stop_timings,
+                         dist, check_range=True):
+            """
+            Checks if any of the timings are significantly different
+            """
+            travel_time = [
+                t2.duration - t1.duration + 1e-9
+                for t1, t2 in zip(this_stop_timings, next_stop_timings)
+            ]
+            profiles = [
+                t2.has_same_profile(t1)
+                for t1, t2 in zip(this_stop_timings, next_stop_timings)
+            ]
+            average_speed = [dist/(t/3600) for t in travel_time]
+            if min(travel_time) < -120:
+                # Skip if travel time is beyond negative threshold
+                logging.debug(f"{self.bus_stop.name} negative skip")
+                return True
+            if check_range and max(travel_time) - min(travel_time) > 180:
+                # Skip if range of travel time is beyond 3 mins
+                logging.debug(f"{self.bus_stop.name} max range skip")
+                return True
+            if not all(profiles):
+                # Skip if type or origin is different
+                logging.debug(f"{self.bus_stop.name} profile skip")
+                return True
+            if (dist > 2 and
+                    any(speed > 60 or speed < 0
+                        for speed in average_speed)):
+                # Skip if long distance and speed is more than 60km/h
+                logging.debug(f"{self.bus_stop.name} high speed skip")
+                return True
+            if any(0 < speed < 2 for speed in average_speed):
+                # Skip if speed is less than 2km/h and non negative
+                logging.debug(f"{self.bus_stop.name} low speed skip")
+                return True
+            logging.debug(f"{self.bus_stop.name} speed: {average_speed}")
+            return False
+
+        # Assign buses based on next stop schedule
+        # Get timings for next stop excluding special departures
+        next_stop_timings = [t for t in next_stop_schedule.timings
+                             if t.origin != next_stop_schedule.bus_stop.id]
+        distance = next_stop_schedule.bus_stop.get_distance()
+        for offset in range(len(next_stop_timings)):
+            logging.info(f"check if different {offset} at {self.bus_stop.name}")
+            if is_different(self.timings, next_stop_timings[offset:],
+                            distance):
+                continue
+
+            # Assign same buses as next stop
+            self.buses = next_stop_schedule.buses[offset:]
+            self.buses = self.buses[:len(self.timings)]
+            break
+        # Check with offset on current stop timings
+        logging.info(f"check if different -1 at {self.bus_stop.name}")
+        if (len(self.buses) == 0 and
+            self.get_num_timings() > 1 and
+            not is_different(
+                self.timings[1:], next_stop_timings, distance)):
+            self.buses = [bus - 1 for bus in next_stop_schedule.buses]
+        # If still no buses and distance is less than 2km
+        # check for difference without range check
+        if (len(self.buses) == 0 and distance < 2):
+            logging.debug(f"{self.bus_stop.name} no initial match")
             for offset in range(len(next_stop_timings)):
-                if is_different(self.timings, next_stop_timings[offset:],
-                                distance):
+                if is_different(self.timings,
+                                next_stop_timings[offset:],
+                                distance, check_range=False):
                     continue
-
-                # Assign same buses as next stop
                 self.buses = next_stop_schedule.buses[offset:]
-                self.buses = self.buses[:len(self.timings)]
                 break
-            # Check with offset on current stop timings
-            if (len(self.buses) == 0 and not is_different(
-                    self.timings[1:], next_stop_timings, distance)):
-                self.buses = [bus - 1 for bus in next_stop_schedule.buses]
-            # If still no buses and distance is less than 2km
-            # check for difference without range check
-            if (len(self.buses) == 0 and distance < 2):
-                logging.debug(f"{self.bus_stop.name} no initial match")
-                for offset in range(len(next_stop_timings)):
-                    if is_different(self.timings,
-                                    next_stop_timings[offset:],
-                                    distance, check_range=False):
-                        continue
-                    self.buses = next_stop_schedule.buses[offset:]
-                    break
-            # If no buses assigned and speed is very low, remove
-            # last timing which may be an anomaly
-            speed_est = distance/(next_stop_timings[-1].duration/3600)
-            if (len(self.buses) == 0 and speed_est < 2 and
-                    len(self.timings) == 3):
-                logging.warning(
-                    f"{self.bus_stop.name} low speed, remove last timing"
-                    f" speed: {speed_est}"
-                    f" buses: {self.buses}"
-                    )
-                self.timings = self.timings[:-1]
-                self.assign_buses(next_stop_schedule)
-                return
-            # Assign new buses if some are not allocated
-            while len(self.buses) < len(self.timings):
-                last_bus = max(self.get_last_bus(),
-                               next_stop_schedule.get_last_bus())
-                self.buses.append(last_bus + 1)
+        # If no buses assigned and speed is very low, remove
+        # last timing which may be an anomaly
+        speed_est = distance/(next_stop_timings[-1].duration/3600)
+        if (len(self.buses) == 0 and speed_est < 2 and
+                len(self.timings) == 3):
+            logging.warning(
+                f"{self.bus_stop.name} low speed, remove last timing"
+                f" speed: {speed_est}"
+                f" buses: {self.buses}"
+                )
+            self.timings = self.timings[:-1]
+            self.assign_buses(next_stop_schedule)
+            return
+        # Assign new buses if some are not allocated
+        while len(self.buses) < len(self.timings):
+            last_bus = max(self.get_last_bus(),
+                           next_stop_schedule.get_last_bus())
+            self.buses.append(last_bus + 1)
 
     def forecast_new_timings(self, bus_diff):
         # If no timings, return
-        if self.get_num_timings() == 0:
+        if self.get_num_timings() == 0 or len(self.buses) == 0:
             return
 
         def find_median(arr):
@@ -290,7 +297,6 @@ class StopSchedule:
                 return (arr[len(arr)//2 - 1] + arr[len(arr)//2])/2
             else:
                 return arr[len(arr)//2]
-
         next_bus = self.buses[-1] + 1
         while next_bus in bus_diff:
             last_timing = self.timings[-1]
