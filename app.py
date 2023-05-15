@@ -41,9 +41,11 @@ def get_bus_arrival_timing(bus_num, direction, stop_seq):
     records = RoutesTable.query.filter(
         func.upper(RoutesTable.bus_num) == bus_num).all()
     records = [record.to_dict() for record in records]
-    stops_info = transform_route_records(records)['stops'][int(direction)]
+    routes_info = transform_route_records(records)
+    stops_info = routes_info['stops'][int(direction)]
+    dest_code = routes_info['directions'][int(direction)]['destCode']
     update_time, arrival_timing, bus_diff = asyncio.run(
-        fetch_arrival_timing(bus_num, stops_info, stop_seq))
+        fetch_arrival_timing(bus_num, stops_info, stop_seq, dest_code))
 
     if arrival_timing is not None:
         return jsonify({

@@ -15,7 +15,8 @@ arrival_api_url = os.getenv("ARRIVAL_API_URL")
 
 
 async def fetch_arrival_timing(
-        bus_num: str, stops_info: List, stop_seq: str) -> List[str]:
+        bus_num: str, stops_info: List,
+        stop_seq: str, dest_code: str) -> List[str]:
     """
     Fetch arrival timings for given bus number for all stops until stop_seq.
 
@@ -23,6 +24,7 @@ async def fetch_arrival_timing(
         bus_num: The bus number.
         stops_info: List of dictionaries with stops info of the bus route.
         stop_seq: The stop sequence number of the target bus stop.
+        dest_code: The destination code of the bus route.
 
     Returns:
         List[str]: A list of arrival timings for bus number at target stop.
@@ -40,7 +42,7 @@ async def fetch_arrival_timing(
                            stop["name"],
                            stop["stopSequence"],
                            stop["distance"])
-        tasks.append(update_bus_stop_timing(new_stop, bus_num))
+        tasks.append(update_bus_stop_timing(new_stop, bus_num, dest_code))
         all_stops.append(new_stop)
 
         new_stop.set_prev_stop(cur_stop)
@@ -72,13 +74,14 @@ async def fetch_arrival_timing(
 
 
 async def update_bus_stop_timing(
-        bus_stop: BusStop, bus_num: str) -> List[Timing]:
+        bus_stop: BusStop, bus_num: str, dest_code: str) -> List[Timing]:
     """
     Fetch arrival timings for given bus stop and update with timing object.
 
     Args:
         bus_stop: The bus stop object for which to fetch arrival timings.
         bus_num: The bus number.
+        dest_code: The destination code of the bus route.
 
     Returns:
         List[Timing]: A list of Timing objects for the given stop and bus num.
@@ -96,7 +99,8 @@ async def update_bus_stop_timing(
                 service = next(
                     (service
                      for service in data["services"]
-                     if service["no"].upper() == bus_num),
+                     if (service["no"].upper() == bus_num and
+                         service["next"]["destination_code"] == dest_code)),
                     None,
                 )
 
