@@ -395,10 +395,8 @@ def transform_route_records(records):
     """
     Transforms list of route records to dictionary.
     """
-    bus_info = {
-        "directions": {},
-        "stops": {}
-    }
+    directions_info = {}
+    stops_info = {}
 
     unique_dists = {1: [], 2: []}
 
@@ -408,13 +406,20 @@ def transform_route_records(records):
         stop_code = record["stop_code"]
         stop_name = record["stop_name"]
         distance = record["distance"]
+        dest_code = record["dest_code"]
+        loop_desc = record["loop_desc"]
 
-        if direction not in bus_info["stops"]:
-            bus_info["stops"][direction] = []
+        if direction not in stops_info:
+            stops_info[direction] = []
+        if direction not in directions_info:
+            directions_info[direction] = {
+                "destCode": dest_code,
+                "loopDesc": loop_desc,
+            }
 
         if distance not in unique_dists[direction]:
             unique_dists[direction].append(distance)
-            bus_info["stops"][direction].append({
+            stops_info[direction].append({
                 "id": stop_code,
                 "stopSequence": stop_seq,
                 "name": stop_name,
@@ -423,13 +428,13 @@ def transform_route_records(records):
 
     # Add destination stop for each direction
     # Ensure stopSequence is sequential without gaps and remove last stop
-    for direction in bus_info["stops"]:
-        stops = bus_info["stops"][direction]
+    for direction in stops_info:
+        stops = stops_info[direction]
         stops.sort(key=lambda x: x["stopSequence"])
-        bus_info["directions"][direction] = f"To {stops[-1]['name']}"
+        directions_info[direction]["text"] = f"To {stops[-1]['name']}"
 
         for i, stop in enumerate(stops):
             stop["stopSequence"] = i+2
-        bus_info["stops"][direction] = stops[:-1]
+        stops_info[direction] = stops[:-1]
 
-    return bus_info
+    return {"directions": directions_info, "stops": stops_info}
