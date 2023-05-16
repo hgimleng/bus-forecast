@@ -16,6 +16,7 @@ database = os.getenv("DB_NAME")
 api_key = os.getenv("LTA_API_KEY")
 URL_ROUTES = "http://datamall2.mytransport.sg/ltaodataservice/BusRoutes?$skip="
 URL_STOPS = "http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip="
+URL_SERVICES = "http://datamall2.mytransport.sg/ltaodataservice/BusServices?$skip="
 
 
 def update_bus_routes():
@@ -28,10 +29,18 @@ def update_bus_routes():
         stop["BusStopCode"]: stop["Description"]
         for stop in fetch_all_records(URL_STOPS, headers)
     }
+    bus_services = {
+        (record["ServiceNo"], record["Direction"]): [
+            record["Category"], record["OriginCode"],
+            record["DestinationCode"], record["LoopDesc"],
+        ]
+        for record in fetch_all_records(URL_SERVICES, headers)
+    }
     bus_routes = [
         (record["ServiceNo"], record["Direction"],
          record["StopSequence"], record["BusStopCode"],
-         bus_stops[record["BusStopCode"]], record["Distance"])
+         bus_stops[record["BusStopCode"]], record["Distance"],
+         *bus_services[(record["ServiceNo"], record["Direction"])],)
         for record in fetch_all_records(URL_ROUTES, headers)
     ]
 
@@ -52,6 +61,10 @@ def update_bus_routes():
                 stop_code VARCHAR(100) NOT NULL,
                 stop_name VARCHAR(100) NOT NULL,
                 distance FLOAT NOT NULL,
+                category VARCHAR(100) NOT NULL,
+                origin_code VARCHAR(100) NOT NULL,
+                destination_code VARCHAR(100) NOT NULL,
+                loop_desc VARCHAR(100),
                 PRIMARY KEY (bus_num, direction, stop_seq)
             );
             """
@@ -70,7 +83,8 @@ def update_bus_routes():
             copy_command = (
                 "COPY routes_table "
                 "(bus_num, direction, stop_seq, "
-                "stop_code, stop_name, distance) "
+                "stop_code, stop_name, distance,"
+                "category, origin_code, destination_code, loop_desc)"
                 "FROM STDIN WITH CSV"
             )
             cursor.copy_expert(copy_command, csv_file)

@@ -12,7 +12,8 @@ function DirectionSelector({ directions, onClick, selectedDirection }) {
                         className={`btn btn-primary${selectedDirection === key ? ' active' : ''}`}
                         onClick={() => onClick(key)}
                         >
-                            {direction}
+                            {direction.text}
+                            {direction.loopDesc && <><br />{direction.loopDesc} (Loop)</>}
                         </button>
                     ))}
                 </div>
