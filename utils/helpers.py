@@ -256,6 +256,8 @@ class StopSchedule:
             not is_different(
                 self.timings[1:], next_stop_timings, distance)):
             self.buses = [bus - 1 for bus in next_stop_schedule.buses]
+            while len(self.buses) < len(self.timings):
+                self.buses.append(self.buses[-1] + 1)
         # If still no buses and distance is less than 2km
         # check for difference without range check
         if (len(self.buses) == 0 and distance < 2):
