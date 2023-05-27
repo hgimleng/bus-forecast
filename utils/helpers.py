@@ -271,7 +271,7 @@ class StopSchedule:
         # last timing which may be an anomaly
         speed_est = distance/(next_stop_timings[-1].duration/3600)
         if (len(self.buses) == 0 and speed_est < 2 and
-                len(self.timings) == 3):
+                len(self.timings) > 1):
             logging.warning(
                 f"{self.bus_stop.name} low speed, remove last timing"
                 f" speed: {speed_est}"
