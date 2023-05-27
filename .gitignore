@@ -1,5 +1,6 @@
 env/
 __pycache__/
 utils/__pycache__/
+test-server/test_arrivals.json
 .vscode
 .env

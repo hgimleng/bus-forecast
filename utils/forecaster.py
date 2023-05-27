@@ -86,7 +86,7 @@ async def update_bus_stop_timing(
     Returns:
         List[Timing]: A list of Timing objects for the given stop and bus num.
     """
-    url = f'{arrival_api_url}/?id={bus_stop.id}'
+    url = f'{arrival_api_url}{bus_stop.id}'
     timings = []
 
     try:
