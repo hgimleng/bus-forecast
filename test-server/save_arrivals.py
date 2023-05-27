@@ -48,6 +48,7 @@ async def fetch_data_from_api(stop_code):
         else:
             return {}
 
+
 async def fetch_all_data(records):
     tasks = []
     for record in records:
@@ -62,6 +63,9 @@ all_timings = asyncio.run(fetch_all_data(records))
 for record, timings in zip(records, all_timings):
     stop_code = record["stop_code"]
     stop_name = record["stop_name"]
+    filtered_services = [timing for timing in timings["services"]
+                         if timing["no"].upper() == bus_num.upper()]
+    timings["services"] = filtered_services
     new_data[stop_code] = {**timings, "stop_name": stop_name}
 
 with open('test_arrivals.json', 'w') as f:
