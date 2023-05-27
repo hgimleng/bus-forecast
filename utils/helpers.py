@@ -213,7 +213,8 @@ class StopSchedule:
                 # Skip if travel time is beyond negative threshold
                 logging.debug(f"{self.bus_stop.name} negative skip")
                 return True
-            if check_range and max(travel_time) - min(travel_time) > 180:
+            if (check_range and
+                    max(travel_time) - max(min(travel_time), 0) > 180):
                 # Skip if range of travel time is beyond 3 mins
                 logging.debug(f"{self.bus_stop.name} max range skip")
                 return True
@@ -267,7 +268,7 @@ class StopSchedule:
                                 next_stop_timings[offset:],
                                 distance, check_range=False):
                     continue
-                self.buses = next_stop_schedule.buses[offset:]
+                self.buses = next_stop_schedule.buses[offset:len(self.timings)]
                 break
         # If no buses assigned and speed is very low, remove
         # last timing which may be an anomaly
