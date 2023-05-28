@@ -281,7 +281,7 @@ class StopSchedule:
                 f" buses: {self.buses}"
                 )
             self.timings = self.timings[:-1]
-            self.assign_buses(next_stop_schedule)
+            self.assign_buses(next_stop_schedule, last_bus)
             return
         # Assign new buses if some are not allocated
         while len(self.buses) < len(self.timings):
