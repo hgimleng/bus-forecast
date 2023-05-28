@@ -181,7 +181,7 @@ class StopSchedule:
     def add_timing(self, timing: Timing):
         self.timings.append(timing)
 
-    def assign_buses(self, next_stop_schedule):
+    def assign_buses(self, next_stop_schedule, last_bus):
         """
         Compare with scheule of next stop and assign buses to self
         """
@@ -286,7 +286,8 @@ class StopSchedule:
         # Assign new buses if some are not allocated
         while len(self.buses) < len(self.timings):
             last_bus = max(self.get_last_bus(),
-                           next_stop_schedule.get_last_bus())
+                           next_stop_schedule.get_last_bus(),
+                           last_bus)
             self.buses.append(last_bus + 1)
 
     def forecast_new_timings(self, bus_diff):
@@ -321,11 +322,15 @@ class RouteSchedule:
         self.schedules = {}
         self.bus_diff = {}  # duration difference between bus i and bus i-1
         self.bus_location = {}  # predicted location of buses based on timing
+        self.last_bus = 0
 
     def add_stop_schedule(self, stop_schedule: StopSchedule):
         schedule_stop_seq = stop_schedule.get_stop_seq()
         self.schedules[schedule_stop_seq] = stop_schedule
-        stop_schedule.assign_buses(self.schedules.get(schedule_stop_seq + 1))
+        stop_schedule.assign_buses(
+            self.schedules.get(schedule_stop_seq + 1), self.last_bus)
+        # Update last bus
+        self.last_bus = max(self.last_bus, stop_schedule.get_last_bus())
         # Update bus diff
         for bus in stop_schedule.buses[1:]:
             if bus not in self.bus_diff:
