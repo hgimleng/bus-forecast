@@ -285,10 +285,13 @@ class StopSchedule:
             return
         # Assign new buses if some are not allocated
         while len(self.buses) < len(self.timings):
-            last_bus = max(self.get_last_bus(),
-                           next_stop_schedule.get_last_bus(),
-                           last_bus)
-            self.buses.append(last_bus + 1)
+            if len(self.buses) > 0:
+                self.buses.append(self.buses[-1] + 1)
+            else:
+                last_bus = max(self.get_last_bus(),
+                               next_stop_schedule.get_last_bus(),
+                               last_bus)
+                self.buses.append(last_bus + 1)
 
     def forecast_new_timings(self, bus_diff):
         # If no timings, return
