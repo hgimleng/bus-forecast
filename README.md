@@ -2,6 +2,8 @@
 
 Bus Forecast is a web app that not only displays bus arrival timings in Singapore from [LTA's DataMall](https://datamall.lta.gov.sg/content/datamall/en.html), but also forecast future arrivals based on timings from the previous stops.
 
+Live demo: https://bus-forecast.onrender.com/
+
 ## Features
 
 - Search for bus services by bus number
