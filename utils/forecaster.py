@@ -37,11 +37,15 @@ async def fetch_arrival_timing(
     all_stops = []
 
     # Create BusStop objects and fetch bus arrival timings
+    added_stops = []
     for stop in stops_info:
+        added_stops.append(stop["id"])
+        visit_num = added_stops.count(stop["id"])
         new_stop = BusStop(stop["id"],
                            stop["name"],
                            stop["stopSequence"],
-                           stop["distance"])
+                           stop["distance"],
+                           visit_num)
         tasks.append(update_bus_stop_timing(new_stop, bus_num, dest_code))
         all_stops.append(new_stop)
 
@@ -112,7 +116,8 @@ async def update_bus_stop_timing(
                                origin=service[key]["origin_code"],
                                load=service[key]["load"],
                                lng=service[key]["lng"],
-                               lat=service[key]["lat"])
+                               lat=service[key]["lat"],
+                               visit_num=service[key]["visit_number"])
                         for i, key in enumerate(["next", "next2", "next3"])
                         if service.get(key) is not None
                     ]

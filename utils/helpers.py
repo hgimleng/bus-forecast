@@ -16,7 +16,8 @@ class BusStop:
     Represents a bus stop with relevant information about arrivals to the stop.
     """
 
-    def __init__(self, id: str, name: str, stop_seq: str, distance: float):
+    def __init__(self, id: str, name: str, stop_seq: str, distance: float,
+                 visit_num: int):
         """
         Initializes a new BusStop object.
 
@@ -24,6 +25,7 @@ class BusStop:
         name: The description name of the bus stop.
         stop_seq: The stop sequence number along the bus route.
         distance: The distance from the bus stop to origin.
+        visit_num: The visit number of the bus stop.
         """
         self.id = id
         self.name = name
@@ -31,6 +33,7 @@ class BusStop:
         self.distance = distance
         self.prev_stop = None
         self.next_stop = None
+        self.visit_num = visit_num
 
     def set_prev_stop(self, prev_stop):
         self.prev_stop = prev_stop
@@ -64,6 +67,7 @@ class Timing:
                  load: str = None,
                  lng: float = None,
                  lat: float = None,
+                 visit_num: int = None,
                  is_forecasted=False):
         """
         Initializes a new Timing object.
@@ -75,6 +79,7 @@ class Timing:
         load: Load of bus, SEA, SDA, LSD, or EMPTY (default: None).
         lng: Longitude of bus (default: None).
         lat: Latitude of bus (default: None).
+        visit_num: Visit number of bus (default: None).
         is_forecasted: Indicates if the timing is forecasted. (default: True)
         """
         self.duration = duration
@@ -84,6 +89,7 @@ class Timing:
         self.load = load
         self.lng = lng
         self.lat = lat
+        self.visit_num = visit_num
         self.is_forecasted = is_forecasted
 
     def get_arrival_time(self, current_datetime):
@@ -94,8 +100,9 @@ class Timing:
         """
         Checks if two timings have same bus type and origin
         """
-        return (self.type == other_timing.type
+        return ((self.type == other_timing.type
                 and self.origin == other_timing.origin)
+                or self.is_forecasted or other_timing.is_forecasted)
 
     def is_special_departure(self, first_stop_id):
         """
@@ -151,7 +158,9 @@ class StopSchedule:
 
     def __init__(self, bus_stop: BusStop, timings: List[Timing]):
         self.bus_stop = bus_stop
-        self.timings = timings
+        # Filter only timings with visit number
+        self.timings = [timing for timing in timings
+                        if timing.visit_num == bus_stop.visit_num]
         self.buses = []
 
     def get_stop_seq(self):
@@ -238,7 +247,8 @@ class StopSchedule:
         # Assign buses based on next stop schedule
         # Get timings for next stop excluding special departures
         next_stop_timings = [t for t in next_stop_schedule.timings
-                             if t.origin != next_stop_schedule.bus_stop.id]
+                             if (t.origin != next_stop_schedule.bus_stop.id
+                                 or t.visit_num > 1)]
         distance = next_stop_schedule.bus_stop.get_distance()
         for offset in range(len(next_stop_timings)):
             logging.info(f"check if different {offset} at {self.bus_stop.name}")
@@ -293,7 +303,7 @@ class StopSchedule:
                                last_bus)
                 self.buses.append(last_bus + 1)
 
-    def forecast_new_timings(self, bus_diff):
+    def forecast_new_timings(self, bus_diff, limit=None):
         # If no timings, return
         if self.get_num_timings() == 0 or len(self.buses) == 0:
             return
@@ -313,6 +323,8 @@ class StopSchedule:
                                    is_forecasted=True))
             self.buses.append(next_bus)
             next_bus += 1
+            if limit is not None and self.get_num_timings() >= limit:
+                break
 
 
 class RouteSchedule:
@@ -339,6 +351,9 @@ class RouteSchedule:
             if bus not in self.bus_diff:
                 self.bus_diff[bus] = []
             self.bus_diff[bus].append(stop_schedule.get_bus_diff(bus))
+        # If stop schedule has fewer than 3 timings, forecast new timings
+        if stop_schedule.get_num_timings() < 3:
+            stop_schedule.forecast_new_timings(self.bus_diff, 3)
 
     def update_bus_info(self):
         """
