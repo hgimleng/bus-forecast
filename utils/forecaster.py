@@ -98,7 +98,7 @@ async def update_bus_stop_timing(
 
     # Helper function to get duration in seconds
     def get_duration(date, time_str):
-        str_time = parser.parse(time_str)
+        str_time = parser.parse(time_str[:19])
         str_time = str_time.astimezone(tz.tzlocal()).replace(tzinfo=None)
         diff = str_time - date
         return diff.total_seconds()
