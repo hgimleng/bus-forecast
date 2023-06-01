@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from dateutil import tz, parser
 from typing import List
 import os
 
@@ -35,6 +36,7 @@ async def fetch_arrival_timing(
     tasks = []
     route_schedule = RouteSchedule()
     all_stops = []
+    date = datetime.now() + timedelta(hours=timezone_offset)
 
     # Create BusStop objects and fetch bus arrival timings
     added_stops = []
@@ -46,7 +48,8 @@ async def fetch_arrival_timing(
                            stop["stopSequence"],
                            stop["distance"],
                            visit_num)
-        tasks.append(update_bus_stop_timing(new_stop, bus_num, dest_code))
+        tasks.append(update_bus_stop_timing(
+            new_stop, bus_num, dest_code, date))
         all_stops.append(new_stop)
 
         new_stop.set_prev_stop(cur_stop)
@@ -70,7 +73,6 @@ async def fetch_arrival_timing(
     # Forecast timing based on time difference between buses
     route_schedule.forecast_new_timings()
 
-    date = datetime.now() + timedelta(hours=timezone_offset)
     res = route_schedule.get_all_timings(date)
     bus_diff = route_schedule.bus_diff
 
@@ -78,7 +80,7 @@ async def fetch_arrival_timing(
 
 
 async def update_bus_stop_timing(
-        bus_stop: BusStop, bus_num: str, dest_code: str) -> List[Timing]:
+        bus_stop: BusStop, bus_num: str, dest_code: str, date) -> List[Timing]:
     """
     Fetch arrival timings for given bus stop and update with timing object.
 
@@ -86,12 +88,20 @@ async def update_bus_stop_timing(
         bus_stop: The bus stop object for which to fetch arrival timings.
         bus_num: The bus number.
         dest_code: The destination code of the bus route.
+        date: The datetime when data was fetched.
 
     Returns:
         List[Timing]: A list of Timing objects for the given stop and bus num.
     """
     url = f'{arrival_api_url}{bus_stop.id}'
     timings = []
+
+    # Helper function to get duration in seconds
+    def get_duration(date, time_str):
+        str_time = parser.parse(time_str)
+        str_time = str_time.astimezone(tz.tzlocal()).replace(tzinfo=None)
+        diff = str_time - date
+        return diff.total_seconds()
 
     try:
         async with httpx.AsyncClient() as client:
@@ -110,7 +120,7 @@ async def update_bus_stop_timing(
 
                 if service:
                     timings = [
-                        Timing(service[key]["duration_ms"]/1000,
+                        Timing(get_duration(date, service[key]["time"]),
                                i+1,
                                type=service[key]["type"],
                                origin=service[key]["origin_code"],
