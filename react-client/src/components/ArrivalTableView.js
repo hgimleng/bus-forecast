@@ -65,6 +65,24 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
         }
     }
 
+    function mapToDebug(busTimings) {
+        let validBusEntries = Object.keys(busTimings)
+            .filter(key => !busTimings[key].isForecasted)
+            .map(key => busTimings[key]);
+
+        let busTypes = validBusEntries.map(entry => entry.busType.split(" ")[0]);
+        let isSpecial = validBusEntries.map(entry => entry.isSpecial);
+        let loads = validBusEntries.map(entry => entry.load);
+        let latlngs = validBusEntries.map(entry => entry.latlng.join(', '));
+
+        busTypes = [...new Set(busTypes)].join(', ');
+        isSpecial = [...new Set(isSpecial)].join(', ');
+        loads = [...new Set(loads)].join(', ');
+        latlngs = [...new Set(latlngs)].join(', ');
+
+        return [busTypes, isSpecial, loads, latlngs];
+    }
+
     return (
         <div className='table-responsive'>
         <table className='table table-striped table-bordered table-sm'>
@@ -111,6 +129,19 @@ function ArrivalTableView({ arrivalData, updateTime, selectedStop, stops }) {
                     </tr>
                   ))
             }
+            {process.env.REACT_APP_DEBUG_MODE === 'true' && (
+                <tr scope='row' key='summary'>
+                    <td style={{'white-space': 'nowrap'}}>Debug Summary</td>
+                    {arrivalData.map(bus => (
+                        <td>
+                            {mapToDebug(bus['busTimings']).map((item) => (
+                                <div>{item}</div>
+                            )
+                            )}
+                        </td>
+                    ))}
+                </tr>
+            )}
             </tbody>
         </table>
         </div>
