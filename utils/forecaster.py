@@ -17,7 +17,7 @@ arrival_api_url = os.getenv("ARRIVAL_API_URL")
 
 async def fetch_arrival_timing(
         bus_num: str, stops_info: List,
-        stop_seq: str, dest_code: str) -> List[str]:
+        stop_seq: str, dest_code: str):
     """
     Fetch arrival timings for given bus number for all stops until stop_seq.
 
@@ -28,8 +28,10 @@ async def fetch_arrival_timing(
         dest_code: The destination code of the bus route.
 
     Returns:
-        List[str]: A list of arrival timings for bus number at target stop.
         datetime: The datetime when data was fetched.
+        List[str]: A list of arrival timings for bus number at target stop.
+        bus_diff: The time difference between buses.
+        status: The status code of the request.
     """
     # Initialise variables
     cur_stop = None
@@ -62,9 +64,13 @@ async def fetch_arrival_timing(
     # Run tasks concurrently
     all_timings = await asyncio.gather(*tasks)
 
+    # Check if any of the timings is None
+    if any(timings is None for timings in all_timings):
+        return None, None, None, 501
+
     # Check if all of the timings are empty
     if all(not timings for timings in all_timings):
-        return None, None, None
+        return None, None, None, 200
 
     for bus_stop, timings in zip(reversed(all_stops), reversed(all_timings)):
         stop_schedule = StopSchedule(bus_stop, timings)
@@ -76,7 +82,7 @@ async def fetch_arrival_timing(
     res = route_schedule.get_all_timings(date)
     bus_diff = route_schedule.bus_diff
 
-    return date.strftime('%H:%M:%S'), res, bus_diff
+    return date.strftime('%H:%M:%S'), res, bus_diff, 200
 
 
 async def update_bus_stop_timing(
@@ -133,5 +139,6 @@ async def update_bus_stop_timing(
                     ]
     except httpx.RequestError as e:
         print(f"Error fetching data from external API: {e}")
+        return None
 
     return timings

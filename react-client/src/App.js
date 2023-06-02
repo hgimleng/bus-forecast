@@ -72,7 +72,15 @@ function App() {
     } catch (error) {
       console.error('Error fetching bus arrival timing:', error)
       // Go back to step 1 and show error message
-      setErrorMsg(`No timings found for bus '${busNum}'`)
+      if (error.response && error.response.status === 502) {
+        setErrorMsg(`No timings found for bus '${busNum}'`)
+      } else if (error.response && error.response.status === 501) {
+        setErrorMsg('An error occurred while fetching data.')
+      } else if (error.response && error.response.status === 503) {
+        setErrorMsg('A database error occured.')
+      } else {
+        setErrorMsg('An unknown error occurred.')
+      }
       setStep(1)
     } finally {
       setIsFetching(false)

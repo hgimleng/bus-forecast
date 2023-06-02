@@ -2,7 +2,7 @@ import asyncio
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from sqlalchemy import func
+from sqlalchemy import func, exc
 
 from models.database import init_db
 from models.routes_table import RoutesTable
@@ -38,23 +38,33 @@ def get_bus_info(bus_num):
 @app.route('/api/bus/<bus_num>/direction/<direction>/stop/<stop_seq>', methods=['GET'])
 def get_bus_arrival_timing(bus_num, direction, stop_seq):
     # Fetch arrival timings based on the provided parameters
-    records = RoutesTable.query.filter(
-        func.upper(RoutesTable.bus_num) == bus_num).all()
-    records = [record.to_dict() for record in records]
-    routes_info = transform_route_records(records)
-    stops_info = routes_info['stops'][int(direction)]
-    dest_code = routes_info['directions'][int(direction)]['destCode']
-    update_time, arrival_timing, bus_diff = asyncio.run(
-        fetch_arrival_timing(bus_num, stops_info, stop_seq, dest_code))
+    try:
+        records = RoutesTable.query.filter(
+            func.upper(RoutesTable.bus_num) == bus_num).all()
+        records = [record.to_dict() for record in records]
+        routes_info = transform_route_records(records)
+        stops_info = routes_info['stops'][int(direction)]
+        dest_code = routes_info['directions'][int(direction)]['destCode']
+        update_time, arrival_timing, bus_diff, status = asyncio.run(
+            fetch_arrival_timing(bus_num, stops_info, stop_seq, dest_code))
+    except exc.SQLAlchemyError as e:
+        print(e)
+        return jsonify({'error': 'Database error'}), 503
+    except Exception as e:
+        print(e)
+        return jsonify({'error': 'An unexpected error occured'}), 500
 
-    if arrival_timing is not None:
+    if status == 200:
+        if arrival_timing is None:
+            return jsonify({'error': 'No timing found'}), 502
+
         return jsonify({
             'timing': arrival_timing,
             'updateTime': update_time,
             'busDiff': bus_diff
         })
     else:
-        return jsonify({'error': 'Bus arrival timing not found'}), 404
+        return jsonify({'error': 'External API error'}), status
 
 
 if __name__ == '__main__':
