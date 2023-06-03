@@ -22,7 +22,7 @@ function SearchForm({ onFind }) {
                 loading={false}
                 loadingProps={{ size: 'small', color: 'white' }}
                 buttonStyle={{
-                    backgroundColor: 'rgba(111, 202, 186, 1)',
+                    backgroundColor: 'skyblue',
                     borderRadius: 5,
                 }}
                 containerStyle={{

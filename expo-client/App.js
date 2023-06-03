@@ -33,7 +33,7 @@ export default function App() {
       }
       setRoutes(data)
       setErrorMsg('')
-      setDisclaimerMsg(unsupportedBuses.includes(findNum) ? `Bus '${findNum}' is not fully supported at the moment.` : '')
+      setDisclaimerMsg(unsupportedBuses.includes(findNum) ? `'${findNum}' is not fully supported at the moment.` : '')
       setStep(2)
       setBusNum(findNum)
       // if 1 direction, select it
