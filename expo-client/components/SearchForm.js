@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { View, TextInput, Button, StyleSheet } from 'react-native'
+import { View, StyleSheet } from 'react-native'
+import { Button, Input } from '@rneui/themed';
 
 function SearchForm({ onFind }) {
     const [text, setText] = useState('')
@@ -10,18 +11,25 @@ function SearchForm({ onFind }) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.inputGroup}>
-                <TextInput 
-                    style={styles.input}
-                    placeholder='Bus no.'
-                    maxLength={4}
-                    onChangeText={(text) => setText(text)}
-                />
-                <Button
-                    title="Find"
-                    onPress={handleSubmit}
-                />
-            </View>
+            <Input 
+                containerStyle={{width: 100, height: 50}}
+                placeholder='Bus no.'
+                maxLength={4}
+                onChangeText={(text) => setText(text)}
+            />
+            <Button
+                title="Find"
+                loading={false}
+                loadingProps={{ size: 'small', color: 'white' }}
+                buttonStyle={{
+                    backgroundColor: 'rgba(111, 202, 186, 1)',
+                    borderRadius: 5,
+                }}
+                containerStyle={{
+                    width: 100
+                }}
+                onPress={handleSubmit}
+            />
         </View>
     )
 }
@@ -30,18 +38,8 @@ const styles = StyleSheet.create({
     container: {
         flexDirection: 'row', 
         justifyContent: 'center',
-    },
-    inputGroup: {
-        flexDirection: 'row', 
-        justifyContent: 'center',
         marginBottom: 12,
-    },
-    input: {
-        width: 80,
-        borderColor: 'gray', 
-        borderWidth: 1,
-        marginRight: 4,
     },
 });
 
-export default SearchForm
+export default SearchForm;
