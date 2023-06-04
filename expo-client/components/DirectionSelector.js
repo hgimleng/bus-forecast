@@ -1,31 +1,26 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { View, StyleSheet } from 'react-native'
+import { ButtonGroup, Text } from '@rneui/themed'
 
 function DirectionSelector({ directions, onClick, selectedDirection }) {
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Select Direction:</Text>
-            <View style={styles.buttonGroup}>
-                {Object.entries(directions).map(([key, direction]) => (
-                    <TouchableOpacity 
-                        key={key} 
-                        style={[
-                            styles.button, 
-                            selectedDirection === key ? styles.activeButton : null
-                        ]}
-                        onPress={() => onClick(key)}
-                    >
-                        <Text style={styles.buttonText}>
-                            {direction.text}
-                            {direction.loopDesc && 
-                                <Text>
-                                    {"\n"}{direction.loopDesc} (Loop)
-                                </Text>
-                            }
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>
+            <Text h4>Select Direction:</Text>
+            <ButtonGroup
+                buttons={
+                    Object.entries(directions).map(([key, direction]) => (
+                        direction.text + (direction.loopDesc ? `\n${direction.loopDesc} (Loop)` : '')
+                    ))
+                }
+                selectedIndex={selectedDirection-1}
+                onPress={(value) => {
+                    onClick(value + 1);
+                }}
+                containerStyle={{ height: 50, width: '90%' }}
+                buttonStyle={{ borderColor: 'skyblue', borderWidth: 1 }}
+                selectedButtonStyle={{ backgroundColor: 'skyblue'}}
+                textStyle={{ textAlign: 'center', color: 'black' }}
+            />
         </View>
     )
 }
@@ -33,25 +28,8 @@ function DirectionSelector({ directions, onClick, selectedDirection }) {
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
-    buttonGroup: {
-        flexDirection: 'row',
-    },
-    button: {
-        backgroundColor: '#007BFF',
-        padding: 10,
-        margin: 5,
-    },
-    activeButton: {
-        backgroundColor: '#0056b3',
-    },
-    buttonText: {
-        color: '#ffffff',
-        textAlign: 'center',
+        borderTopColor: 'lightgrey',
+        borderTopWidth: 1,
     },
 });
 

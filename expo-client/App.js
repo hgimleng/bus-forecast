@@ -1,11 +1,12 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, StatusBar } from 'react-native';
 
 import api from './api';
 import SearchForm from './components/SearchForm';
 import ErrorMessage from './components/ErrorMessage';
 import DisclaimerMessage from './components/DisclaimerMessage';
 import DirectionSelector from './components/DirectionSelector';
+import BusStopSelector from './components/BusStopSelector';
 
 export default function App() {
   const [step, setStep] = useState(1)
@@ -50,7 +51,39 @@ export default function App() {
   }
 
   function selectDirection(direction) {
-    console.log(direction)
+    setSelectedDirection(direction)
+    setSelectedStop('')
+    setStep(3)
+  }
+
+  async function fetchArrivalData(stopSequence) {
+    console.log(stopSequence)
+    // try {
+    //   setIsFetching(true)
+    //   const response = await api.get(`/bus/${busNum}/direction/${selectedDirection}/stop/${stopSequence}`)
+
+    //   const data = response.data
+      setSelectedStop(stopSequence)
+    //   setArrivalData(data['timing'])
+    //   setUpdateTime(data['updateTime'])
+    //   setBusDiff(data['busDiff'])
+    //   setStep(4)
+    // } catch (error) {
+    //   console.error('Error fetching bus arrival timing:', error)
+    //   // Go back to step 1 and show error message
+    //   if (error.response && error.response.status === 502) {
+    //     setErrorMsg(`No timings found for bus '${busNum}'`)
+    //   } else if (error.response && error.response.status === 501) {
+    //     setErrorMsg('An error occurred while fetching data.')
+    //   } else if (error.response && error.response.status === 503) {
+    //     setErrorMsg('A database error occured.')
+    //   } else {
+    //     setErrorMsg('An unknown error occurred.')
+    //   }
+    //   setStep(1)
+    // } finally {
+    //   setIsFetching(false)
+    // }
   }
 
   return (
@@ -60,6 +93,7 @@ export default function App() {
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
+      {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} />}
     </View>
   );
 }
@@ -70,5 +104,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: StatusBar.currentHeight,
   },
 });
