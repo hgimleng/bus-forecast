@@ -1,34 +1,26 @@
 import React, { useState } from 'react'
 import { View, StyleSheet } from 'react-native'
-import { Button, Input } from '@rneui/themed';
+import { Searchbar } from 'react-native-paper';
 
 function SearchForm({ onFind }) {
     const [text, setText] = useState('')
 
     const handleSubmit = () => {
-        onFind(text.toUpperCase())
+        if (text.length > 0) {
+            onFind(text.toUpperCase())
+        }
     }
 
     return (
         <View style={styles.container}>
-            <Input 
-                containerStyle={{width: 100, height: 50}}
-                placeholder='Bus no.'
-                maxLength={4}
+            <Searchbar 
+                placeholder="Bus no."
                 onChangeText={(text) => setText(text)}
-            />
-            <Button
-                title="Find"
-                loading={false}
-                loadingProps={{ size: 'small', color: 'white' }}
-                buttonStyle={{
-                    backgroundColor: 'skyblue',
-                    borderRadius: 5,
-                }}
-                containerStyle={{
-                    width: 100
-                }}
-                onPress={handleSubmit}
+                maxLength={4}
+                onSubmitEditing={handleSubmit}
+                onEndEditing={handleSubmit}
+                onIconPress={handleSubmit}
+                theme={{ roundness: 0 }}
             />
         </View>
     )
@@ -36,9 +28,7 @@ function SearchForm({ onFind }) {
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: 'row', 
         justifyContent: 'center',
-        marginBottom: 12,
     },
 });
 

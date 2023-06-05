@@ -30,6 +30,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderTopColor: 'lightgrey',
         borderTopWidth: 1,
+        marginBottom: 12,
     },
 });
 

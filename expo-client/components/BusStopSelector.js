@@ -1,56 +1,51 @@
 import React from 'react'
-import { ScrollView, View, StyleSheet } from 'react-native'
-import { ListItem, Text } from '@rneui/themed'
+import { ScrollView, StyleSheet } from 'react-native'
+import { List } from 'react-native-paper'
 
-function BusStopSelector({ stops, selectStop, selectedStop }) {
+function BusStopSelector({ selectStop, selectedStop, routes, selectDirection, selectedDirection }) {    
+    
     return (
-        <View style={styles.container}>
-            <Text style={styles.text} h4>Select Bus Stop:</Text>
-            <ScrollView
-                style={styles.scrollView}
-                showsVerticalScrollIndicator={true}
-                persistentScrollbar={true}>
-                {stops.map(stop => (
-                    <ListItem
-                        key={stop.stopSequence}
-                        onPress={() => selectStop(stop.stopSequence)}
-                        containerStyle={styles.listItem}
-                        disabled={stop.stopSequence === selectedStop}
-                        disabledStyle={styles.listItemSelected}
-                    >
-                        <ListItem.Content>
-                            <ListItem.Title>{stop.name}</ListItem.Title>
-                        </ListItem.Content>
-                        <ListItem.Chevron />
-                    </ListItem>
-                ))}
-            </ScrollView>
-        </View>
+        <List.AccordionGroup
+        expandedId={selectedDirection}
+        onAccordionPress={selectDirection}>
+            {Object.entries(routes['directions']).map(([key, direction]) => (
+                <List.Accordion
+                    title={direction.text}
+                    description={direction.loopDesc ? `${direction.loopDesc} (Loop)` : ''}
+                    id={key}
+                    key={key}>
+                        <ScrollView
+                            style={styles.scrollView}
+                            showsVerticalScrollIndicator={true}
+                            persistentScrollbar={true}>
+                            {routes['stops'][key].map(stop => (
+                                <List.Item
+                                    title={stop.name}
+                                    onPress={() => selectStop(stop.stopSequence)}
+                                    style={[
+                                        styles.listItem,
+                                        stop.stopSequence === selectedStop ? styles.listItemSelected : null,
+                                    ]}
+                                    disabled={stop.stopSequence === selectedStop}
+                                />
+                            ))}
+                        </ScrollView>
+                </List.Accordion>
+            ))}
+        </List.AccordionGroup>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        borderTopColor: 'lightgrey',
-        borderTopWidth: 1,
-        width: '90%',
-    },
-    text: {
-        textAlign: 'center',
-    },
     scrollView: {
         maxHeight: 300,
-        borderColor: 'skyblue',
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
     },
     listItem: {
-        paddingVertical: 8,
+        paddingVertical: 4,
     },
     listItemSelected: {
-        backgroundColor: 'skyblue',
         opacity: 0.5,
-    },
+    }
 });
 
 export default BusStopSelector;

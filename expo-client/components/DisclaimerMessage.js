@@ -1,11 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { Banner, useTheme } from 'react-native-paper';
 
 function DisclaimerMessage({ message }) {
+    const theme = useTheme();
+
     return (
-        <View style={styles.alert}>
-            <Text style={styles.alertText}>{message}</Text>
-        </View>
+        <Banner
+        visible={true}
+        style={{backgroundColor: theme.colors.secondaryContainer}}>
+            {message}
+        </Banner>
     )
 }
 

@@ -1,23 +1,16 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Banner, useTheme } from 'react-native-paper';
 
 function ErrorMessage({ message }) {
+    const theme = useTheme();
+
     return (
-        <View style={styles.alert}>
-            <Text style={styles.alertText}>{message}</Text>
-        </View>
+        <Banner
+        visible={true}
+        style={{backgroundColor: theme.colors.errorContainer}}>
+            {message}
+        </Banner>
     )
 }
-
-const styles = StyleSheet.create({
-    alert: {
-        backgroundColor: 'tomato',
-        padding: 10,
-        borderRadius: 5
-    },
-    alertText: {
-        color: '#fff',
-    },
-});
 
 export default ErrorMessage;
