@@ -27,6 +27,7 @@ function BusStopSelector({ selectStop, selectedStop, routes, selectDirection, se
                                         stop.stopSequence === selectedStop ? styles.listItemSelected : null,
                                     ]}
                                     disabled={stop.stopSequence === selectedStop}
+                                    key={stop.stopSequence}
                                 />
                             ))}
                         </ScrollView>

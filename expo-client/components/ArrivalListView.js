@@ -2,6 +2,9 @@ import React from 'react'
 import { ScrollView, StyleSheet, View } from 'react-native'
 import { DataTable, Text } from 'react-native-paper'
 
+import ListBusTime from './displays/ListBusTime'
+import ListBusInfo from './displays/ListBusInfo'
+
 function ArrivalListView({ arrivalData, updateTime, selectedStop, busDiff }) {
     function getBusType(busTimings) {
         // Loop through all bus timings and find first non 'NA' bus type
@@ -45,21 +48,22 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop, busDiff }) {
                 <DataTable.Title style={{flex: 2}}>Time</DataTable.Title>
                 <DataTable.Title style={{flex: 5}}>Next Stop</DataTable.Title>
             </DataTable.Header>
-            {arrivalData.map(item => (
+            {arrivalData.map(item => {
+                const arrivalTime = item['busTimings'][selectedStop] ? item['busTimings'][selectedStop]['time'] : '-'
+                const timeDiff = busDiff[item['busId']-1] ? formatTimeDiff(busDiff[item['busId']-1]) : null
+                const busLocation = item['busLocation']
+                const busType = getBusType(item['busTimings'])
+                const busLoad = getBusLoad(item['busTimings'])
+
+                return (
                 <DataTable.Row>
-                    <DataTable.Cell style={{flex: 1}}>
+                    <DataTable.Cell style={{flex: 0.5}}>
                         {item['busId']}
                     </DataTable.Cell>
-                    <View style={{flex: 2}}>
-                        <Text>{item['busTimings'][selectedStop] ? item['busTimings'][selectedStop]['time'] : '-'}</Text>
-                        {busDiff[item['busId']-1] && <Text> (+{ formatTimeDiff(busDiff[item['busId']-1]) })</Text>}
-                    </View>
-                    <View style={{flex: 5}}>
-                        <Text>{item['busLocation']}</Text>
-                        <Text>{`(${getBusType(item['busTimings'])}, ${getBusLoad(item['busTimings'])} crowd)`}</Text>
-                    </View>
-                </DataTable.Row>
-            ))}
+                    <ListBusTime style={{flex: 2}} arrivalTime={arrivalTime} timeDiff={timeDiff} />
+                    <ListBusInfo style={{flex: 5}} busLocation={busLocation} busType={busType} busLoad={busLoad} />
+                </DataTable.Row>)
+            })}
         </DataTable>
     )
 }
