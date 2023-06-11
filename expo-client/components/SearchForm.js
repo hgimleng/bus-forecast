@@ -21,6 +21,7 @@ function SearchForm({ onFind }) {
                 onEndEditing={handleSubmit}
                 onIconPress={handleSubmit}
                 theme={{ roundness: 0 }}
+                keyboardType='visible-password'
             />
         </View>
     )
