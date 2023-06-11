@@ -39,12 +39,6 @@ export default function App() {
       setDisclaimerMsg(unsupportedBuses.includes(findNum) ? `'${findNum}' is not fully supported at the moment.` : '')
       setStep(2)
       setBusNum(findNum)
-      // if 1 direction, select it
-      if (Object.keys(data['directions']).length === 1) {
-        selectDirection(Object.keys(data['directions'])[0])
-      } else {
-        setSelectedDirection('')
-      }
     } catch (error) {
       setErrorMsg(`Bus '${findNum}' not found`)
       setDisclaimerMsg('')
@@ -52,21 +46,17 @@ export default function App() {
     }
   }
 
-  function selectDirection(direction) {
-    setSelectedDirection(direction)
-    setSelectedStop('')
-  }
-
-  async function fetchArrivalData(stopSequence) {
+  async function fetchArrivalData(direction, stopSequence) {
     try {
       setIsFetching(true)
-      const response = await api.get(`/bus/${busNum}/direction/${selectedDirection}/stop/${stopSequence}`)
+      const response = await api.get(`/bus/${busNum}/direction/${direction}/stop/${stopSequence}`)
 
       const data = response.data
       setSelectedStop(stopSequence)
       setArrivalData(data['timing'])
       setUpdateTime(data['updateTime'])
       setBusDiff(data['busDiff'])
+      setSelectedDirection(direction)
       setStep(3)
     } catch (error) {
       console.error('Error fetching bus arrival timing:', error)
@@ -97,7 +87,7 @@ export default function App() {
       {isFetching && step===1 && <ActivityIndicator />}
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}
-      {step >= 2 && <BusStopSelector selectStop={fetchArrivalData} selectedStop={selectedStop} routes={routes} selectDirection={selectDirection} selectedDirection={selectedDirection} />}
+      {step >= 2 && <BusStopSelector selectStop={fetchArrivalData} selectedStop={selectedStop} routes={routes} />}
       {isFetching && step===2 && <ActivityIndicator />}
       {step >= 3 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} busDiff={busDiff} />}
       {isFetching && step===3 && <ActivityIndicator />}

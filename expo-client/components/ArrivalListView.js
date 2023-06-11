@@ -56,7 +56,7 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop, busDiff }) {
                 const busLoad = getBusLoad(item['busTimings'])
 
                 return (
-                <DataTable.Row>
+                <DataTable.Row key={item['busId']}>
                     <DataTable.Cell style={{flex: 0.5}}>
                         {item['busId']}
                     </DataTable.Cell>

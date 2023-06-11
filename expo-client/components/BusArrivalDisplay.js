@@ -16,11 +16,8 @@ function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop,
             { stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }
         </Text>
         <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} busDiff={busDiff} />
+        <Text>Last Updated: {updateTime}</Text>
         </>
-        // <View style={styles.container}>
-        //     <Text style={styles.text} h4>{ stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }</Text>
-        //     {listView && <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} busDiff={busDiff} />}
-        // </View>
     )
 }
 

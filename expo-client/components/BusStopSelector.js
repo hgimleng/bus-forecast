@@ -1,13 +1,20 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { ScrollView, StyleSheet } from 'react-native'
 import { List } from 'react-native-paper'
 
-function BusStopSelector({ selectStop, selectedStop, routes, selectDirection, selectedDirection }) {    
+function BusStopSelector({ selectStop, selectedStop, routes }) {    
     
+    const [expandedId, setExpandedId] = useState(null)
+
+    function onSelectStop(stopSequence) {
+        selectStop(expandedId.toString(), stopSequence)
+        setExpandedId(null)
+    }
+
     return (
         <List.AccordionGroup
-        expandedId={selectedDirection}
-        onAccordionPress={selectDirection}>
+        expandedId={expandedId}
+        onAccordionPress={setExpandedId}>
             {Object.entries(routes['directions']).map(([key, direction]) => (
                 <List.Accordion
                     title={direction.text}
@@ -21,7 +28,7 @@ function BusStopSelector({ selectStop, selectedStop, routes, selectDirection, se
                             {routes['stops'][key].map(stop => (
                                 <List.Item
                                     title={stop.name}
-                                    onPress={() => selectStop(stop.stopSequence)}
+                                    onPress={() => onSelectStop(stop.stopSequence)}
                                     style={[
                                         styles.listItem,
                                         stop.stopSequence === selectedStop ? styles.listItemSelected : null,
