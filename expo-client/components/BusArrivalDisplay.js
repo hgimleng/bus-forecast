@@ -1,23 +1,44 @@
 import React, { useState } from 'react'
 import { View, StyleSheet } from 'react-native'
-// import { ListItem, Text } from '@rneui/themed'
-import { Text } from 'react-native-paper';
+import { Button, SegmentedButtons, Text } from 'react-native-paper';
 
 import ArrivalListView from './ArrivalListView'
 
-function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop, stops, busDiff }) {
-    const [listView, setListView] = useState(true)
-    const [refreshCountdown, setRefreshCountdown] = useState(0)
+function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop, stops, busDiff, isLoading }) {
+    const [viewType, setViewType] = useState('list')
+    const [allowRefresh, setAllowRefresh] = useState(true)
+
+    function handleRefresh() {
+        refreshData()
+        setAllowRefresh(false)
+
+        setTimeout(() => {
+            setAllowRefresh(true)
+        }, 15000);
+    }
 
     return (
-        <>
-        <Text
-        variant="headlineSmall">
-            { stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }
-        </Text>
-        <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} busDiff={busDiff} />
-        <Text>Last Updated: {updateTime}</Text>
-        </>
+        <View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <SegmentedButtons
+                value={viewType}
+                onValueChange={value => setViewType(value)}
+                buttons={[{ label: 'List View', value: 'list' }, { label: 'Table View', value: 'table' }]}
+                theme={{ roundness: 0 }}
+                style={{ flex: 1 }}
+            />
+            <Button mode={'outlined'} onPress={handleRefresh} theme={{ roundness: 0 }} disabled={!allowRefresh} loading={isLoading} >
+                Refresh
+            </Button>
+            </View>
+
+            <Text
+            variant="headlineSmall">
+                { stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }
+            </Text>
+            <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} busDiff={busDiff} />
+            <Text>Last Updated: {updateTime}</Text>
+        </View>
     )
 }
 

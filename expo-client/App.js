@@ -77,7 +77,7 @@ export default function App() {
   }
 
   function refreshData() {
-    fetchArrivalData(selectedStop)
+    fetchArrivalData(selectedDirection, selectedStop)
   }
 
   return (
@@ -89,8 +89,7 @@ export default function App() {
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}
       {step >= 2 && <BusStopSelector selectStop={fetchArrivalData} selectedStop={selectedStop} selectedDirection={selectedDirection} routes={routes} />}
       {isFetching && step===2 && <ActivityIndicator />}
-      {step >= 3 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} busDiff={busDiff} />}
-      {isFetching && step===3 && <ActivityIndicator />}
+      {step >= 3 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} busDiff={busDiff} isLoading={isFetching} />}
     </ScrollView>
     </PaperProvider>
   );
