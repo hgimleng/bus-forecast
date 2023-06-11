@@ -1,42 +1,46 @@
 import React, { useState } from 'react'
 import { ScrollView, StyleSheet } from 'react-native'
-import { List } from 'react-native-paper'
+import { List, Divider } from 'react-native-paper'
 
-function BusStopSelector({ selectStop, selectedStop, routes }) {    
+function BusStopSelector({ selectStop, selectedStop, selectedDirection, routes }) {    
     
     const [expandedId, setExpandedId] = useState(null)
 
     function onSelectStop(stopSequence) {
         selectStop(expandedId.toString(), stopSequence)
-        setExpandedId(null)
     }
 
     return (
         <List.AccordionGroup
         expandedId={expandedId}
-        onAccordionPress={setExpandedId}>
-            {Object.entries(routes['directions']).map(([key, direction]) => (
+        onAccordionPress={(id) => id == expandedId ? setExpandedId(null) : setExpandedId(id)}>
+            {Object.entries(routes['directions']).map(([directionNum, direction]) => (
                 <List.Accordion
                     title={direction.text}
                     description={direction.loopDesc ? `${direction.loopDesc} (Loop)` : ''}
-                    id={key}
-                    key={key}>
+                    id={directionNum}
+                    key={directionNum}>
                         <ScrollView
                             style={styles.scrollView}
                             showsVerticalScrollIndicator={true}
-                            persistentScrollbar={true}>
-                            {routes['stops'][key].map(stop => (
+                            persistentScrollbar={true}
+                            nestedScrollEnabled={true}>
+                            {routes['stops'][directionNum].map(stop => {
+                                let isSelected = stop.stopSequence === selectedStop && expandedId === selectedDirection
+
+                                return (<>
                                 <List.Item
                                     title={stop.name}
                                     onPress={() => onSelectStop(stop.stopSequence)}
                                     style={[
                                         styles.listItem,
-                                        stop.stopSequence === selectedStop ? styles.listItemSelected : null,
+                                        isSelected ? styles.listItemSelected : null,
                                     ]}
-                                    disabled={stop.stopSequence === selectedStop}
+                                    disabled={isSelected}
                                     key={stop.stopSequence}
-                                />
-                            ))}
+                                /><Divider />
+                                </>)
+                            })}
                         </ScrollView>
                 </List.Accordion>
             ))}

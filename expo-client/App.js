@@ -87,7 +87,7 @@ export default function App() {
       {isFetching && step===1 && <ActivityIndicator />}
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}
-      {step >= 2 && <BusStopSelector selectStop={fetchArrivalData} selectedStop={selectedStop} routes={routes} />}
+      {step >= 2 && <BusStopSelector selectStop={fetchArrivalData} selectedStop={selectedStop} selectedDirection={selectedDirection} routes={routes} />}
       {isFetching && step===2 && <ActivityIndicator />}
       {step >= 3 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} busDiff={busDiff} />}
       {isFetching && step===3 && <ActivityIndicator />}
