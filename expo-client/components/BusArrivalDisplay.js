@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native'
 import { Button, SegmentedButtons, Text } from 'react-native-paper';
 
 import ArrivalListView from './ArrivalListView'
+import ArrivalTableView from './ArrivalTableView'
 
 function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop, stops, busDiff, isLoading }) {
     const [viewType, setViewType] = useState('list')
@@ -25,9 +26,9 @@ function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop,
                 onValueChange={value => setViewType(value)}
                 buttons={[{ label: 'List View', value: 'list' }, { label: 'Table View', value: 'table' }]}
                 theme={{ roundness: 0 }}
-                style={{ flex: 1 }}
+                style={{ flex: 4 }}
             />
-            <Button mode={'outlined'} onPress={handleRefresh} theme={{ roundness: 0 }} disabled={!allowRefresh} loading={isLoading} >
+            <Button style={{ flex: 1 }} mode={'outlined'} onPress={handleRefresh} theme={{ roundness: 0 }} disabled={!allowRefresh} loading={isLoading} >
                 Refresh
             </Button>
             </View>
@@ -36,7 +37,8 @@ function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop,
             variant="headlineSmall">
                 { stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }
             </Text>
-            <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} busDiff={busDiff} />
+            {viewType === 'list' && <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} busDiff={busDiff} />}
+            {viewType === 'table' && <ArrivalTableView arrivalData={arrivalData} selectedStop={selectedStop} stops={stops} />}
             <Text>Last Updated: {updateTime}</Text>
         </View>
     )
