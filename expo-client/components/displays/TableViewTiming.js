@@ -2,10 +2,10 @@ import React from 'react'
 import { View, StyleSheet } from 'react-native'
 import { Text } from 'react-native-paper'
 
-function TableViewTiming({ style, timing }) {
+function TableViewTiming({ style, timing, fontWeight }) {
     return (
         <View style={[style, styles.view]}>
-            <Text style={styles.text}>{timing}</Text>
+            <Text style={[styles.text, {fontWeight: fontWeight}]}>{timing}</Text>
         </View>
     )
 }

@@ -20,7 +20,7 @@ function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop,
 
     return (
         <View>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View style={styles.buttonView}>
             <SegmentedButtons
                 value={viewType}
                 onValueChange={value => setViewType(value)}
@@ -34,7 +34,8 @@ function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop,
             </View>
 
             <Text
-            variant="headlineSmall">
+            variant="headlineSmall"
+            style={styles.text}>
                 { stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }
             </Text>
             {viewType === 'list' && <ArrivalListView arrivalData={arrivalData} updateTime={updateTime} selectedStop={selectedStop} busDiff={busDiff} />}
@@ -55,6 +56,11 @@ const styles = StyleSheet.create({
     text: {
         textAlign: 'center',
     },
+    buttonView: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginVertical: 12,
+    }
 });
 
 export default BusArrivalDisplay;

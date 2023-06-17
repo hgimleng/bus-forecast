@@ -43,20 +43,25 @@ export default function App() {
       setErrorMsg(`Bus '${findNum}' not found`)
       setDisclaimerMsg('')
       setStep(1)
+    } finally {
+      setIsFetching(false)
+      setSelectedDirection('')
+      setSelectedStop('')
     }
   }
 
   async function fetchArrivalData(direction, stopSequence) {
     try {
+      setSelectedStop(stopSequence)
+      setSelectedDirection(direction)
+
       setIsFetching(true)
       const response = await api.get(`/bus/${busNum}/direction/${direction}/stop/${stopSequence}`)
 
       const data = response.data
-      setSelectedStop(stopSequence)
       setArrivalData(data['timing'])
       setUpdateTime(data['updateTime'])
       setBusDiff(data['busDiff'])
-      setSelectedDirection(direction)
       setStep(3)
     } catch (error) {
       console.error('Error fetching bus arrival timing:', error)
@@ -83,7 +88,7 @@ export default function App() {
   return (
     <PaperProvider>
     <ScrollView contentContainerStyle={styles.scrollView}>
-      <SearchForm onFind={fetchDirectionsAndStops} />
+      <SearchForm onFind={fetchDirectionsAndStops} busNum={busNum} />
       {isFetching && step===1 && <ActivityIndicator />}
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}

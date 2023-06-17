@@ -25,10 +25,10 @@ function BusStopSelector({ selectStop, selectedStop, selectedDirection, routes }
                             showsVerticalScrollIndicator={true}
                             persistentScrollbar={true}
                             nestedScrollEnabled={true}>
-                            {routes['stops'][directionNum].map(stop => {
+                            {routes['stops'][directionNum].map((stop, index) => {
                                 let isSelected = stop.stopSequence === selectedStop && expandedId === selectedDirection
 
-                                return (<>
+                                return (<React.Fragment key={index}>
                                 <List.Item
                                     title={stop.name}
                                     onPress={() => onSelectStop(stop.stopSequence)}
@@ -37,9 +37,9 @@ function BusStopSelector({ selectStop, selectedStop, selectedDirection, routes }
                                         isSelected ? styles.listItemSelected : null,
                                     ]}
                                     disabled={isSelected}
-                                    key={stop.stopSequence}
+                                    key={`${directionNum}-${stop.stopSequence}`}
                                 /><Divider />
-                                </>)
+                                </React.Fragment>)
                             })}
                         </ScrollView>
                 </List.Accordion>

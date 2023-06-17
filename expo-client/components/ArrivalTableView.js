@@ -14,6 +14,13 @@ function ArrivalTableView({ arrivalData, selectedStop, stops }) {
         return busTimings[stopSequence]['time']
     }
 
+    function getFontWeight(busTimings, stopSequence) {
+        if (!busTimings[stopSequence]) {
+          return 'normal'
+        }
+        return busTimings[stopSequence]['isForecasted'] ? 'normal' : 'bold'
+    }
+
     function timeDiff(time1, time2) {
         const parseTime = (timeStr) => {
             const [hours, minutes, seconds] = timeStr.split(':').map(Number);
@@ -54,11 +61,11 @@ function ArrivalTableView({ arrivalData, selectedStop, stops }) {
         <ScrollView horizontal={true}>
         <DataTable>
             <DataTable.Header>
-                <TableViewHeader title={'Bus Stop'} style={{width: 150}} />
-                {arrivalData.map((item) => (
-                    <TableViewHeader title={`Bus ${item['busId']}`} style={{width: 80}} />
+                <TableViewHeader title={'Bus Stop'} style={{width: 200}} />
+                {arrivalData.map((item, index) => (
+                    <TableViewHeader key={index} title={`Bus ${item['busId']}`} style={{width: 80}} />
                 ))}
-                <TableViewHeader title={'Travel Time'} style={{width: 150}} />
+                <TableViewHeader title={'Travel Time'} style={{width: 200}} />
             </DataTable.Header>
             {stops
                 .filter(stop => stop['stopSequence'] <= parseInt(selectedStop))
@@ -66,8 +73,8 @@ function ArrivalTableView({ arrivalData, selectedStop, stops }) {
                 .map(stop => (
                     <DataTable.Row key={stop['stopSequence']} style={styles.row}>
                         <TableViewInfo content={stop['name']} />
-                        {arrivalData.map(bus => (
-                            <TableViewTiming timing={getBusTiming(bus['busTimings'], stop['stopSequence'])} />
+                        {arrivalData.map((bus, index) => (
+                            <TableViewTiming key={index} timing={getBusTiming(bus['busTimings'], stop['stopSequence'])} fontWeight={getFontWeight(bus['busTimings'], stop['stopSequence'])} />
                         ))}
                         <TableViewInfo content={getTravelTimeRange(stop['stopSequence'], stop['stopSequence']-1)} />
                     </DataTable.Row>
@@ -88,7 +95,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     row: {
-        marginVertical: 0
+        marginVertical: -6
     }
 });
 

@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginLeft: 2,
         marginRight: 2,
-        width: 150,
+        width: 200,
     },
     text: {
         textAlign: 'center',

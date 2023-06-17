@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { Searchbar } from 'react-native-paper';
 
-function SearchForm({ onFind }) {
+function SearchForm({ onFind, busNum }) {
     const [text, setText] = useState('')
 
     const handleSubmit = () => {
-        if (text.length > 0) {
+        if (text.length > 0 && busNum !== text.toUpperCase()) {
             onFind(text.toUpperCase())
         }
     }
