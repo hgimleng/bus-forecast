@@ -1,6 +1,6 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
-import { DataTable, Text } from 'react-native-paper'
+import { ScrollView, StyleSheet } from 'react-native'
+import { DataTable } from 'react-native-paper'
 import TableViewHeader from './displays/TableViewHeader'
 import TableViewInfo from './displays/TableViewInfo'
 import TableViewTiming from './displays/TableViewTiming'
@@ -86,14 +86,6 @@ function ArrivalTableView({ arrivalData, selectedStop, stops }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        borderTopColor: 'lightgrey',
-        borderTopWidth: 1,
-        width: '90%',
-    },
-    text: {
-        textAlign: 'center',
-    },
     row: {
         marginVertical: -6
     }

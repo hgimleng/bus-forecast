@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, StyleSheet } from 'react-native'
-import { Text, Divider } from 'react-native-paper'
+import { Text } from 'react-native-paper'
 
 function TableViewHeader({ style, title }) {
     return (

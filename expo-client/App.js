@@ -1,12 +1,11 @@
 import React, {useState} from 'react';
-import { StyleSheet, Text, View, ScrollView, StatusBar } from 'react-native';
+import { StyleSheet, ScrollView, StatusBar } from 'react-native';
 import { PaperProvider, ActivityIndicator } from 'react-native-paper';
 
 import api from './api';
 import SearchForm from './components/SearchForm';
 import ErrorMessage from './components/ErrorMessage';
 import DisclaimerMessage from './components/DisclaimerMessage';
-import DirectionSelector from './components/DirectionSelector';
 import BusStopSelector from './components/BusStopSelector';
 import BusArrivalDisplay from './components/BusArrivalDisplay';
 

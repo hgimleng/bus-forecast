@@ -5,20 +5,20 @@ import { Text, IconButton } from 'react-native-paper'
 function ListBusInfo({ style, busLocation, busType, busLoad }) {
     let busTypeIcon = [];
     if (busType === 'Single Deck') {
-        busTypeIcon = [<IconButton icon="bus-side" style={styles.icon} />];
+        busTypeIcon = [<IconButton key='bus-side-1' icon="bus-side" style={styles.icon} />];
     } else if (busType === 'Double Deck') {
-        busTypeIcon = [<IconButton icon="bus-double-decker" style={styles.icon} />];
+        busTypeIcon = [<IconButton key='bus-double-decker-1' icon="bus-double-decker" style={styles.icon} />];
     } else if (busType === 'Bendy') {
-        busTypeIcon = [<IconButton icon="bus-side" style={styles.icon} />, <IconButton icon="bus-side" style={styles.icon} />];
+        busTypeIcon = [<IconButton key='bus-side-1' icon="bus-side" style={styles.icon} />, <IconButton key='bus-side-2' icon="bus-side" style={styles.icon} />];
     }
 
     let busLoadIcon = [];
     if (busLoad === 'Low') {
-        busLoadIcon = [<IconButton icon="account" style={styles.icon} />, <IconButton icon="account-outline" style={styles.icon} />, <IconButton icon="account-outline" style={styles.icon} />];
+        busLoadIcon = [<IconButton key='account-1' icon="account" style={styles.icon} />, <IconButton key='account-outline-1' icon="account-outline" style={styles.icon} />, <IconButton key='account-outline-2' icon="account-outline" style={styles.icon} />];
     } else if (busLoad === 'Medium') {
-        busLoadIcon = [<IconButton icon="account" style={styles.icon} />, <IconButton icon="account" style={styles.icon} />, <IconButton icon="account-outline" style={styles.icon} />];
+        busLoadIcon = [<IconButton key='account-1' icon="account" style={styles.icon} />, <IconButton key='account-2' icon="account" style={styles.icon} />, <IconButton key='account-outline-1' icon="account-outline" style={styles.icon} />];
     } else if (busLoad === 'High') {
-        busLoadIcon = [<IconButton icon="account" style={styles.icon} />, <IconButton icon="account" style={styles.icon} />, <IconButton icon="account" style={styles.icon} />];
+        busLoadIcon = [<IconButton key='account-1' icon="account" style={styles.icon} />, <IconButton key='account-2' icon="account" style={styles.icon} />, <IconButton key='account-3' icon="account" style={styles.icon} />];
     }
 
     return (

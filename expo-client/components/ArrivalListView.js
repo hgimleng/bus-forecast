@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { DataTable, Text } from 'react-native-paper'
 
 import ListBusTime from './displays/ListBusTime'
