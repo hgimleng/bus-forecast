@@ -13,7 +13,7 @@ function SearchForm({ onFind }) {
             <div className='col-auto'>
                 <form onSubmit={handleSubmit} className='input-group mb-3'>
                     <input 
-                    type='text'
+                    type='search'
                     className='form-control'
                     placeholder='Bus no.'
                     maxLength='4'

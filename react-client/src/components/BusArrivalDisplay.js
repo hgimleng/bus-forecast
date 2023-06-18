@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import ArrivalListView from './ArrivalListView'
 import ArrivalTableView from './ArrivalTableView'
 
-function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop, stops, busDiff }) {
+function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop, stops, busDiff, isLoading }) {
     const [listView, setListView] = useState(true)
     const [refreshCountdown, setRefreshCountdown] = useState(0)
 
@@ -43,6 +43,7 @@ function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop,
                 className='btn btn-success'
                 onClick={handleRefresh}
                 disabled={refreshCountdown > 0}>
+                    {isLoading && <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>}
                     Refresh{refreshCountdown > 0 ? ` (${refreshCountdown}s)` : ''}
                 </button>
             </div>
