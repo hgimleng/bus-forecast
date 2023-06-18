@@ -23,7 +23,7 @@ function ListBusInfo({ style, busLocation, busType, busLoad }) {
 
     return (
         <View style={[style, styles.view]}>
-            <Text>{busLocation}</Text>
+            <Text style={{textAlign: 'center'}}>{busLocation}</Text>
             <View style={styles.iconContainer}>
                 {busTypeIcon}
                 {busLoadIcon}
