@@ -44,9 +44,9 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop, busDiff }) {
     return (
         <DataTable>
             <DataTable.Header>
-                <DataTable.Title style={{flex: 1}}>Bus</DataTable.Title>
-                <DataTable.Title style={{flex: 2}}>Time</DataTable.Title>
-                <DataTable.Title style={{flex: 5}}>Next Stop</DataTable.Title>
+                <View style={styles.busCellView}><Text variant='titleSmall'>Bus</Text></View>
+                <View style={styles.timeCellView}><Text variant='titleSmall'>Time</Text></View>
+                <View style={styles.infoCellView}><Text variant='titleSmall'>Next Stop</Text></View>
             </DataTable.Header>
             {arrivalData.map(item => {
                 const arrivalTime = item['busTimings'][selectedStop] ? item['busTimings'][selectedStop]['time'] : '-'
@@ -57,11 +57,9 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop, busDiff }) {
 
                 return (
                 <DataTable.Row key={item['busId']}>
-                    <DataTable.Cell style={{flex: 0.5}}>
-                        {item['busId']}
-                    </DataTable.Cell>
-                    <ListBusTime style={{flex: 2}} arrivalTime={arrivalTime} timeDiff={timeDiff} />
-                    <ListBusInfo style={{flex: 5}} busLocation={busLocation} busType={busType} busLoad={busLoad} />
+                    <View style={styles.busCellView}><Text>{item['busId']}</Text></View>
+                    <ListBusTime style={styles.timeCellView} arrivalTime={arrivalTime} timeDiff={timeDiff} />
+                    <ListBusInfo style={styles.infoCellView} busLocation={busLocation} busType={busType} busLoad={busLoad} />
                 </DataTable.Row>)
             })}
         </DataTable>
@@ -69,14 +67,21 @@ function ArrivalListView({ arrivalData, updateTime, selectedStop, busDiff }) {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        borderTopColor: 'lightgrey',
-        borderTopWidth: 1,
-        width: '90%',
+    busCellView: {
+        flex: 1,
+        alignItems:'center',
+        justifyContent:'center',
     },
-    text: {
-        textAlign: 'center',
+    timeCellView: {
+        flex: 2,
+        alignItems:'center',
+        justifyContent:'center',
     },
+    infoCellView: {
+        flex: 5,
+        alignItems:'center',
+        justifyContent:'center',
+    }
 });
 
 export default ArrivalListView;

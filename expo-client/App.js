@@ -26,6 +26,10 @@ export default function App() {
 
   async function fetchDirectionsAndStops(findNum) {
     try {
+      setSelectedDirection('')
+      setSelectedStop('')
+      setStep(2)
+
       setIsFetching(true)
       const response = await api.get(`/bus/${findNum}`)
       setIsFetching(false)
@@ -37,7 +41,6 @@ export default function App() {
       setRoutes(data)
       setErrorMsg('')
       setDisclaimerMsg(unsupportedBuses.includes(findNum) ? `'${findNum}' is not fully supported at the moment.` : '')
-      setStep(2)
       setBusNum(findNum)
     } catch (error) {
       setErrorMsg(`Bus '${findNum}' not found`)
@@ -45,8 +48,6 @@ export default function App() {
       setStep(1)
     } finally {
       setIsFetching(false)
-      setSelectedDirection('')
-      setSelectedStop('')
     }
   }
 

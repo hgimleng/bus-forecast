@@ -36,8 +36,6 @@ export default ListBusInfo;
 
 const styles = StyleSheet.create({
     view: {
-        justifyContent: 'center',
-        alignItems: 'center',
         marginTop: 4,
         marginBottom: 4,
     },
