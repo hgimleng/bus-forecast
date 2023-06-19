@@ -16,7 +16,6 @@ function BusStopSelector({ stops, selectStop, selectedStop, isLoading }) {
                             key={stop.stopSequence}
                             onClick={() => selectStop(stop.stopSequence)}
                             className={`list-group-item ${isSelected ? 'active disabled' : ''} list-group-item-action text-center`}>
-                                {/* { !showSpinner && <>{stop.name}</> } */}
                                 {stop.name}
                                 { showSpinner && <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
                                 
