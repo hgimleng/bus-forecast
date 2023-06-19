@@ -44,9 +44,10 @@ def get_bus_arrival_timing(bus_num, direction, stop_seq):
         records = [record.to_dict() for record in records]
         routes_info = transform_route_records(records)
         stops_info = routes_info['stops'][int(direction)]
-        dest_code = routes_info['directions'][int(direction)]['destCode']
+        dest_codes = (routes_info['directions'][int(direction)]['destCode'],
+                      stops_info[-1]["id"])
         update_time, arrival_timing, bus_diff, status = asyncio.run(
-            fetch_arrival_timing(bus_num, stops_info, stop_seq, dest_code))
+            fetch_arrival_timing(bus_num, stops_info, stop_seq, dest_codes))
     except exc.SQLAlchemyError as e:
         print(e)
         return jsonify({'error': 'Database error'}), 503

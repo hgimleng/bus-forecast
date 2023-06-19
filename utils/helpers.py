@@ -50,6 +50,9 @@ class BusStop:
         else:
             return self.distance
 
+    def get_stop_seq(self):
+        return int(self.stop_seq)
+
     def __str__(self):
         return f"Bus Stop {self.id} ({self.name})"
 
@@ -61,7 +64,7 @@ class Timing:
 
     def __init__(self,
                  duration: float,
-                 arrival_seq: int,
+                 arrival_seq: int = None,
                  type: str = None,
                  origin: str = None,
                  load: str = None,
@@ -327,61 +330,217 @@ class StopSchedule:
                 break
 
 
+class BusSchedule:
+    """
+    Contains timings of a bus for stops along a route
+    """
+
+    def __init__(self, id: int, bus_stops: List[BusStop]):
+        self.id = id
+        self.schedule = {}
+        self.bus_stops = bus_stops
+
+    def has_suitable_slot(self, stop_seq: int, timing: Timing):
+        """
+        Checks if timing aligns with existing timings
+        """
+        if stop_seq in self.schedule:
+            return False
+        if self.get_bus_type() != timing.type:
+            return False
+        if self.get_bus_origin() != timing.origin:
+            return False
+        if self.has_latlng(timing.get_latlng()):
+            return True
+        if stop_seq + 1 in self.schedule:
+            next_stop_duration = self.schedule[stop_seq + 1].duration
+            current_stop_duration = timing.duration
+            travel_time = next_stop_duration - current_stop_duration
+            if travel_time < -120:
+                return False
+        return True
+
+    def set_timing(self, stop_seq: int, timing: Timing):
+        self.schedule[stop_seq] = timing
+
+    def remove_timing(self, stop_seq: int):
+        del self.schedule[stop_seq]
+
+    def get_location(self):
+        def get_name_from_stop_seq(stop_seq: int):
+            return next((stop.name for stop in self.bus_stops if
+                        stop.stop_seq == stop_seq), None)
+
+        for stop_seq in sorted(self.schedule.keys()):
+            if self.schedule[stop_seq].duration > 0:
+                return get_name_from_stop_seq(stop_seq)
+        return get_name_from_stop_seq(max(self.schedule.keys()))
+
+    def get_bus_type(self):
+        for timing in self.schedule.values():
+            if timing.type is not None:
+                return timing.type
+
+    def get_bus_load(self):
+        for timing in self.schedule.values():
+            if timing.load is not None:
+                return timing.load
+
+    def get_bus_origin(self):
+        for timing in self.schedule.values():
+            if timing.origin is not None:
+                return timing.origin
+
+    def get_all_timings(self, current_datetime):
+        all_timings = {}
+        for stop_seq, timing in self.schedule.items():
+            all_timings[stop_seq] = {
+                "time": timing.get_arrival_time(current_datetime),
+                "isForecasted": timing.is_forecasted,
+                "isSpecial": timing.is_special_departure(
+                    self.bus_stops[0].id),
+                "load": timing.get_load(),
+                "latlng": timing.get_latlng(),
+                "busType": timing.get_bus_type(),
+            }
+        return all_timings
+
+    def has_latlng(self, latlng):
+        if 0 in latlng or None in latlng:
+            return False
+        for timing in self.schedule.values():
+            if timing.get_latlng() == latlng:
+                return True
+
+
 class RouteSchedule:
     """
     Contains schedules of all the stops and methods
     to get more information about buses
     """
 
-    def __init__(self):
-        self.schedules = {}
-        self.bus_diff = {}  # duration difference between bus i and bus i-1
-        self.bus_location = {}  # predicted location of buses based on timing
-        self.last_bus = 0
+    def __init__(self, bus_stops: List[BusStop]):
+        self.bus_schedules = []
+        self.bus_stops = bus_stops
 
-    def add_stop_schedule(self, stop_schedule: StopSchedule):
-        schedule_stop_seq = stop_schedule.get_stop_seq()
-        self.schedules[schedule_stop_seq] = stop_schedule
-        stop_schedule.assign_buses(
-            self.schedules.get(schedule_stop_seq + 1), self.last_bus)
-        # Update last bus
-        self.last_bus = max(self.last_bus, stop_schedule.get_last_bus())
-        # Update bus diff
-        for bus in stop_schedule.buses[1:]:
-            if bus not in self.bus_diff:
-                self.bus_diff[bus] = []
-            self.bus_diff[bus].append(stop_schedule.get_bus_diff(bus))
-        # If stop schedule has fewer than 3 timings, forecast new timings
-        if stop_schedule.get_num_timings() < 3:
-            stop_schedule.forecast_new_timings(self.bus_diff, 3)
+    def get_schedules_with_stop(self, stop_seq: int):
+        return [schedule for schedule in self.bus_schedules
+                if stop_seq in schedule.schedule]
 
-    def update_bus_info(self):
-        """
-        Loop through stop schedules and add duration diff between buses
-        and predicted locations.
-        """
-        for stop_seq in sorted(self.schedules, reverse=True):
-            schedule = self.schedules[stop_seq]
-            for bus in schedule.buses:
-                # Update location of bus
-                if schedule.bus_stop.stop_seq == 2:
-                    self.bus_location[bus] = "Yet to depart"
-                elif (schedule.bus_stop.stop_seq < 5 and
-                      all(t.get_latlng() == (0, 0) for t in schedule.timings)):
-                    # Check if all timing of bus has no location
-                    self.bus_location[bus] = "Yet to depart"
-                elif (schedule.get_timing(bus).duration < 0 and
-                      bus in self.bus_location):
-                    # Ignore stops with negative duration if
-                    # bus is already in the dict
-                    continue
+    def add_timings(self, timings: List[Timing], bus_stop: BusStop):
+        # Initialisation for first set of timings
+        if len(self.bus_schedules) == 0:
+            for idx, timing in enumerate(timings):
+                bus_schedule = BusSchedule(idx + 1, self.bus_stops)
+                bus_schedule.set_timing(bus_stop.get_stop_seq(), timing)
+                self.bus_schedules.append(bus_schedule)
+            return
+        # Main logic for assigning timings to schedules
+        assigned_schedules = {}
+        current_stop_seq = bus_stop.get_stop_seq()
+        next_stop_seq = current_stop_seq + 1
+        candidate_schedules = self.get_schedules_with_stop(next_stop_seq)
+        for idx, timing in enumerate(timings):
+            found_slot = False
+            for schedule in candidate_schedules:
+                if schedule.has_suitable_slot(current_stop_seq, timing):
+                    schedule.set_timing(current_stop_seq, timing)
+                    assigned_schedules[timing.arrival_seq] = schedule
+                    found_slot = True
+                    break
+            if not found_slot:
+                # Check if adding timing to schedule before first candidate is
+                # more reasonable than adding to schedule after last candidate
+                if (idx == 0 and
+                        self.is_suitable_before(current_stop_seq, timing)):
+                    bus_schedule = self.get_bus_schedule_before(
+                        candidate_schedules[0])
                 else:
-                    self.bus_location[bus] = schedule.bus_stop.name
+                    bus_schedule = self.get_bus_schedule_after(
+                        candidate_schedules[-1])
+                bus_schedule.set_timing(current_stop_seq, timing)
+                assigned_schedules[timing.arrival_seq] = bus_schedule
+        # Further optimisation to remove gaps between timings
+        for timing1, timing2 in zip(
+                reversed(timings[1:]), reversed(timings[:-1])):
+            schedule_before = self.get_bus_schedule_before(
+                assigned_schedules[timing1.arrival_seq])
+            if schedule_before.has_suitable_slot(current_stop_seq, timing2):
+                schedule_before.set_timing(current_stop_seq, timing2)
+                assigned_schedules[timing2.arrival_seq].remove_timing(
+                    current_stop_seq)
+                assigned_schedules[timing2.arrival_seq] = schedule_before
+
+    def is_suitable_before(self, stop_seq: int, timing: Timing):
+        # TODO: Check for bus type
+        for schedule in self.bus_schedules:
+            if stop_seq + 1 in schedule.schedule:
+                min_duration = schedule.schedule[stop_seq + 1].duration
+                if min_duration - timing.duration > -60:
+                    return True
+                break
+        return False
+
+    def get_bus_schedule_before(self, schedule: BusSchedule):
+        if schedule == self.bus_schedules[0]:
+            new_schedule = BusSchedule(schedule.id - 1, self.bus_stops)
+            self.bus_schedules.insert(0, new_schedule)
+            return new_schedule
+        else:
+            return self.bus_schedules[self.bus_schedules.index(schedule) - 1]
+
+    def get_bus_schedule_after(self, schedule: BusSchedule):
+        if schedule == self.bus_schedules[-1]:
+            new_schedule = BusSchedule(schedule.id + 1, self.bus_stops)
+            self.bus_schedules.append(new_schedule)
+            return new_schedule
+        else:
+            return self.bus_schedules[self.bus_schedules.index(schedule) + 1]
+
+    def get_all_bus_diff(self):
+        all_diff = {}
+        for bus_schedule, next_schedule in zip(
+                self.bus_schedules, self.bus_schedules[1:]):
+            bus_diff = self.get_bus_diff(bus_schedule, next_schedule)
+            if bus_diff is None:
+                continue
+            all_diff[bus_schedule.id] = bus_diff
+        return all_diff
+
+    def get_bus_diff(self, bus_schedule, next_schedule):
+        common_stops = set(bus_schedule.schedule.keys()) & set(
+            next_schedule.schedule.keys())
+        if len(common_stops) == 0:
+            return None
+        all_diff = []
+        for stop_seq in common_stops:
+            # Skip if any timing is forecasted
+            if (bus_schedule.schedule[stop_seq].is_forecasted or
+                    next_schedule.schedule[stop_seq].is_forecasted):
+                continue
+            bus_diff = (next_schedule.schedule[stop_seq].duration
+                        - bus_schedule.schedule[stop_seq].duration)
+            all_diff.append(bus_diff)
+        # Find and return the median of all the differences
+        return sorted(all_diff)
 
     def forecast_new_timings(self):
-        self.update_bus_info()
-        for schedule in self.schedules.values():
-            schedule.forecast_new_timings(self.bus_diff)
+        for bus_schedule, next_schedule in zip(
+                self.bus_schedules, self.bus_schedules[1:]):
+            bus_diff = self.get_bus_diff(bus_schedule, next_schedule)
+            if bus_diff is None:
+                continue
+            else:
+                # Get the median bus diff
+                bus_diff = bus_diff[len(bus_diff) // 2]
+            for bus_stop in self.bus_stops:
+                stop_seq = bus_stop.get_stop_seq()
+                if (stop_seq not in next_schedule.schedule and
+                        stop_seq in bus_schedule.schedule):
+                    prev_duration = bus_schedule.schedule[stop_seq].duration
+                    new_timing = Timing(prev_duration + bus_diff,
+                                        is_forecasted=True)
+                    next_schedule.set_timing(stop_seq, new_timing)
 
     def get_timings_from_bus(self, bus, current_datetime):
         """
@@ -413,13 +572,20 @@ class RouteSchedule:
         being an object with stop sequence as key and
         stop name and time as value
         """
-        all_timings = []
-        for bus in sorted(self.bus_location.keys()):
-            all_timings.append({
-                "busId": bus + 1,
-                "busLocation": self.bus_location[bus],
-                "busTimings": self.get_timings_from_bus(bus, current_datetime),
-            })
+        def convert_schedule_to_dict(schedule):
+            return {
+                "busId": schedule.id,
+                "busLocation": schedule.get_location(),
+                "busTimings": schedule.get_all_timings(current_datetime),
+            }
+        all_timings = list(map(convert_schedule_to_dict, self.bus_schedules))
+        # all_timings = []
+        # for bus in sorted(self.bus_location.keys()):
+        #     all_timings.append({
+        #         "busId": bus + 1,
+        #         "busLocation": self.bus_location[bus],
+        #         "busTimings": self.get_timings_from_bus(bus, current_datetime),
+        #     })
         return all_timings
 
 
