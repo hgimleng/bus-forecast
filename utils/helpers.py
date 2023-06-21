@@ -358,7 +358,10 @@ class BusSchedule:
             current_stop_duration = timing.duration
             travel_time = next_stop_duration - current_stop_duration
             dist = self.bus_stops[stop_seq + 1].get_distance()
-            speed = dist / (travel_time / 3600)
+            if travel_time == 0:
+                speed = 0
+            else:
+                speed = dist / (travel_time / 3600)
 
             if travel_time < -120:
                 # Check if travel time is beyond negative threshold
@@ -366,7 +369,7 @@ class BusSchedule:
             if (dist > 2 and (speed > 60 or speed < 0)):
                 # Check for speed for long distance
                 return False
-            if (0 < speed < 2):
+            if (0 < speed < 3):
                 # Check if speed is too slow
                 return False
 
@@ -483,7 +486,7 @@ class RouteSchedule:
                 schedule2_before.set_timing(current_stop_seq, timing)
                 schedule1.remove_timing(current_stop_seq)
                 sorted_schedule[i - 1] = schedule2_before
-        # Sort sorted_schedule by duration at current stop seq and rearrange ids
+        # Sort sorted_schedule by duration at current stop seq and rearrange id
         sorted_schedule = sorted(sorted_schedule, key=lambda x: x.schedule[
             current_stop_seq].duration)
         sorted_ids = sorted([schedule.id for schedule in sorted_schedule])
@@ -538,8 +541,6 @@ class RouteSchedule:
     def get_bus_diff(self, bus_schedule, next_schedule):
         common_stops = set(bus_schedule.schedule.keys()) & set(
             next_schedule.schedule.keys())
-        if len(common_stops) == 0:
-            return None
         all_diff = []
         for stop_seq in common_stops:
             # Skip if any timing is forecasted
@@ -550,6 +551,8 @@ class RouteSchedule:
                         - bus_schedule.schedule[stop_seq].duration)
             all_diff.append(bus_diff)
         # Find and return the median of all the differences
+        if len(all_diff) == 0:
+            return None
         return sorted(all_diff)
 
     def forecast_new_timings(self):

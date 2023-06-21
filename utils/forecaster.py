@@ -81,7 +81,6 @@ async def fetch_arrival_timing(
                     if timing.visit_num == visit_count[bus_stop.id]]
         route_schedule.add_timings(timings, bus_stop)
         visit_count[bus_stop.id] -= 1
-        
 
     # Forecast timing based on time difference between buses
     route_schedule.forecast_new_timings()
