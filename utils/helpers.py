@@ -380,7 +380,9 @@ class BusSchedule:
 
     def get_location(self):
         for stop_seq in sorted(self.schedule.keys()):
-            if self.schedule[stop_seq].duration > 0:
+            if stop_seq == 2:
+                return "Yet to depart"
+            elif self.schedule[stop_seq].duration > 0:
                 return self.bus_stops[stop_seq].name
         return self.bus_stops[max(self.schedule.keys())].name
 
