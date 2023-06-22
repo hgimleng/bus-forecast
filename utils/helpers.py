@@ -440,19 +440,26 @@ class RouteSchedule:
         return [schedule for schedule in self.bus_schedules
                 if stop_seq in schedule.schedule]
 
-    def add_timings(self, timings: List[Timing], bus_stop: BusStop):
-        # Initialisation for first set of timings
+    def get_last_schedule_id(self):
         if len(self.bus_schedules) == 0:
-            for idx, timing in enumerate(timings):
-                bus_schedule = BusSchedule(idx + 1, self.bus_stops)
-                bus_schedule.set_timing(bus_stop.get_stop_seq(), timing)
-                self.bus_schedules.append(bus_schedule)
-            return
+            return 0
+        else:
+            return self.bus_schedules[-1].id
+
+    def add_timings(self, timings: List[Timing], bus_stop: BusStop):
         # Main logic for assigning timings to schedules
         assigned_schedules = []
         current_stop_seq = bus_stop.get_stop_seq()
         next_stop_seq = current_stop_seq + 1
         candidate_schedules = self.get_schedules_with_stop(next_stop_seq)
+        if len(candidate_schedules) == 0:
+            # If no schedules have timings for next stop, create new schedule
+            last_id = self.get_last_schedule_id()
+            for idx, timing in enumerate(timings):
+                bus_schedule = BusSchedule(last_id + idx + 1, self.bus_stops)
+                bus_schedule.set_timing(current_stop_seq, timing)
+                self.bus_schedules.append(bus_schedule)
+            return
         for idx, timing in enumerate(timings):
             found_slot = False
             for schedule in candidate_schedules:
