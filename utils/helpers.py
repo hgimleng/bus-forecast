@@ -435,6 +435,18 @@ class BusSchedule:
             return (self.schedule[max_common_stop].duration
                     < other.schedule[max_common_stop].duration)
 
+    def get_min_stop_seq(self):
+        return min(self.schedule.keys())
+
+    def has_latlng_match(self, stop_seq):
+        latlng = self.schedule[stop_seq].get_latlng()
+        if 0 in latlng or None in latlng:
+            return False
+        for (other_seq, timing) in self.schedule.items():
+            if timing.get_latlng() == latlng and other_seq != stop_seq:
+                return True
+        return False
+
 
 class RouteSchedule:
     """
@@ -446,9 +458,11 @@ class RouteSchedule:
         self.bus_schedules = []
         self.bus_stops = bus_stops
 
-    def get_schedules_with_stop(self, stop_seq: int):
+    def get_candidate_schedules(self, stop_seq: int):
+        candidates = [schedule.id for schedule in self.bus_schedules
+                      if stop_seq in schedule.schedule]
         return [schedule for schedule in self.bus_schedules
-                if stop_seq in schedule.schedule]
+                if min(candidates) <= schedule.id <= max(candidates)]
 
     def get_last_schedule_id(self):
         if len(self.bus_schedules) == 0:
@@ -461,7 +475,7 @@ class RouteSchedule:
         assigned_schedules = []
         current_stop_seq = bus_stop.get_stop_seq()
         next_stop_seq = current_stop_seq + 1
-        candidate_schedules = self.get_schedules_with_stop(next_stop_seq)
+        candidate_schedules = self.get_candidate_schedules(next_stop_seq)
         if len(candidate_schedules) == 0:
             # If no schedules have timings for next stop, create new schedule
             last_id = self.get_last_schedule_id()
@@ -481,8 +495,6 @@ class RouteSchedule:
             if not found_slot:
                 # Check if adding timing to schedule before first candidate is
                 # more reasonable than adding to schedule after last candidate
-                if bus_stop.name == "Opp Orchard Stn/ION" and timing.arrival_seq == 3:
-                    print(f"last id: {candidate_schedules[-1].id}")
                 if (idx <= 1 and
                         self.is_suitable_before(current_stop_seq, timing)):
                     bus_schedule = self.get_bus_schedule_before(
@@ -501,7 +513,8 @@ class RouteSchedule:
             timing = schedule1.schedule[current_stop_seq]
             if schedule2_before in sorted_schedule:
                 continue
-            if schedule2_before.has_suitable_slot(current_stop_seq, timing):
+            if (schedule2_before.has_suitable_slot(current_stop_seq, timing)
+                and not schedule1.has_latlng_match(current_stop_seq)):
                 schedule2_before.set_timing(current_stop_seq, timing)
                 schedule1.remove_timing(current_stop_seq)
                 sorted_schedule[i - 1] = schedule2_before
@@ -586,6 +599,9 @@ class RouteSchedule:
             return None
         return sorted(all_diff)
 
+    def get_last_stop_seq(self):
+        return max([stops.stop_seq for stops in self.bus_stops])
+
     def forecast_new_timings(self):
         for bus_schedule, next_schedule in zip(
                 self.bus_schedules, self.bus_schedules[1:]):
@@ -604,7 +620,8 @@ class RouteSchedule:
                                         is_forecasted=True)
                     next_schedule.set_timing(stop_seq, new_timing)
                 if (stop_seq not in bus_schedule.schedule and
-                        stop_seq in next_schedule.schedule):
+                        stop_seq in next_schedule.schedule and
+                        bus_schedule.get_min_stop_seq() < stop_seq):
                     next_duration = next_schedule.schedule[stop_seq].duration
                     new_timing = Timing(next_duration - bus_diff,
                                         is_forecasted=True)
