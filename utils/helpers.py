@@ -425,6 +425,16 @@ class BusSchedule:
             if timing.get_latlng() == latlng:
                 return True
 
+    def is_before(self, other):
+        common_stop_seq = (set(self.schedule.keys()) &
+                           set(other.schedule.keys()))
+        if len(common_stop_seq) == 0:
+            return max(self.schedule.keys()) > max(other.schedule.keys())
+        else:
+            max_common_stop = max(common_stop_seq)
+            return (self.schedule[max_common_stop].duration
+                    < other.schedule[max_common_stop].duration)
+
 
 class RouteSchedule:
     """
@@ -471,7 +481,9 @@ class RouteSchedule:
             if not found_slot:
                 # Check if adding timing to schedule before first candidate is
                 # more reasonable than adding to schedule after last candidate
-                if (idx == 0 and
+                if bus_stop.name == "Opp Orchard Stn/ION" and timing.arrival_seq == 3:
+                    print(f"last id: {candidate_schedules[-1].id}")
+                if (idx <= 1 and
                         self.is_suitable_before(current_stop_seq, timing)):
                     bus_schedule = self.get_bus_schedule_before(
                         candidate_schedules[0])
@@ -494,12 +506,24 @@ class RouteSchedule:
                 schedule1.remove_timing(current_stop_seq)
                 sorted_schedule[i - 1] = schedule2_before
         # Sort sorted_schedule by duration at current stop seq and rearrange id
-        sorted_schedule = sorted(sorted_schedule, key=lambda x: x.schedule[
-            current_stop_seq].duration)
-        sorted_ids = sorted([schedule.id for schedule in sorted_schedule])
-        for schedule, id in zip(sorted_schedule, sorted_ids):
-            schedule.id = id
-        self.bus_schedules = sorted(self.bus_schedules, key=lambda x: x.id)
+        # sorted_schedule = sorted(sorted_schedule, key=lambda x: x.schedule[
+        #     current_stop_seq].duration)
+        # sorted_ids = sorted([schedule.id for schedule in sorted_schedule])
+        # for schedule, id in zip(sorted_schedule, sorted_ids):
+        #     schedule.id = id
+        # self.bus_schedules = sorted(self.bus_schedules, key=lambda x: x.id)
+
+    def sort_schedules(self):
+        for i in range(len(self.bus_schedules)):
+            swapped = False
+            for j, (s1, s2) in enumerate(zip(self.bus_schedules, self.bus_schedules[1:])):
+                if s2.is_before(s1):
+                    self.bus_schedules[j] = s2
+                    self.bus_schedules[j + 1] = s1
+                    s1.id, s2.id = s2.id, s1.id
+                    swapped = True
+            if not swapped:
+                break
 
     def is_suitable_before(self, stop_seq: int, timing: Timing):
         # TODO: Check for bus type
@@ -579,6 +603,12 @@ class RouteSchedule:
                     new_timing = Timing(prev_duration + bus_diff,
                                         is_forecasted=True)
                     next_schedule.set_timing(stop_seq, new_timing)
+                if (stop_seq not in bus_schedule.schedule and
+                        stop_seq in next_schedule.schedule):
+                    next_duration = next_schedule.schedule[stop_seq].duration
+                    new_timing = Timing(next_duration - bus_diff,
+                                        is_forecasted=True)
+                    bus_schedule.set_timing(stop_seq, new_timing)
 
     def get_timings_from_bus(self, bus, current_datetime):
         """

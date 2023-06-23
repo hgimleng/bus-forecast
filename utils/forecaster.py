@@ -79,8 +79,11 @@ async def fetch_arrival_timing(
     for bus_stop, timings in zip(reversed(all_stops), reversed(all_timings)):
         timings = [timing for timing in timings
                     if timing.visit_num == visit_count[bus_stop.id]]
-        route_schedule.add_timings(timings, bus_stop)
+        route_schedule.add_timings(timings, bus_stop)        
         visit_count[bus_stop.id] -= 1
+
+    # Sort schedules by arrival time of common stops
+    route_schedule.sort_schedules()
 
     # Forecast timing based on time difference between buses
     route_schedule.forecast_new_timings()
