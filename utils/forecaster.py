@@ -7,7 +7,7 @@ import asyncio
 from dotenv import load_dotenv
 import httpx
 
-from utils.helpers import BusStop, RouteSchedule, StopSchedule, Timing
+from utils.helpers import BusStop, RouteSchedule, Timing
 
 # load env variables
 load_dotenv()
