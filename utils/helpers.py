@@ -396,9 +396,18 @@ class BusSchedule:
         for stop_seq in sorted(self.schedule.keys()):
             if stop_seq == 2:
                 return "Yet to depart"
+            elif stop_seq < 5 and self.has_no_latlng():
+                return "Yet to depart"
             elif self.schedule[stop_seq].duration > 0:
                 return self.bus_stops[stop_seq].name
         return self.bus_stops[max(self.schedule.keys())].name
+
+    def has_no_latlng(self):
+        for timing in self.schedule.values():
+            latlng = timing.get_latlng()
+            if latlng is not None and latlng != (0, 0):
+                return False
+        return True
 
     def get_bus_type(self):
         for timing in self.schedule.values():
@@ -447,7 +456,7 @@ class BusSchedule:
                     < other.schedule[max_common_stop].duration)
 
     def get_min_stop_seq(self):
-        return min(self.schedule.keys())
+        return min(self.schedule.keys(), default=100)
 
     def has_latlng_match(self, stop_seq):
         latlng = self.schedule[stop_seq].get_latlng()

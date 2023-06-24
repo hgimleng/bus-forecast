@@ -20,7 +20,7 @@ function App() {
   const [updateTime, setUpdateTime] = useState('')
   const [busDiff, setBusDiff] = useState({})
   const [isFetching, setIsFetching] = useState(false)
-  const [unsupportedBuses, setUnsupportedBuses] = useState(['123', '123M', '160', '170', '170X', '291', '293', '358', '359', '60', '73', '812', '883', '883M', '950', '98'])
+  const [unsupportedBuses, setUnsupportedBuses] = useState(['160', '170', '170X', '291', '293', '358', '359', '812', '883M', '950', '975'])
 
   // Fetch directions, stops, and update busNum, step and routes
   async function fetchDirectionsAndStops(findNum) {
