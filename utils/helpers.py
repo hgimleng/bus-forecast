@@ -474,13 +474,18 @@ class RouteSchedule:
     to get more information about buses
     """
 
-    def __init__(self, bus_stops: List[BusStop]):
+    SPECIAL_BUSES = ['160', '950']
+
+    def __init__(self, bus_stops: List[BusStop], bus_num: str):
         self.bus_schedules = []
         self.bus_stops = bus_stops
+        self.bus_num = bus_num
 
     def get_candidate_schedules(self, stop_seq: int):
         candidates = [schedule.id for schedule in self.bus_schedules
                       if stop_seq in schedule.schedule]
+        if len(candidates) == 0:
+            return []
         return [schedule for schedule in self.bus_schedules
                 if min(candidates) <= schedule.id <= max(candidates)]
 
@@ -506,6 +511,9 @@ class RouteSchedule:
             return
         for idx, timing in enumerate(timings):
             for schedule in self.bus_schedules:
+                # Skip latlng matches for special buses
+                if self.bus_num in self.SPECIAL_BUSES:
+                    continue
                 # First match by latlng and bus type
                 if schedule.has_perfect_slot(current_stop_seq, timing):
                     schedule.set_timing(current_stop_seq, timing)
@@ -517,8 +525,6 @@ class RouteSchedule:
                     if schedule.has_suitable_slot(current_stop_seq, timing):
                         schedule.set_timing(current_stop_seq, timing)
                         assigned_schedules.append(schedule)
-                        if bus_stop.name == "Aft Lim Chu Kang Rd" and timing.arrival_seq==1:
-                            print("Assigned to", schedule.id)
                         break
                 else:
                     # Check if adding timing to schedule before first
@@ -566,9 +572,7 @@ class RouteSchedule:
         for schedule in self.bus_schedules:
             if stop_seq + 1 in schedule.schedule:
                 min_duration = schedule.schedule[stop_seq + 1].duration
-                if min_duration - timing.duration > -60:
-                    return True
-                break
+                return min_duration - timing.duration > -60
         return False
 
     def get_bus_schedule_before(self, schedule: BusSchedule):

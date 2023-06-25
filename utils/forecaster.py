@@ -71,7 +71,7 @@ async def fetch_arrival_timing(
     if all(not timings for timings in all_timings):
         return None, None, None, 200
 
-    route_schedule = RouteSchedule(all_stops)
+    route_schedule = RouteSchedule(all_stops, bus_num)
     # Keep track of visit count for routes with multiple visits
     visit_count = {stop.id: 0 for stop in all_stops}
     for stop in all_stops:
