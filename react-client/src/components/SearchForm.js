@@ -8,6 +8,13 @@ function SearchForm({ onFind }) {
         onFind(text.toUpperCase())
     }
 
+    const handleChange = (e) => {
+        let inputValue = e.target.value;
+        // RegEx to remove non-alphanumeric characters
+        const alphanumeric = inputValue.replace(/[^a-zA-Z0-9]/g, '');
+        setText(alphanumeric);
+    }
+
     return (
         <div className='row justify-content-center'>
             <div className='col-auto'>
@@ -18,7 +25,8 @@ function SearchForm({ onFind }) {
                     placeholder='Bus no.'
                     maxLength='4'
                     style={{'width': '80px'}}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={handleChange}
+                    value={text}
                     />
                     <button
                     className='btn btn-success'
