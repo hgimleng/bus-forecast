@@ -6,7 +6,6 @@ import DirectionSelector from "./components/DirectionSelector";
 import DisclaimerMessage from "./components/DisclaimerMessage";
 import ErrorMessage from "./components/ErrorMessage";
 import SearchForm from "./components/SearchForm";
-import CircularProgress from "@mui/material/CircularProgress";
 
 function App() {
   const [step, setStep] = useState(1)
@@ -14,6 +13,7 @@ function App() {
   const [disclaimerMsg, setDisclaimerMsg] = useState('')
   const [busNum, setBusNum] = useState('')
   const [routes, setRoutes] = useState({'directions': {}, 'stops': {}})
+  const [userLocation, setUserLocation] = useState({})
   const [selectedDirection, setSelectedDirection] = useState('')
   const [selectedStop, setSelectedStop] = useState('')
   const [arrivalData, setArrivalData] = useState([])
@@ -93,11 +93,11 @@ function App() {
 
   return (
     <div className='container mt-4 mb-4 text-center' >
-      <SearchForm onFind={fetchDirectionsAndStops} />
+      <SearchForm onFind={fetchDirectionsAndStops} setUserLocation={setUserLocation} />
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}
       {step >= 2 && <DirectionSelector directions={routes['directions']} onClick={selectDirection} selectedDirection={selectedDirection} />}
-      {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} isLoading={isFetching} />}
+      {step >= 3 && <BusStopSelector stops={routes['stops'][selectedDirection]} selectStop={fetchArrivalData} selectedStop={selectedStop} isLoading={isFetching} userLocation={userLocation} />}
       {step >= 4 && <BusArrivalDisplay arrivalData={arrivalData} updateTime={updateTime} refreshData={refreshData} selectedStop={selectedStop} stops={routes['stops'][selectedDirection]} busDiff={busDiff} isLoading={isFetching} />}
     </div>
   );

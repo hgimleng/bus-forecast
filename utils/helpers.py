@@ -542,6 +542,8 @@ def transform_route_records(records):
         stop_seq = record["stop_seq"]
         stop_code = record["stop_code"]
         stop_name = record["stop_name"]
+        latitude = record["latitude"]
+        longitude = record["longitude"]
         distance = record["distance"]
         dest_code = record["dest_code"]
         loop_desc = record["loop_desc"]
@@ -561,6 +563,8 @@ def transform_route_records(records):
                 "stopSequence": stop_seq,
                 "name": stop_name,
                 "distance": distance,
+                "latitude": latitude,
+                "longitude": longitude,
             })
 
     # Add destination stop for each direction

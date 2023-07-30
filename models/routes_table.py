@@ -12,6 +12,8 @@ class RoutesTable(db.Model):
     stop_seq = db.Column(db.Integer, primary_key=True)
     stop_code = db.Column(db.String(100), nullable=False)
     stop_name = db.Column(db.String(100), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
     distance = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(100), nullable=False)
     origin_code = db.Column(db.String(100), nullable=False)
@@ -25,6 +27,8 @@ class RoutesTable(db.Model):
             "stop_seq": self.stop_seq,
             "stop_code": self.stop_code,
             "stop_name": self.stop_name,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
             "distance": self.distance,
             "dest_code": self.destination_code,
             "loop_desc": self.loop_desc,

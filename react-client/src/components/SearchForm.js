@@ -1,10 +1,18 @@
 import { useState } from 'react'
 
-function SearchForm({ onFind }) {
+function SearchForm({ onFind, setUserLocation }) {
     const [text, setText] = useState('')
 
     const handleSubmit = (e) => {
         e.preventDefault()
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+              setUserLocation({
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+              });
+            });
+          }
         onFind(text.toUpperCase())
     }
 
