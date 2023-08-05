@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import api from '../api';
+import { api_forecast } from '../api';
 import BusArrivalDisplay from "../components/Forecast/BusArrivalDisplay";
 import BusStopSelector from "../components/Forecast/BusStopSelector";
 import DirectionSelector from "../components/Forecast/DirectionSelector";
@@ -26,7 +26,7 @@ function Forecast() {
   async function fetchDirectionsAndStops(findNum) {
     try {
       setIsFetching(true)
-      const response = await api.get(`/bus/${findNum}`)
+      const response = await api_forecast.get(`/bus/${findNum}`)
       setIsFetching(false)
 
       const data = response.data
@@ -62,7 +62,7 @@ function Forecast() {
     try {
       setSelectedStop(stopSequence)
       setIsFetching(true)
-      const response = await api.get(`/bus/${busNum}/direction/${selectedDirection}/stop/${stopSequence}`)
+      const response = await api_forecast.get(`/bus/${busNum}/direction/${selectedDirection}/stop/${stopSequence}`)
 
       const data = response.data
       setArrivalData(data['timing'])
