@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import api from '../api';
-import BusArrivalDisplay from "../components/BusArrivalDisplay";
-import BusStopSelector from "../components/BusStopSelector";
-import DirectionSelector from "../components/DirectionSelector";
-import DisclaimerMessage from "../components/DisclaimerMessage";
-import ErrorMessage from "../components/ErrorMessage";
-import SearchForm from "../components/SearchForm";
+import BusArrivalDisplay from "../components/Forecast/BusArrivalDisplay";
+import BusStopSelector from "../components/Forecast/BusStopSelector";
+import DirectionSelector from "../components/Forecast/DirectionSelector";
+import DisclaimerMessage from "../components/Forecast/DisclaimerMessage";
+import ErrorMessage from "../components/Forecast/ErrorMessage";
+import SearchForm from "../components/Forecast/SearchForm";
 
 function Forecast() {
   const [step, setStep] = useState(1)
