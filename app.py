@@ -68,5 +68,39 @@ def get_bus_arrival_timing(bus_num, direction, stop_seq):
         return jsonify({'error': 'External API error'}), status
 
 
+@app.route('/api/all-bus-info')
+def get_all_bus_info():
+    records = RoutesTable.query.all()
+
+    result = {"bus_data": {}, "stop_data": {}}
+    for record in records:
+        record_dict = record.to_dict()
+
+        # Add bus data
+        bus_num = record_dict["bus_num"]
+        direction = record_dict["direction"]
+        dest_code = record_dict["dest_code"]
+        stop_code = record_dict["stop_code"]
+
+        if bus_num not in result["bus_data"]:
+            result["bus_data"][bus_num] = {}
+        if direction not in result["bus_data"][bus_num]:
+            result["bus_data"][bus_num][direction] = {
+                "dest_code": dest_code,
+                "stops": []
+            }
+        result["bus_data"][bus_num][direction]["stops"].append(stop_code)
+
+        # Add stop data
+        if stop_code not in result["stop_data"]:
+            result["stop_data"][stop_code] = {
+                "lat": record_dict["latitude"],
+                "lng": record_dict["longitude"],
+                "name": record_dict["stop_name"]
+            }
+
+    return jsonify(result)
+
+
 if __name__ == '__main__':
     app.run()

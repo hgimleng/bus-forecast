@@ -2,11 +2,14 @@ import { useState, useEffect } from 'react';
 import { api_arrival } from '../api';
 import SearchForm from '../components/Countdown/SearchForm';
 import TimingDisplay from '../components/Countdown/TimingDisplay';
+import useAppData from '../utilities/useAppData';
 
 function Countdown() {
     const [busInfo, setBusInfo] = useState({})
     const [lastSearchTime, setLastSearchTime] = useState('')
     const [currentTime, setCurrentTime] = useState(new Date())
+
+    const data = useAppData()
 
     useEffect(() => {
         // Update the time state every 1 second/ 1000 milliseconds
@@ -19,6 +22,8 @@ function Countdown() {
       }, []);
 
     async function fetchStopInfo(stopCode) {
+        console.log('Data: ', data)
+
         try {
             const response = await api_arrival.get(`/?id=${stopCode}`)
             const data = response.data
