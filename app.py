@@ -96,7 +96,8 @@ def get_all_bus_info():
             result["stop_data"][stop_code] = {
                 "lat": record_dict["latitude"],
                 "lng": record_dict["longitude"],
-                "name": record_dict["stop_name"]
+                "name": record_dict["stop_name"],
+                "road": record_dict["road_name"],
             }
 
     return jsonify(result)

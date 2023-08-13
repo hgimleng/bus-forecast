@@ -3,19 +3,19 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime}) {
         // Parse the date string into a date object
         const targetDate = new Date(dateString);
       
-        // Calculate the difference in milliseconds
-        let diffMilliseconds = targetDate - currentTime;
+        // Calculate the difference in seconds
+        let totalDiffSeconds = Math.floor((targetDate - currentTime) / 1000);
       
         // Determine if time difference is negative
         let prefix = "";
-        if (diffMilliseconds < 0) {
+        if (totalDiffSeconds < 0) {
           prefix = "-";
-          diffMilliseconds = -diffMilliseconds;
+          totalDiffSeconds = -totalDiffSeconds;
         }
       
         // Calculate minutes and seconds
-        const diffMinutes = Math.floor(diffMilliseconds / (1000 * 60));
-        const diffSeconds = Math.floor((diffMilliseconds % (1000 * 60)) / 1000);
+        const diffMinutes = Math.floor(totalDiffSeconds / 60);
+        const diffSeconds = totalDiffSeconds % 60;
       
         // Format the difference as "MM:SS"
         const timeDiffString = `${prefix}${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}`;

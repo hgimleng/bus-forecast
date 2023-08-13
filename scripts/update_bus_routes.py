@@ -27,7 +27,7 @@ def update_bus_routes():
     headers = {"AccountKey": api_key}
     bus_stops = {
         stop["BusStopCode"]: [
-            stop["Description"], stop["Latitude"], stop["Longitude"]
+            stop["Description"], stop["Latitude"], stop["Longitude"], stop["RoadName"]
         ]
         for stop in fetch_all_records(URL_STOPS, headers)
     }
@@ -65,6 +65,7 @@ def update_bus_routes():
                 stop_name VARCHAR(100) NOT NULL,
                 latitude FLOAT NOT NULL,
                 longitude FLOAT NOT NULL,
+                road_name VARCHAR(100) NOT NULL,
                 distance FLOAT NOT NULL,
                 category VARCHAR(100) NOT NULL,
                 origin_code VARCHAR(100) NOT NULL,
@@ -88,8 +89,8 @@ def update_bus_routes():
             copy_command = (
                 "COPY routes_table "
                 "(bus_num, direction, stop_seq, "
-                "stop_code, stop_name, latitude, longitude, distance, "
-                "category, origin_code, destination_code, loop_desc)"
+                "stop_code, stop_name, latitude, longitude, road_name, "
+                "distance, category, origin_code, destination_code, loop_desc)"
                 "FROM STDIN WITH CSV"
             )
             cursor.copy_expert(copy_command, csv_file)

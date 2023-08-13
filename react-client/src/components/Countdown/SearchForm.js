@@ -1,16 +1,41 @@
 import { useState } from 'react'
 
-function SearchForm({ onFind }) {
+function SearchForm({ busData, stopData, setStopList }) {
     const [text, setText] = useState('')
 
-    const handleSubmit = (e) => {
+    function handleSubmit(e) {
         e.preventDefault()
-        onFind(text.toUpperCase())
+
+        const searchStopsByCode = () => {
+            return text in stopData ? [text] : []
+        }
+
+        const searchStopsByName = () => {
+            // Remove punctuations and convert to uppercase
+            const cleanString = (str) => 
+                str.replace(/[^\w\s]/gi, '').toUpperCase()
+
+            let stopList = []
+            for (let stopCode in stopData) {
+                if (cleanString(stopData[stopCode]['name']).includes(cleanString(text))) {
+                    stopList.push(stopCode)
+                }
+            }
+            return stopList
+        }
+
+        setStopList([...searchStopsByCode(), ...searchStopsByName()])
     }
 
-    const handleChange = (e) => {
+    function handleChange(e) {
         let inputValue = e.target.value;
         setText(inputValue);
+    }
+
+    function handleNearbyClick(e) {
+        // Set stopList as the list of 100 stops sorted by distance of stopData
+        const sortedStopList = [...Object.keys(stopData)].sort((a, b) => stopData[a].distance - stopData[b].distance).slice(0, 100)
+        setStopList(sortedStopList)
     }
 
     return (
@@ -21,7 +46,6 @@ function SearchForm({ onFind }) {
                     type='search'
                     className='form-control'
                     placeholder='Bus stop code'
-                    maxLength='5'
                     style={{'width': '150px'}}
                     onChange={handleChange}
                     value={text}
@@ -32,6 +56,11 @@ function SearchForm({ onFind }) {
                         Find
                     </button>
                 </form>
+                <button
+                className='btn btn-info'
+                onClick={handleNearbyClick}>
+                    Nearby
+                </button>
             </div>
         </div>
     )

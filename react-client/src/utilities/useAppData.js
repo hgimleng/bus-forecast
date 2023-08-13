@@ -3,7 +3,7 @@ import { getData, setData } from './storage';
 import { api_forecast } from '../api';
 
 function useAppData() {
-  const [data, setDataState] = useState(null);
+  const [data, setDataState] = useState({'bus_data': {}, 'stop_data': {}});
 
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -34,7 +34,51 @@ function useAppData() {
     return data;
   };
 
-  return data;
+  function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    function deg2rad(deg) {
+      return deg * (Math.PI / 180);
+    }
+
+    const R = 6371; // Radius of the earth in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c; // Distance in km
+    return distance;
+  }
+
+  const updateDistanceForStops = () => {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const userLat = position.coords.latitude;
+            const userLon = position.coords.longitude;
+
+            const updatedStopData = {...data['stop_data']};
+            for (let stopCode in updatedStopData) {
+                const stopLat = updatedStopData[stopCode].lat;
+                const stopLon = updatedStopData[stopCode].lng;
+                const distance = getDistanceFromLatLonInKm(userLat, userLon, stopLat, stopLon);
+                
+                updatedStopData[stopCode].distance = distance;
+            }
+
+            setDataState(prevData => ({
+              ...prevData,
+              'stop_data': updatedStopData
+            }));
+        }, error => {
+            console.error("Error retrieving user's location: ", error);
+        });
+    } else {
+        console.log("Geolocation is not supported by this browser.");
+    }
+  }
+
+  return { data, updateDistanceForStops };
 };
 
 export default useAppData;
