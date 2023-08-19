@@ -12,13 +12,14 @@ function useAppData() {
       if (!localData || isDataOutdated(localData)) {
         const freshData = await fetchDataFromAPI();
         await setData('busInfo', freshData);
-        setDataState(freshData);
-      } else {
-        setDataState(localData);
+        localData = freshData;
       }
+      localData = updateDataDistance(localData);
+      setDataState(localData);
     };
 
     fetchAndSetData();
+    updateDistanceForStops();
   }, []);
 
   const isDataOutdated = (data) => {
@@ -51,31 +52,36 @@ function useAppData() {
     return distance;
   }
 
-  const updateDistanceForStops = () => {
+  const updateDataDistance = (data) => {
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            const userLat = position.coords.latitude;
-            const userLon = position.coords.longitude;
+      navigator.geolocation.getCurrentPosition(position => {
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
 
-            const updatedStopData = {...data['stop_data']};
-            for (let stopCode in updatedStopData) {
-                const stopLat = updatedStopData[stopCode].lat;
-                const stopLon = updatedStopData[stopCode].lng;
-                const distance = getDistanceFromLatLonInKm(userLat, userLon, stopLat, stopLon);
-                
-                updatedStopData[stopCode].distance = distance;
-            }
+        const updatedStopData = {...data['stop_data']};
+        for (let stopCode in updatedStopData) {
+          const stopLat = updatedStopData[stopCode].lat;
+          const stopLon = updatedStopData[stopCode].lng;
+          const distance = getDistanceFromLatLonInKm(userLat, userLon, stopLat, stopLon);
 
-            setDataState(prevData => ({
-              ...prevData,
-              'stop_data': updatedStopData
-            }));
-        }, error => {
-            console.error("Error retrieving user's location: ", error);
-        });
+          updatedStopData[stopCode].distance = distance;
+        }
+
+        data['stop_data'] = updatedStopData;
+      }, error => {
+        console.error("Error retrieving user's location: ", error);
+      });
     } else {
-        console.log("Geolocation is not supported by this browser.");
+      console.log("Geolocation is not supported by this browser.");
     }
+    return data;
+  };
+
+  const updateDistanceForStops = () => {
+    setDataState(prevData => {
+      const updatedData = updateDataDistance(prevData);
+      return updatedData;
+    });
   }
 
   return { data, updateDistanceForStops };
