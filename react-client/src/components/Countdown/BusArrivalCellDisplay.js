@@ -1,5 +1,3 @@
-import haversine from 'haversine';
-
 function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, userLatLon, busLatLon}) {
     function calculateTimeDifference(dateString, currentTime) {
         // Parse the date string into a date object
