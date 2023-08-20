@@ -1,4 +1,4 @@
-function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, userLatLon, busLatLon}) {
+function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon}) {
     function calculateTimeDifference(dateString, currentTime) {
         // Parse the date string into a date object
         const targetDate = new Date(dateString);
@@ -81,7 +81,7 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, user
             { prevBusTime && <> (+{calculateTimeDifference(time, new Date(prevBusTime))})</> }
             <br />
             <small>
-            ({ convertType(type) }, { convertLoad(load) } crowd{ getDistance(userLatLon, busLatLon) })
+            ({ convertType(type) }, { convertLoad(load) } crowd{ getDistance(stopLatLon, busLatLon) })
             </small>
         </td>
     )
