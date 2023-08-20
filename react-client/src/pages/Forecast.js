@@ -7,7 +7,7 @@ import DisclaimerMessage from "../components/Forecast/DisclaimerMessage";
 import ErrorMessage from "../components/Forecast/ErrorMessage";
 import SearchForm from "../components/Forecast/SearchForm";
 
-function Forecast() {
+function Forecast({ active }) {
   const [step, setStep] = useState(1)
   const [errorMsg, setErrorMsg] = useState('')
   const [disclaimerMsg, setDisclaimerMsg] = useState('')
@@ -92,7 +92,7 @@ function Forecast() {
   }
 
   return (
-    <div className='container mt-4 mb-4 text-center' >
+    <div className={`container mt-4 mb-4 text-center ${active ? '' : 'd-none'}`} >
       <SearchForm onFind={fetchDirectionsAndStops} setUserLocation={setUserLocation} />
       {errorMsg !== '' && <ErrorMessage message={errorMsg} />}
       {disclaimerMsg !== '' && <DisclaimerMessage message={disclaimerMsg} />}

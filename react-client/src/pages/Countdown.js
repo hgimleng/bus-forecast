@@ -5,7 +5,7 @@ import TimingDisplay from '../components/Countdown/TimingDisplay';
 import useAppData from '../utilities/useAppData';
 import StopSelector from '../components/Countdown/StopSelector';
 
-function Countdown() {
+function Countdown({ active }) {
     const [timingData, setTimingData] = useState({})
     const [lastUpdateTime, setLastUpdateTime] = useState('')
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -58,7 +58,7 @@ function Countdown() {
     }
 
     return (
-        <div className='container mt-4 mb-4 text-center' >
+        <div className={`container mt-4 mb-4 text-center ${active ? '' : 'd-none'}`} >
             <SearchForm busData={data['bus_data']} stopData={data['stop_data']} setStopList={setNewStopList} />
             {stopList.length > 0 && <StopSelector stopData={data['stop_data']} stopList={stopList} setSelectedStop={fetchStopInfo} />}
             {timingData['services'] && stopList.length > 0 && <TimingDisplay selectedStop={selectedStop} timingData={timingData} stopData={data['stop_data']} lastUpdateTime={lastUpdateTime} currentTime={currentTime} />}

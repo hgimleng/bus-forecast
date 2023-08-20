@@ -43,7 +43,7 @@ function BusArrivalDisplay({ arrivalData, updateTime, refreshData, selectedStop,
     return (
         <div className='row justify-content-center'>
             <hr />
-            <div className='col-auto text-center mb-1'>
+            <div className='col-auto text-center mb-5'>
                 <h5>Arrivals for <u>{ stops.filter(s => s['stopSequence'] === selectedStop)[0]['name'] }</u></h5>
                 {!isConsistent(arrivalData, busDiff) && <DisclaimerMessage message='Forecast may be inconsistent and refresh is recommended.' />}
                 {listView 
