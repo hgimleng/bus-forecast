@@ -1,8 +1,14 @@
+import { useEffect } from "react";
 import StopButton from "./StopButton";
 
 function StopSelector({ stopData, stopList, setSelectedStop }) {
-    // Sort the stopList by distance in ascending order and limit to 100 stops
-    const sortedStopList = [...stopList].sort((a, b) => stopData[a].distance - stopData[b].distance).slice(0, 100)
+
+    // If there is only 1 stop in the list, select it
+    useEffect(() => {
+        if (stopList.length == 1) {
+            setSelectedStop(stopList[0])
+        }
+    }, [stopList])
 
     return (
     <>
@@ -12,7 +18,7 @@ function StopSelector({ stopData, stopList, setSelectedStop }) {
                 <h4>Bus Stops</h4>
                 <div className='list-group overflow-scroll mx-auto'
                 style={{'maxHeight': '300px'}}>
-                    {sortedStopList.map((stopCode) => {
+                    {stopList.map((stopCode) => {
                         return (
                             <StopButton
                             key={stopCode}

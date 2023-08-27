@@ -9,6 +9,7 @@ function Countdown({ active }) {
     const [timingData, setTimingData] = useState({})
     const [lastUpdateTime, setLastUpdateTime] = useState('')
     const [currentTime, setCurrentTime] = useState(new Date())
+    const [busList, setBusList] = useState([])
     const [stopList, setStopList] = useState([])
     const [selectedStop, setSelectedStop] = useState('')
 
@@ -32,16 +33,7 @@ function Countdown({ active }) {
             clearInterval(timer);
             clearInterval(dataRefresher);
         };
-      }, [selectedStop]);
-
-    function setNewStopList(stopList) {
-        updateDistanceForStops()
-        setStopList(stopList)
-
-        if (stopList.length == 1) {
-            fetchStopInfo(stopList[0])
-        }
-    }
+      }, [selectedStop])
 
     async function fetchStopInfo(stopCode) {
         setSelectedStop(stopCode)
@@ -59,7 +51,7 @@ function Countdown({ active }) {
 
     return (
         <div className={`container mt-4 mb-4 text-center ${active ? '' : 'd-none'}`} >
-            <SearchForm busData={data['bus_data']} stopData={data['stop_data']} setStopList={setNewStopList} />
+            <SearchForm busData={data['bus_data']} stopData={data['stop_data']} setStopList={setStopList} updateDistanceForStops={updateDistanceForStops} />
             {stopList.length > 0 && <StopSelector stopData={data['stop_data']} stopList={stopList} setSelectedStop={fetchStopInfo} />}
             {timingData['services'] && stopList.length > 0 && <TimingDisplay selectedStop={selectedStop} timingData={timingData} stopData={data['stop_data']} lastUpdateTime={lastUpdateTime} currentTime={currentTime} />}
         </div>

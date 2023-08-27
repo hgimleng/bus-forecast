@@ -1,30 +1,20 @@
 import { useState } from 'react'
 
-function SearchForm({ busData, stopData, setStopList }) {
+function SearchForm({ busData, stopData, setStopList, updateDistanceForStops }) {
     const [text, setText] = useState('')
 
     function handleSubmit(e) {
         e.preventDefault()
 
-        const searchStopsByCode = () => {
-            return text in stopData ? [text] : []
-        }
+        const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
 
-        const searchStopsByName = () => {
-            // Remove punctuations and convert to uppercase
-            const cleanString = (str) => 
-                str.replace(/[^\w\s]/gi, '').toUpperCase()
+        const filteredStopData = Object.fromEntries(
+            Object.entries(stopData).filter(([stopCode, stopValue]) => stopCode === text || cleanString(stopValue['name']).includes(cleanString(text)))
+          );
 
-            let stopList = []
-            for (let stopCode in stopData) {
-                if (cleanString(stopData[stopCode]['name']).includes(cleanString(text))) {
-                    stopList.push(stopCode)
-                }
-            }
-            return stopList
-        }
-
-        setStopList([...searchStopsByCode(), ...searchStopsByName()])
+        updateDistanceForStops()
+        const sortedStopList = getStopListSortedByDistance(filteredStopData)
+        setStopList(sortedStopList)
     }
 
     function handleChange(e) {
@@ -33,9 +23,14 @@ function SearchForm({ busData, stopData, setStopList }) {
     }
 
     function handleNearbyClick(e) {
-        // Set stopList as the list of 100 stops sorted by distance of stopData
-        const sortedStopList = [...Object.keys(stopData)].sort((a, b) => stopData[a].distance - stopData[b].distance).slice(0, 100)
+        updateDistanceForStops()
+        const sortedStopList = getStopListSortedByDistance(stopData)
         setStopList(sortedStopList)
+    }
+
+    function getStopListSortedByDistance(data) {
+        // Sort the stopList by distance in ascending order and limit to 100 stops
+        return [...Object.keys(data)].sort((a, b) => data[a].distance - data[b].distance).slice(0, 100)
     }
 
     return (
