@@ -3,6 +3,7 @@ import { api_arrival } from '../api';
 import SearchForm from '../components/Countdown/SearchForm';
 import TimingDisplay from '../components/Countdown/TimingDisplay';
 import useAppData from '../utilities/useAppData';
+import BusSelector from '../components/Countdown/BusSelector';
 import StopSelector from '../components/Countdown/StopSelector';
 
 function Countdown({ active }) {
@@ -12,6 +13,8 @@ function Countdown({ active }) {
     const [busList, setBusList] = useState([])
     const [stopList, setStopList] = useState([])
     const [selectedStop, setSelectedStop] = useState('')
+    const [selectedBus, setSelectedBus] = useState('')
+    const [selectedDirection, setSelectedDirection] = useState('')
 
     const { data, updateDistanceForStops } = useAppData()
 
@@ -49,11 +52,26 @@ function Countdown({ active }) {
         }
     }
 
+    function handleBusSelect(busNum, direction) {
+        setSelectedBus(busNum)
+        setSelectedDirection(direction)
+        setStopList(data['bus_data'][busNum][direction]['stops'].slice(0, -1))
+    }
+
+    function onBusRowClick(busNum, dest_code) {
+        const busData = data['bus_data'][busNum]
+        const direction = Object.keys(busData).find(direction => busData[direction]['dest_code'] === dest_code);
+
+        setBusList([{'number': busNum, 'direction': direction}])
+        handleBusSelect(busNum, direction)
+    }
+
     return (
         <div className={`container mt-4 mb-4 text-center ${active ? '' : 'd-none'}`} >
-            <SearchForm busData={data['bus_data']} stopData={data['stop_data']} setStopList={setStopList} updateDistanceForStops={updateDistanceForStops} />
+            <SearchForm busData={data['bus_data']} stopData={data['stop_data']} setBusList={setBusList} setStopList={setStopList} updateDistanceForStops={updateDistanceForStops} />
+            {busList.length > 0 && <BusSelector busData={data['bus_data']} busList={busList} selectedBus={selectedBus} selectedDirection={selectedDirection} handleBusSelect={handleBusSelect} />}
             {stopList.length > 0 && <StopSelector stopData={data['stop_data']} stopList={stopList} setSelectedStop={fetchStopInfo} />}
-            {timingData['services'] && stopList.length > 0 && <TimingDisplay selectedStop={selectedStop} timingData={timingData} stopData={data['stop_data']} lastUpdateTime={lastUpdateTime} currentTime={currentTime} />}
+            {timingData['services'] && stopList.length > 0 && <TimingDisplay selectedStop={selectedStop} timingData={timingData} stopData={data['stop_data']} lastUpdateTime={lastUpdateTime} currentTime={currentTime} onBusRowClick={onBusRowClick} />}
         </div>
     )
 }

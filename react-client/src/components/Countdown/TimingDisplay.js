@@ -1,6 +1,6 @@
 import BusRowDisplay from "./BusRowDisplay";
 
-function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime }) {
+function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick }) {
 
     const sortedTimingData = timingData['services'].sort((a, b) => {
         // Extract numeric and alphabetic parts of bus numbers
@@ -43,13 +43,14 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                     {sortedTimingData
                     .map((bus) => (
                         <BusRowDisplay
-                            key={bus['no']}
+                            key={`${bus['no']}-${bus['next']['destination_code']}`}
                             busNum={bus['no']}
                             arrival1={bus['next']}
                             arrival2={bus['next2']}
                             arrival3={bus['next3']}
                             currentTime={currentTime}
                             stopLatLon={stopLatLon}
+                            onBusRowClick={onBusRowClick}
                         />
                     ))}
                 </tbody>

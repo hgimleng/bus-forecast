@@ -1,20 +1,40 @@
 import { useState } from 'react'
 
-function SearchForm({ busData, stopData, setStopList, updateDistanceForStops }) {
+function SearchForm({ busData, stopData, setBusList, setStopList, updateDistanceForStops }) {
     const [text, setText] = useState('')
+    const [isNearbyClicked, setIsNearbyClicked] = useState(false);
 
-    function handleSubmit(e) {
+    function handleSubmit(e, inputText = text) {
         e.preventDefault()
+        if (!inputText) return
 
         const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
 
         const filteredStopData = Object.fromEntries(
-            Object.entries(stopData).filter(([stopCode, stopValue]) => stopCode === text || cleanString(stopValue['name']).includes(cleanString(text)))
+            Object.entries(stopData).filter(([stopCode, stopValue]) => {
+                return (
+                    stopCode === inputText ||
+                    cleanString(stopValue['name']).includes(cleanString(inputText)) ||
+                    stopValue['buses'].some(busNum => [cleanString(busNum), busNum.slice(0, -1)].includes(cleanString(inputText)))
+                    )
+            })
           );
 
         updateDistanceForStops()
-        const sortedStopList = getStopListSortedByDistance(filteredStopData)
+        if (inputText === 'nearby') {
+            setIsNearbyClicked(true)
+            var sortedStopList = getStopListSortedByDistance(stopData, 2)
+        } else {
+            setIsNearbyClicked(false)
+            var sortedStopList = getStopListSortedByDistance(filteredStopData)
+        }
         setStopList(sortedStopList)
+
+        const filteredBusList = Object.keys(busData).filter(busNum => [cleanString(busNum), busNum.slice(0, -1)].includes(cleanString(inputText)))
+        const newBusList = filteredBusList.flatMap(busNum => 
+            Object.keys(busData[busNum]).map(direction => ({ 'number': busNum, 'direction': direction }))
+          )
+        setBusList(newBusList)
     }
 
     function handleChange(e) {
@@ -23,14 +43,13 @@ function SearchForm({ busData, stopData, setStopList, updateDistanceForStops }) 
     }
 
     function handleNearbyClick(e) {
-        updateDistanceForStops()
-        const sortedStopList = getStopListSortedByDistance(stopData)
-        setStopList(sortedStopList)
+        setText('nearby')
+        handleSubmit(e, 'nearby')
     }
 
-    function getStopListSortedByDistance(data) {
-        // Sort the stopList by distance in ascending order and limit to 100 stops
-        return [...Object.keys(data)].sort((a, b) => data[a].distance - data[b].distance).slice(0, 100)
+    function getStopListSortedByDistance(data, distanceLimit = Number.MAX_VALUE) {
+        // Sort the stopList by distance in ascending order and limit by distance
+        return [...Object.keys(data)].sort((a, b) => data[a].distance - data[b].distance).filter((stopCode) => data[stopCode].distance < distanceLimit);
     }
 
     return (
@@ -40,8 +59,7 @@ function SearchForm({ busData, stopData, setStopList, updateDistanceForStops }) 
                     <input 
                     type='search'
                     className='form-control'
-                    placeholder='Bus stop code'
-                    style={{'width': '150px'}}
+                    placeholder='Bus number, stop name, or code'
                     onChange={handleChange}
                     value={text}
                     />
@@ -52,7 +70,7 @@ function SearchForm({ busData, stopData, setStopList, updateDistanceForStops }) 
                     </button>
                 </form>
                 <button
-                className='btn btn-info'
+                className={isNearbyClicked ? 'btn btn-primary' : 'btn btn-outline-primary'}
                 onClick={handleNearbyClick}>
                     Nearby
                 </button>

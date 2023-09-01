@@ -76,20 +76,10 @@ def get_all_bus_info():
     for record in records:
         record_dict = record.to_dict()
 
-        # Add bus data
         bus_num = record_dict["bus_num"]
         direction = record_dict["direction"]
         dest_code = record_dict["dest_code"]
         stop_code = record_dict["stop_code"]
-
-        if bus_num not in result["bus_data"]:
-            result["bus_data"][bus_num] = {}
-        if direction not in result["bus_data"][bus_num]:
-            result["bus_data"][bus_num][direction] = {
-                "dest_code": dest_code,
-                "stops": []
-            }
-        result["bus_data"][bus_num][direction]["stops"].append(stop_code)
 
         # Add stop data
         if stop_code not in result["stop_data"]:
@@ -98,7 +88,27 @@ def get_all_bus_info():
                 "lng": record_dict["longitude"],
                 "name": record_dict["stop_name"],
                 "road": record_dict["road_name"],
+                "buses": []
             }
+
+        # Add bus data
+        if bus_num not in result["bus_data"]:
+            result["bus_data"][bus_num] = {}
+        if direction not in result["bus_data"][bus_num]:
+            result["bus_data"][bus_num][direction] = {
+                "dest_code": dest_code,
+                "stops": []
+            }
+        result["bus_data"][bus_num][direction]["stops"].append(stop_code)
+        if bus_num not in result["stop_data"][stop_code]["buses"]:
+            result["stop_data"][stop_code]["buses"].append(bus_num)
+
+    # Add destination name
+    for bus_num in result["bus_data"]:
+        for direction in result["bus_data"][bus_num]:
+            dest_code = result["bus_data"][bus_num][direction]["dest_code"]
+            route_info = result["bus_data"][bus_num][direction]
+            route_info["dest_name"] = result["stop_data"][dest_code]["name"]
 
     return jsonify(result)
 

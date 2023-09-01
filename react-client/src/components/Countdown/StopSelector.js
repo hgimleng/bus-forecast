@@ -18,10 +18,10 @@ function StopSelector({ stopData, stopList, setSelectedStop }) {
                 <h4>Bus Stops</h4>
                 <div className='list-group overflow-scroll mx-auto'
                 style={{'maxHeight': '300px'}}>
-                    {stopList.map((stopCode) => {
+                    {stopList.map((stopCode, index) => {
                         return (
                             <StopButton
-                            key={stopCode}
+                            key={`${stopCode}-${index}`}
                             code={stopCode}
                             name={stopData[stopCode]['name']}
                             road={stopData[stopCode]['road']}
