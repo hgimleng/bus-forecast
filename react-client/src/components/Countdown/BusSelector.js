@@ -4,8 +4,8 @@ function BusSelector({ busData, busList, selectedBus, selectedDirection, handleB
     return (
     <>
         <hr />
-        <div className='row justify-content-center mb-3'>
-            <div className='col text-center'>
+        <div className='row mb-3'>
+            <div className='col'>
                 <h4>Buses</h4>
                 {busList.map(bus => {
                     const number = bus['number']

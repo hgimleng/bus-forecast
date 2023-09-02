@@ -1,3 +1,8 @@
+import 'bootstrap-icons/font/bootstrap-icons.css';
+import BDIcon from "../Icon/BDIcon";
+import SDIcon from "../Icon/SDIcon";
+import DDIcon from "../Icon/DDIcon";
+
 function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon}) {
     function calculateTimeDifference(dateString, currentTime) {
         // Parse the date string into a date object
@@ -18,34 +23,30 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
         const diffSeconds = totalDiffSeconds % 60;
       
         // Format the difference as "MM:SS"
-        const timeDiffString = `${prefix}${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}`;
-      
-        return timeDiffString;
+        return `${prefix}${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}`;
     }
 
-    function convertType(type) {
+    function convertToIcon(type, load) {
+        const iconType = convertLoad(load)
+
         switch (type) {
-            case 'SD':
-                return 'Single Deck';
             case 'DD':
-                return 'Double Deck';
+                return <DDIcon icon={iconType} />;
             case 'BD':
-                return 'Bendy';
+                return <BDIcon icon={iconType} />;
             default:
-                return 'Unknown';
+                return <SDIcon icon={iconType} />;
         }
     }
 
     function convertLoad(load) {
         switch (load) {
-            case 'SEA':
-                return 'Low';
             case 'SDA':
-                return 'Med';
+                return 'bi-square-half';
             case 'LSD':
-                return 'High';
+                return 'bi-square-fill';
             default:
-                return 'Unknown';
+                return 'bi-square';
         }
     }
 
@@ -63,16 +64,15 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
                 Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
                 Math.sin(dLon / 2) * Math.sin(dLon / 2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = R * c; // Distance in km
-            return distance;
+            return R * c; // Distance in km
         }
 
-        if (latLon2[0] == 0 || latLon2[1] == 0) {
+        if (latLon2[0] === 0 || latLon2[1] === 0) {
             return '';
         }
 
         const distance = getDistanceFromLatLonInKm(latLon1[0], latLon1[1], latLon2[0], latLon2[1]);
-        return `, ${distance.toFixed(1)} km`;
+        return ` ${distance.toFixed(1)} km`;
     }
 
     return (
@@ -80,9 +80,14 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
             { calculateTimeDifference(time, currentTime) }
             { prevBusTime && <> (+{calculateTimeDifference(time, new Date(prevBusTime))})</> }
             <br />
-            <small>
-            ({ convertType(type) }, { convertLoad(load) } crowd{ getDistance(stopLatLon, busLatLon) })
-            </small>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <small>
+                    { convertToIcon(type, load) }
+                </small>
+                <small style={{ marginLeft: '5px' }}>
+                    { getDistance(stopLatLon, busLatLon) }
+                </small>
+            </div>
         </td>
     )
 }

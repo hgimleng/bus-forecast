@@ -15,6 +15,7 @@ function Countdown({ active }) {
     const [selectedStop, setSelectedStop] = useState('')
     const [selectedBus, setSelectedBus] = useState('')
     const [selectedDirection, setSelectedDirection] = useState('')
+    const [isNearbyClicked, setIsNearbyClicked] = useState(false)
 
     const { data, updateDistanceForStops } = useAppData()
 
@@ -52,6 +53,16 @@ function Countdown({ active }) {
         }
     }
 
+    function handleSearch(inputText) {
+        if (inputText === 'nearby') {
+            setIsNearbyClicked(true)
+        } else {
+            setIsNearbyClicked(false)
+        }
+        setSelectedBus('')
+        setSelectedDirection('')
+    }
+
     function handleBusSelect(busNum, direction) {
         setSelectedBus(busNum)
         setSelectedDirection(direction)
@@ -64,11 +75,12 @@ function Countdown({ active }) {
 
         setBusList([{'number': busNum, 'direction': direction}])
         handleBusSelect(busNum, direction)
+        setIsNearbyClicked(false)
     }
 
     return (
-        <div className={`container mt-4 mb-4 text-center ${active ? '' : 'd-none'}`} >
-            <SearchForm busData={data['bus_data']} stopData={data['stop_data']} setBusList={setBusList} setStopList={setStopList} updateDistanceForStops={updateDistanceForStops} />
+        <div className={`container mt-4 mb-4 ${active ? '' : 'd-none'}`} >
+            <SearchForm busData={data['bus_data']} stopData={data['stop_data']} setBusList={setBusList} setStopList={setStopList} updateDistanceForStops={updateDistanceForStops} isNearbyClicked={isNearbyClicked} handleSearch={handleSearch} />
             {busList.length > 0 && <BusSelector busData={data['bus_data']} busList={busList} selectedBus={selectedBus} selectedDirection={selectedDirection} handleBusSelect={handleBusSelect} />}
             {stopList.length > 0 && <StopSelector stopData={data['stop_data']} stopList={stopList} setSelectedStop={fetchStopInfo} />}
             {timingData['services'] && stopList.length > 0 && <TimingDisplay selectedStop={selectedStop} timingData={timingData} stopData={data['stop_data']} lastUpdateTime={lastUpdateTime} currentTime={currentTime} onBusRowClick={onBusRowClick} />}

@@ -5,7 +5,7 @@ function StopSelector({ stopData, stopList, setSelectedStop }) {
 
     // If there is only 1 stop in the list, select it
     useEffect(() => {
-        if (stopList.length == 1) {
+        if (stopList.length === 1) {
             setSelectedStop(stopList[0])
         }
     }, [stopList])
@@ -13,8 +13,8 @@ function StopSelector({ stopData, stopList, setSelectedStop }) {
     return (
     <>
         <hr />
-        <div className='row justify-content-center mb-3'>
-            <div className='col text-center'>
+        <div className='row mb-3'>
+            <div className='col'>
                 <h4>Bus Stops</h4>
                 <div className='list-group overflow-scroll mx-auto'
                 style={{'maxHeight': '300px'}}>

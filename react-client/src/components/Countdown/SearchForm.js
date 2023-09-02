@@ -1,8 +1,8 @@
 import { useState } from 'react'
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
-function SearchForm({ busData, stopData, setBusList, setStopList, updateDistanceForStops }) {
+function SearchForm({ busData, stopData, setBusList, setStopList, updateDistanceForStops, isNearbyClicked, handleSearch }) {
     const [text, setText] = useState('')
-    const [isNearbyClicked, setIsNearbyClicked] = useState(false);
 
     function handleSubmit(e, inputText = text) {
         e.preventDefault()
@@ -21,12 +21,11 @@ function SearchForm({ busData, stopData, setBusList, setStopList, updateDistance
           );
 
         updateDistanceForStops()
+        let sortedStopList
         if (inputText === 'nearby') {
-            setIsNearbyClicked(true)
-            var sortedStopList = getStopListSortedByDistance(stopData, 2)
+            sortedStopList = getStopListSortedByDistance(stopData, 2)
         } else {
-            setIsNearbyClicked(false)
-            var sortedStopList = getStopListSortedByDistance(filteredStopData)
+            sortedStopList = getStopListSortedByDistance(filteredStopData)
         }
         setStopList(sortedStopList)
 
@@ -35,6 +34,7 @@ function SearchForm({ busData, stopData, setBusList, setStopList, updateDistance
             Object.keys(busData[busNum]).map(direction => ({ 'number': busNum, 'direction': direction }))
           )
         setBusList(newBusList)
+        handleSearch(inputText)
     }
 
     function handleChange(e) {
@@ -53,27 +53,30 @@ function SearchForm({ busData, stopData, setBusList, setStopList, updateDistance
     }
 
     return (
-        <div className='row justify-content-center'>
-            <div className='col-auto'>
-                <form onSubmit={handleSubmit} className='input-group mb-3'>
-                    <input 
-                    type='search'
-                    className='form-control'
-                    placeholder='Bus number, stop name, or code'
-                    onChange={handleChange}
-                    value={text}
-                    />
+        <div className='row text-center'>
+            <div className='col-12'>
+                <form onSubmit={handleSubmit}>
+                    <div className="input-group mb-3">
+                        <input
+                            type="search"
+                            className="form-control"
+                            placeholder="Bus number, stop name, or code"
+                            onChange={handleChange}
+                            value={text}
+                        />
+                        <div className="input-group-append">
+                            <span className="input-group-text" onClick={handleSubmit} style={{cursor: 'pointer'}}>
+                                <i className="bi bi-search"></i>
+                            </span>
+                        </div>
+                    </div>
                     <button
-                    className='btn btn-success'
-                    type='submit'>
-                        Find
+                    className={isNearbyClicked ? 'btn btn-primary' : 'btn btn-outline-primary'}
+                    onClick={handleNearbyClick}
+                    type="button">
+                        Nearby
                     </button>
                 </form>
-                <button
-                className={isNearbyClicked ? 'btn btn-primary' : 'btn btn-outline-primary'}
-                onClick={handleNearbyClick}>
-                    Nearby
-                </button>
             </div>
         </div>
     )
