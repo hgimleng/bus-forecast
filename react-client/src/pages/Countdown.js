@@ -60,7 +60,7 @@ function Countdown({ active }) {
 
     function onBusRowClick(busNum, dest_code) {
         const busData = data['bus_data'][busNum]
-        const direction = Object.keys(busData).find(direction => busData[direction]['dest_code'] === dest_code);
+        const direction = Object.keys(busData).find(direction => busData[direction]['stops'].slice(-2).includes(dest_code));
 
         setBusList([{'number': busNum, 'direction': direction}])
         handleBusSelect(busNum, direction)
