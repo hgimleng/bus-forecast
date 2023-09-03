@@ -66,7 +66,7 @@ function Countdown({ active }) {
     function handleBusSelect(busNum, direction) {
         setSelectedBus(busNum)
         setSelectedDirection(direction)
-        setStopList(data['bus_data'][busNum][direction]['stops'].slice(0, -1))
+        setStopList(data['bus_data'][busNum][direction]['stops'])
     }
 
     function onBusRowClick(busNum, dest_code) {

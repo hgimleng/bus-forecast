@@ -75,19 +75,26 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
         return ` ${distance.toFixed(1)} km`;
     }
 
+    const distance = getDistance(stopLatLon, busLatLon);
+
     return (
         <td>
-            { calculateTimeDifference(time, currentTime) }
-            { prevBusTime && <> (+{calculateTimeDifference(time, new Date(prevBusTime))})</> }
-            <br />
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <small>
+            <div style={{ height:'1.4em', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                { calculateTimeDifference(time, currentTime) }
+                <small style={{ marginLeft: '0.4em' }}>
                     { convertToIcon(type, load) }
                 </small>
-                <small style={{ marginLeft: '5px' }}>
-                    { getDistance(stopLatLon, busLatLon) }
-                </small>
             </div>
+            { prevBusTime && <>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    (+{calculateTimeDifference(time, new Date(prevBusTime))})
+                </div>
+            </>}
+            { distance !== '' &&
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <small>{ distance }</small>
+                </div>
+            }
         </td>
     )
 }

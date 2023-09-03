@@ -23,7 +23,7 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
     const stopLatLon = [stopData[selectedStop]['lat'], stopData[selectedStop]['lng']];
 
     return (
-        <div className='col-auto text-center mb-5'>
+        <div className='col-auto mb-5'>
             <hr />
             <h4>{ stopData[selectedStop]['name'] }</h4>
             <h6>{ stopData[selectedStop]['road'] } | {selectedStop} | {stopData[selectedStop]['distance'] && stopData[selectedStop]['distance'].toFixed(1)} km</h6>
