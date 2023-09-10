@@ -1,6 +1,6 @@
 function BusButton({ bus, destName, selected, onClick }) {
     return (
-        <div className="mb-1">
+        <div>
             <button
             className={selected ? 'btn btn-primary' : 'btn btn-outline-primary'}
             onClick={onClick}>

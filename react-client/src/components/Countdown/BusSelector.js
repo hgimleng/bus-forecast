@@ -5,8 +5,8 @@ function BusSelector({ busData, busList, selectedBus, selectedDirection, handleB
     <>
         <hr />
         <div className='row mb-3'>
-            <div className='col'>
-                <h4>Buses</h4>
+            <h4>Buses</h4>
+            <div className='col d-grid gap-1'>
                 {busList.map(bus => {
                     const number = bus['number']
                     const direction = bus['direction']
