@@ -1,26 +1,51 @@
 import { useState, useEffect } from 'react';
 import { getData, setData } from './storage';
 import { api_forecast } from '../api';
+import { useGeolocated } from "react-geolocated";
 
 function useAppData() {
   const [data, setDataState] = useState({'bus_data': {}, 'stop_data': {}});
+  const { coords, getPosition, isGeolocationEnabled } =
+      useGeolocated({
+        positionOptions: {
+          enableHighAccuracy: false,
+        },
+        userDecisionTimeout: 10000,
+      });
 
   useEffect(() => {
     const fetchAndSetData = async () => {
       let localData = await getData('busInfo');
 
       if (!localData || isDataOutdated(localData)) {
+        if (!localData) {
+          getPosition()
+        }
+
         const freshData = await fetchDataFromAPI();
         await setData('busInfo', freshData);
         localData = freshData;
       }
-      localData = updateDataDistance(localData);
+
+      console.log("Setting data to local data")
       setDataState(localData);
     };
 
+    console.log("Fetching data")
     fetchAndSetData();
-    updateDistanceForStops();
   }, []);
+
+  useEffect(() => {
+    console.log("Location enabled, updating distances")
+    if (isGeolocationEnabled && Object.values(data['stop_data']).length > 0 && Object.values(data['stop_data'])[0].distance === undefined) {
+      const updateDistances = async () => {
+        const updatedData = await updateDataDistance(data);
+        setDataState(updatedData);
+      };
+
+      updateDistances();
+    }
+  }, [isGeolocationEnabled, data]);
 
   const isDataOutdated = (data) => {
     const oneDay = 24 * 60 * 60 * 1000;
@@ -32,6 +57,7 @@ function useAppData() {
     const response = await api_forecast.get('/all-bus-info');
     const data = response.data;
     data.timestamp = Date.now();
+    console.log("Downloaded data")
     return data;
   };
 
@@ -52,39 +78,39 @@ function useAppData() {
     return distance;
   }
 
-  const updateDataDistance = (data) => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(position => {
-        const userLat = position.coords.latitude;
-        const userLon = position.coords.longitude;
+  async function updateDataDistance(data) {
+    let updatedData = JSON.parse(JSON.stringify(data));
+    if (isGeolocationEnabled && coords) {
+      const updatedStopData = { ...updatedData['stop_data'] };
+      for (let stopCode in updatedStopData) {
+        const stopLat = updatedStopData[stopCode].lat;
+        const stopLon = updatedStopData[stopCode].lng;
+        updatedStopData[stopCode].distance = getDistanceFromLatLonInKm(coords.latitude, coords.longitude, stopLat, stopLon);
+      }
 
-        const updatedStopData = {...data['stop_data']};
-        for (let stopCode in updatedStopData) {
-          const stopLat = updatedStopData[stopCode].lat;
-          const stopLon = updatedStopData[stopCode].lng;
-          const distance = getDistanceFromLatLonInKm(userLat, userLon, stopLat, stopLon);
+      updatedData['stop_data'] = updatedStopData;
+      console.log("Updated stop data with distance");
 
-          updatedStopData[stopCode].distance = distance;
-        }
-
-        data['stop_data'] = updatedStopData;
-      }, error => {
-        console.error("Error retrieving user's location: ", error);
-      });
-    } else {
-      console.log("Geolocation is not supported by this browser.");
-    }
-    return data;
-  };
-
-  const updateDistanceForStops = () => {
-    setDataState(prevData => {
-      const updatedData = updateDataDistance(prevData);
       return updatedData;
-    });
+    } else {
+      console.log("Location not enabled, not updating distances");
+      return updatedData;
+    }
   }
 
-  return { data, updateDistanceForStops };
-};
+  const updateDistanceForStops = async () => {
+    const newData = await updateDataDistance(data);
+    setDataState(newData);
+    return newData;
+  };
+
+  const downloadData = async () => {
+    const freshData = await fetchDataFromAPI();
+    await setData('busInfo', freshData);
+    setDataState(freshData);
+  }
+
+  return { data, updateDistanceForStops, downloadData };
+}
 
 export default useAppData;

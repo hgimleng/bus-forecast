@@ -9,7 +9,7 @@ function StopButton({ code, name, road, distance, onClick, selected, isLoading }
                 { selected && isLoading && <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> }
                 <br />
                 <small>
-                    {road} | {code} | {distance && distance.toFixed(1)} km
+                    {road} | {code}{distance && ` | ${distance.toFixed(1)}`} km
                 </small>
             </div>
         </button>

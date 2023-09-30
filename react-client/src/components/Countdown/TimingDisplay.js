@@ -26,7 +26,7 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
         <div className='col-auto mb-5'>
             <hr />
             <h4>{ stopData[selectedStop]['name'] }</h4>
-            <h6>{ stopData[selectedStop]['road'] } | {selectedStop} | {stopData[selectedStop]['distance'] && stopData[selectedStop]['distance'].toFixed(1)} km</h6>
+            <h6>{ stopData[selectedStop]['road'] } | {selectedStop}{stopData[selectedStop]['distance'] && ` | ${stopData[selectedStop]['distance'].toFixed(1)}`} km</h6>
             <table className='table table-striped table-bordered'>
                 <caption>
                     Last Updated: { lastUpdateTime }

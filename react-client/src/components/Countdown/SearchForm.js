@@ -1,33 +1,15 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-function SearchForm({ busData, stopData, setBusList, setStopList, updateDistanceForStops, isNearbyClicked, handleSearch }) {
+function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, locationEnabled, requestLocationPermission }) {
     const [text, setText] = useState('')
 
     function handleSubmit(e, inputText = text) {
         e.preventDefault()
         if (!inputText) return
+        console.log("Handling search form submit")
 
         const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
-
-        const filteredStopData = Object.fromEntries(
-            Object.entries(stopData).filter(([stopCode, stopValue]) => {
-                return (
-                    stopCode === inputText ||
-                    cleanString(stopValue['name']).includes(cleanString(inputText)) ||
-                    stopValue['buses'].some(busNum => [cleanString(busNum), busNum.slice(0, -1)].includes(cleanString(inputText)))
-                    )
-            })
-          );
-
-        updateDistanceForStops()
-        let sortedStopList
-        if (inputText === 'nearby') {
-            sortedStopList = getStopListSortedByDistance(stopData, 2)
-        } else {
-            sortedStopList = getStopListSortedByDistance(filteredStopData)
-        }
-        setStopList(sortedStopList)
 
         const filteredBusList = Object.keys(busData).filter(busNum => [cleanString(busNum), busNum.slice(0, -1)].includes(cleanString(inputText)))
         const newBusList = filteredBusList.flatMap(busNum => 
@@ -42,14 +24,19 @@ function SearchForm({ busData, stopData, setBusList, setStopList, updateDistance
         setText(inputValue);
     }
 
-    function handleNearbyClick(e) {
-        setText('nearby')
-        handleSubmit(e, 'nearby')
-    }
+    async function handleNearbyClick(e) {
+        e.preventDefault();
 
-    function getStopListSortedByDistance(data, distanceLimit = Number.MAX_VALUE) {
-        // Sort the stopList by distance in ascending order and limit by distance
-        return [...Object.keys(data)].sort((a, b) => data[a].distance - data[b].distance).filter((stopCode) => data[stopCode].distance < distanceLimit);
+        if (!locationEnabled) {
+            const { success } = await requestLocationPermission();
+
+            if (!success) {
+                return;
+            }
+        }
+
+        setText('nearby');
+        handleSubmit(e, 'nearby');
     }
 
     return (

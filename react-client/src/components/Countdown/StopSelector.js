@@ -1,10 +1,9 @@
-import { useEffect } from "react";
+import {useEffect} from "react";
 import StopButton from "./StopButton";
 
 function StopSelector({ stopData, stopList, setSelectedStop }) {
-
-    // If there is only 1 stop in the list, select it
     useEffect(() => {
+        // If there is only 1 stop in the list, select it
         if (stopList.length === 1) {
             setSelectedStop(stopList[0])
         }

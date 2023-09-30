@@ -5,16 +5,18 @@ import Settings from './pages/Settings';
 
 import 'font-awesome/css/font-awesome.min.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import useAppData from "./utilities/useAppData";
 
 function App() {
   const [activeTab, setActiveTab] = useState('countdown');
+  const { data, updateDistanceForStops, downloadData } = useAppData()
 
   return (
     <div className="container d-flex flex-column">
         <div className="flex-grow-1 overflow-auto">
-            <Countdown active={activeTab === 'countdown'} />
+            <Countdown active={activeTab === 'countdown'} data={data} updateDistanceForStops={updateDistanceForStops} />
             <Forecast active={activeTab === 'forecast'} />
-            <Settings active={activeTab === 'settings'} />
+            <Settings active={activeTab === 'settings'} dataTimestamp={data.timestamp} downloadData={downloadData} />
         </div>
 
         <div className="container-fluid position-fixed bg-light shadow-sm p-2 border-top" style={{ bottom: 0, left: 0, right: 0 }}>

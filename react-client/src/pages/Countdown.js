@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 import { api_arrival } from '../api';
 import SearchForm from '../components/Countdown/SearchForm';
 import TimingDisplay from '../components/Countdown/TimingDisplay';
-import useAppData from '../utilities/useAppData';
 import BusSelector from '../components/Countdown/BusSelector';
 import StopSelector from '../components/Countdown/StopSelector';
+import { useGeolocated } from "react-geolocated";
 
-function Countdown({ active }) {
+function Countdown({ active, data, updateDistanceForStops }) {
     const [timingData, setTimingData] = useState({})
     const [lastUpdateTime, setLastUpdateTime] = useState('')
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -16,8 +16,15 @@ function Countdown({ active }) {
     const [selectedBus, setSelectedBus] = useState('')
     const [selectedDirection, setSelectedDirection] = useState('')
     const [isNearbyClicked, setIsNearbyClicked] = useState(false)
+    const [getStopList, setGetStopList] = useState(() => (stopData) => [])
 
-    const { data, updateDistanceForStops } = useAppData()
+    const { coords, getPosition, isGeolocationEnabled } =
+        useGeolocated({
+            positionOptions: {
+                enableHighAccuracy: false,
+            },
+            userDecisionTimeout: 10000,
+        });
 
     useEffect(() => {
         // Update the time state every 1 second/ 1000 milliseconds
@@ -39,9 +46,18 @@ function Countdown({ active }) {
         };
       }, [selectedStop])
 
+    useEffect(() => {
+        console.log("[data/getStopList changed] updating stop list from data of "+Object.keys(data['stop_data']).length.toString())
+        setStopList(getStopList(data['stop_data']));
+    }, [data, getStopList])
+
+    useEffect(() => {
+        console.log("[stopList changed] stopList length: "+stopList.length.toString())
+    }, [stopList])
+
     async function fetchStopInfo(stopCode) {
         setSelectedStop(stopCode)
-        updateDistanceForStops()
+        await updateDistanceForStops()
 
         try {
             const response = await api_arrival.get(`/?id=${stopCode}`)
@@ -54,10 +70,45 @@ function Countdown({ active }) {
     }
 
     function handleSearch(inputText) {
+        const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
+
+        function getStopListSortedByDistance(data, distanceLimit = Number.MAX_VALUE) {
+            // Sort the stopList by distance in ascending order and limit by distance
+            console.log("Sorting stop list by distance")
+            return [...Object.keys(data)].sort((a, b) => data[a].distance - data[b].distance).filter((stopCode) => data[stopCode].distance < distanceLimit);
+        }
+
+        function getStopListSortedByName(data) {
+            // Sort the stopList by name in ascending order
+            console.log("Sorting stop list by name")
+            return [...Object.keys(data)].sort((a, b) => data[a].name.localeCompare(data[b].name));
+        }
+
         if (inputText === 'nearby') {
             setIsNearbyClicked(true)
+            setGetStopList(() =>
+                (stopData) => getStopListSortedByDistance(stopData, 2)
+            )
         } else {
             setIsNearbyClicked(false)
+            setGetStopList(() =>
+                function (stopData) {
+                    const filteredStopData = Object.fromEntries(
+                        Object.entries(stopData).filter(([stopCode, stopValue]) => {
+                            // Check if stop code matches input text
+                            // or if stop name contains input text
+                            // or if any of the buses at the stop is a variant of the input text
+                            return (
+                                stopCode === inputText ||
+                                cleanString(stopValue['name']).includes(cleanString(inputText)) ||
+                                stopValue['buses'].some(busNum => [cleanString(busNum), busNum.replace(/[a-zA-Z]$/, '')].includes(cleanString(inputText)))
+                            )
+                        })
+                    );
+
+                    return isGeolocationEnabled ? getStopListSortedByDistance(filteredStopData) : getStopListSortedByName(filteredStopData)
+                }
+            )
         }
         setSelectedBus('')
         setSelectedDirection('')
@@ -66,25 +117,70 @@ function Countdown({ active }) {
     function handleBusSelect(busNum, direction) {
         setSelectedBus(busNum)
         setSelectedDirection(direction)
-        setStopList(data['bus_data'][busNum][direction]['stops'])
+        setGetStopList(() =>
+            (stopData) => data['bus_data'][busNum][direction]['stops']
+        )
     }
 
     function onBusRowClick(busNum, dest_code) {
         const busData = data['bus_data'][busNum]
         const direction = Object.keys(busData).find(direction => busData[direction]['stops'].slice(-2).includes(dest_code));
 
-        setBusList([{'number': busNum, 'direction': direction}])
+        const newBusList = Object.keys(busData).map(direction => ({ 'number': busNum, 'direction': direction }))
+
+        setBusList(newBusList)
         handleBusSelect(busNum, direction)
         setIsNearbyClicked(false)
     }
 
+    function showStopSelector() {
+        if (stopList.length === 0) {
+            return false;
+        }
+        return (isNearbyClicked && isGeolocationEnabled) || !isNearbyClicked;
+    }
+
+    function hasData() {
+        return Object.keys(data['stop_data']).length > 0;
+    }
+
     return (
-        <div className={`container mt-4 mb-4 ${active ? '' : 'd-none'}`} >
-            <SearchForm busData={data['bus_data']} stopData={data['stop_data']} setBusList={setBusList} setStopList={setStopList} updateDistanceForStops={updateDistanceForStops} isNearbyClicked={isNearbyClicked} handleSearch={handleSearch} />
-            {busList.length > 0 && <BusSelector busData={data['bus_data']} busList={busList} selectedBus={selectedBus} selectedDirection={selectedDirection} handleBusSelect={handleBusSelect} />}
-            {stopList.length > 0 && <StopSelector stopData={data['stop_data']} stopList={stopList} setSelectedStop={fetchStopInfo} />}
-            {timingData['services'] && stopList.length > 0 && <TimingDisplay selectedStop={selectedStop} timingData={timingData} stopData={data['stop_data']} lastUpdateTime={lastUpdateTime} currentTime={currentTime} onBusRowClick={onBusRowClick} />}
-        </div>
+        <>
+        {hasData() ?
+        <div className={`container mt-4 mb-4 ${active ? '' : 'd-none'}`}>
+            <SearchForm busData={data['bus_data']}
+                        setBusList={setBusList}
+                        isNearbyClicked={isNearbyClicked}
+                        handleSearch={handleSearch}
+                        locationEnabled={isGeolocationEnabled}
+                        requestLocationPermission={getPosition}
+            />
+            {busList.length > 0 &&
+                <BusSelector busData={data['bus_data']}
+                             busList={busList}
+                             selectedBus={selectedBus}
+                             selectedDirection={selectedDirection}
+                             handleBusSelect={handleBusSelect}
+                />}
+            {showStopSelector() &&
+                <StopSelector stopData={data['stop_data']}
+                              stopList={stopList}
+                              setSelectedStop={fetchStopInfo}
+                              sortByDistance={isNearbyClicked}
+                              distanceLimit={2}
+                />}
+            {timingData['services'] && stopList.length > 0 &&
+                <TimingDisplay selectedStop={selectedStop}
+                               timingData={timingData}
+                               stopData={data['stop_data']}
+                               lastUpdateTime={lastUpdateTime}
+                               currentTime={currentTime}
+                               onBusRowClick={onBusRowClick}
+                />}
+        </div> :
+        <div className="container mt-4 mb-4 spinner-border"
+             style={{display: 'flex', alignItems: 'center', justifyContent: 'center',}} />}
+        </>
     )
 }
 
