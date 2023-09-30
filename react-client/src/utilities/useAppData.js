@@ -79,6 +79,7 @@ function useAppData() {
   }
 
   async function updateDataDistance(data) {
+    getPosition();
     let updatedData = JSON.parse(JSON.stringify(data));
     if (isGeolocationEnabled && coords) {
       const updatedStopData = { ...updatedData['stop_data'] };
