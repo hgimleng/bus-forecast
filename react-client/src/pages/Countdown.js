@@ -5,6 +5,7 @@ import TimingDisplay from '../components/Countdown/TimingDisplay';
 import BusSelector from '../components/Countdown/BusSelector';
 import StopSelector from '../components/Countdown/StopSelector';
 import { useGeolocated } from "react-geolocated";
+import TimingErrorAlert from "../components/Countdown/TimingErrorAlert";
 
 function Countdown({ active, data, updateDistanceForStops }) {
     const [timingData, setTimingData] = useState({})
@@ -17,6 +18,7 @@ function Countdown({ active, data, updateDistanceForStops }) {
     const [selectedDirection, setSelectedDirection] = useState('')
     const [isNearbyClicked, setIsNearbyClicked] = useState(false)
     const [getStopList, setGetStopList] = useState(() => (stopData) => [])
+    const [showAlert, setShowAlert] = useState(false);
 
     const { coords, getPosition, isGeolocationEnabled } =
         useGeolocated({
@@ -64,8 +66,11 @@ function Countdown({ active, data, updateDistanceForStops }) {
             const data = response.data
             setTimingData(data)
             setLastUpdateTime(new Date().toLocaleTimeString())
+            setShowAlert(false)
         } catch(error) {
             console.error('Error fetching data:', error)
+
+            setShowAlert(true)
         }
     }
 
@@ -166,9 +171,10 @@ function Countdown({ active, data, updateDistanceForStops }) {
                 <StopSelector stopData={data['stop_data']}
                               stopList={stopList}
                               setSelectedStop={fetchStopInfo}
-                              sortByDistance={isNearbyClicked}
-                              distanceLimit={2}
+                              selectedStop={selectedStop}
                 />}
+            <TimingErrorAlert showAlert={showAlert}
+                              setShowAlert={setShowAlert} />
             {timingData['services'] && stopList.length > 0 &&
                 <TimingDisplay selectedStop={selectedStop}
                                timingData={timingData}
@@ -176,6 +182,7 @@ function Countdown({ active, data, updateDistanceForStops }) {
                                lastUpdateTime={lastUpdateTime}
                                currentTime={currentTime}
                                onBusRowClick={onBusRowClick}
+                               setSelectedStop={fetchStopInfo}
                 />}
         </div> :
         <div className="container mt-4 mb-4 spinner-border"

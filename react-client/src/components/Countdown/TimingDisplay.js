@@ -1,6 +1,7 @@
 import BusRowDisplay from "./BusRowDisplay";
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
-function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick }) {
+function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick, setSelectedStop }) {
 
     const sortedTimingData = timingData['services'].sort((a, b) => {
         // Extract numeric and alphabetic parts of bus numbers
@@ -22,10 +23,21 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
     })
     const stopLatLon = [stopData[selectedStop]['lat'], stopData[selectedStop]['lng']];
 
+    function getOppositeStop() {
+        const lastDigit = selectedStop.slice(-1);
+        const oppositeStop = selectedStop.slice(0, -1) + (10 - parseInt(lastDigit, 10)).toString();
+        return stopData[oppositeStop] ? oppositeStop : '';
+    }
+
     return (
         <div className='col-auto mb-5'>
             <hr />
-            <h4>{ stopData[selectedStop]['name'] }</h4>
+            <div className="d-flex align-items-center">
+                <h4>{ stopData[selectedStop]['name'] }</h4>
+                {getOppositeStop() !== '' &&
+                <i className="bi bi-shuffle ms-2"
+                   onClick={() => setSelectedStop(getOppositeStop())}></i>}
+            </div>
             <h6>{ stopData[selectedStop]['road'] } | {selectedStop}{stopData[selectedStop]['distance'] && ` | ${stopData[selectedStop]['distance'].toFixed(1)}`} km</h6>
             <table className='table table-striped table-bordered'>
                 <caption>
