@@ -53,10 +53,6 @@ function Countdown({ active, data, updateDistanceForStops }) {
         setStopList(getStopList(data['stop_data']));
     }, [data, getStopList])
 
-    useEffect(() => {
-        console.log("[stopList changed] stopList length: "+stopList.length.toString())
-    }, [stopList])
-
     async function fetchStopInfo(stopCode) {
         setSelectedStop(stopCode)
         await updateDistanceForStops()
@@ -74,7 +70,8 @@ function Countdown({ active, data, updateDistanceForStops }) {
         }
     }
 
-    function handleSearch(inputText) {
+    async function handleSearch(inputText) {
+        await updateDistanceForStops()
         const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
 
         function getStopListSortedByDistance(data, distanceLimit = Number.MAX_VALUE) {

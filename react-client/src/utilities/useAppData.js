@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import {useState, useEffect, useRef} from 'react';
 import { getData, setData } from './storage';
 import { api_forecast } from '../api';
 import { useGeolocated } from "react-geolocated";
@@ -12,6 +12,7 @@ function useAppData() {
         },
         userDecisionTimeout: 10000,
       });
+  const prevCoordsRef = useRef();
 
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -36,16 +37,15 @@ function useAppData() {
   }, []);
 
   useEffect(() => {
-    console.log("Location enabled, updating distances")
-    if (isGeolocationEnabled && Object.values(data['stop_data']).length > 0 && Object.values(data['stop_data'])[0].distance === undefined) {
-      const updateDistances = async () => {
-        const updatedData = await updateDataDistance(data);
-        setDataState(updatedData);
-      };
-
-      updateDistances();
+    if(coords) {
+      const prevCoords = prevCoordsRef.current;
+      if (!prevCoords || (Math.abs(prevCoords.latitude - coords.latitude) > 0) || (Math.abs(prevCoords.longitude - coords.longitude) > 0)) {
+        console.log("Location changed, updating distances");
+        updateDataDistance(data);
+        prevCoordsRef.current = coords;
+      }
     }
-  }, [isGeolocationEnabled, data]);
+  }, [coords, data]);
 
   const isDataOutdated = (data) => {
     const oneDay = 24 * 60 * 60 * 1000;
@@ -91,6 +91,7 @@ function useAppData() {
 
       updatedData['stop_data'] = updatedStopData;
       console.log("Updated stop data with distance");
+      console.log("Current location: "+coords.latitude.toString()+", "+coords.longitude.toString());
 
       return updatedData;
     } else {
