@@ -53,6 +53,28 @@ function Countdown({ active, data, updateDistanceForStops }) {
         setStopList(getStopList(data['stop_data']));
     }, [data, getStopList])
 
+    useEffect(() => {
+        if (isNearbyClicked && stopList.length > 0){
+            let newBusList = [];
+            for (const stopCode of stopList) {
+                const buses = data['stop_data'][stopCode]['buses'];
+                for (const busNum of buses) {
+                    const busDirections = Object.keys(data['bus_data'][busNum]);
+                    // Add bus number and direction to the list if it is not already in the list
+                    for (const direction of busDirections) {
+                        if (!newBusList.some(bus => bus.number === busNum && bus.direction === direction)) {
+                            newBusList.push({ 'number': busNum, 'direction': direction });
+                        }
+                    }
+                }
+                if (newBusList.length > 10) {
+                    break;
+                }
+            }
+            setBusList(newBusList);
+        }
+    }, [isNearbyClicked, stopList])
+
     async function fetchStopInfo(stopCode) {
         setSelectedStop(stopCode)
         await updateDistanceForStops()
