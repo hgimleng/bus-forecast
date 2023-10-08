@@ -11,10 +11,7 @@ function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, locati
 
         const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
 
-        const filteredBusList = Object.keys(busData).filter(busNum => [cleanString(busNum), busNum.slice(0, -1)].includes(cleanString(inputText)))
-        const newBusList = filteredBusList.flatMap(busNum => 
-            Object.keys(busData[busNum]).map(direction => ({ 'number': busNum, 'direction': direction }))
-          )
+        const newBusList = Object.keys(busData).filter(busNum => [cleanString(busNum), busNum.slice(0, -1)].includes(cleanString(inputText)))
         setBusList(newBusList)
         handleSearch(inputText)
     }

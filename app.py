@@ -80,6 +80,7 @@ def get_all_bus_info():
         direction = record_dict["direction"]
         dest_code = record_dict["dest_code"]
         stop_code = record_dict["stop_code"]
+        loop_desc = record_dict["loop_desc"]
 
         # Add stop data
         if stop_code not in result["stop_data"]:
@@ -97,7 +98,8 @@ def get_all_bus_info():
         if direction not in result["bus_data"][bus_num]:
             result["bus_data"][bus_num][direction] = {
                 "dest_code": dest_code,
-                "stops": []
+                "stops": [],
+                "loop_desc": loop_desc
             }
         result["bus_data"][bus_num][direction]["stops"].append(stop_code)
         if bus_num not in result["stop_data"][stop_code]["buses"]:

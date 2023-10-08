@@ -1,13 +1,15 @@
-function BusButton({ bus, destName, selected, onClick }) {
+function BusButton({ bus, direction, isSelected, description, handleBusSelect }) {
     return (
-        <div>
-            <button
-            className={selected ? 'btn btn-primary' : 'btn btn-outline-primary'}
-            onClick={onClick}>
-                {bus} (To {destName})
-            </button>
-            <br />
-        </div>
+        <button
+            className={`list-group-item list-group-item-action ${isSelected ? 'active disabled' : ''}`}
+            style={{textAlign: 'left'}}
+            onClick={() => handleBusSelect(bus, direction)}>
+            <div>
+                <small>
+                    {description}
+                </small>
+            </div>
+        </button>
     )
 }
 

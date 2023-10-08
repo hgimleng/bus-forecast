@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api_arrival } from '../api';
 import SearchForm from '../components/Countdown/SearchForm';
 import TimingDisplay from '../components/Countdown/TimingDisplay';
@@ -19,6 +19,10 @@ function Countdown({ active, data, updateDistanceForStops }) {
     const [isNearbyClicked, setIsNearbyClicked] = useState(false)
     const [getStopList, setGetStopList] = useState(() => (stopData) => [])
     const [showAlert, setShowAlert] = useState(false);
+    const [isTimingDisplayRendered, setIsTimingDisplayRendered] = useState(false);
+    const targetRef = useRef(null);
+
+    const scrollToRef = (ref) => ref.current.scrollIntoView({ behavior: 'smooth' });
 
     const { coords, getPosition, isGeolocationEnabled } =
         useGeolocated({
@@ -57,26 +61,31 @@ function Countdown({ active, data, updateDistanceForStops }) {
         if (isNearbyClicked && stopList.length > 0){
             let newBusList = [];
             for (const stopCode of stopList) {
+                if (data['stop_data'][stopCode]['distance'] > 0.5) {
+                    break;
+                }
+
                 const buses = data['stop_data'][stopCode]['buses'];
                 for (const busNum of buses) {
-                    const busDirections = Object.keys(data['bus_data'][busNum]);
-                    // Add bus number and direction to the list if it is not already in the list
-                    for (const direction of busDirections) {
-                        if (!newBusList.some(bus => bus.number === busNum && bus.direction === direction)) {
-                            newBusList.push({ 'number': busNum, 'direction': direction });
-                        }
+                    if (!newBusList.includes(busNum)) {
+                        newBusList.push(busNum);
                     }
-                }
-                if (newBusList.length > 10) {
-                    break;
                 }
             }
             setBusList(newBusList);
         }
     }, [isNearbyClicked, stopList])
 
+    useEffect(() => {
+        if (selectedStop && isTimingDisplayRendered) {
+            scrollToRef(targetRef);
+        }
+    }, [selectedStop, isTimingDisplayRendered])
+
     async function fetchStopInfo(stopCode) {
-        setSelectedStop(stopCode)
+        if (selectedStop !== stopCode) {
+            setSelectedStop(stopCode)
+        }
         await updateDistanceForStops()
 
         try {
@@ -144,15 +153,14 @@ function Countdown({ active, data, updateDistanceForStops }) {
         setGetStopList(() =>
             (stopData) => data['bus_data'][busNum][direction]['stops']
         )
+        setIsNearbyClicked(false)
     }
 
     function onBusRowClick(busNum, dest_code) {
         const busData = data['bus_data'][busNum]
         const direction = Object.keys(busData).find(direction => busData[direction]['stops'].slice(-2).includes(dest_code));
 
-        const newBusList = Object.keys(busData).map(direction => ({ 'number': busNum, 'direction': direction }))
-
-        setBusList(newBusList)
+        setBusList([busNum])
         handleBusSelect(busNum, direction)
         setIsNearbyClicked(false)
     }
@@ -192,6 +200,7 @@ function Countdown({ active, data, updateDistanceForStops }) {
                               setSelectedStop={fetchStopInfo}
                               selectedStop={selectedStop}
                 />}
+            <div ref={targetRef}>
             <TimingErrorAlert showAlert={showAlert}
                               setShowAlert={setShowAlert} />
             {timingData['services'] && stopList.length > 0 &&
@@ -202,7 +211,9 @@ function Countdown({ active, data, updateDistanceForStops }) {
                                currentTime={currentTime}
                                onBusRowClick={onBusRowClick}
                                setSelectedStop={fetchStopInfo}
+                               onRendered={() => setIsTimingDisplayRendered(true)}
                 />}
+            </div>
         </div> :
         <div className="container mt-4 mb-4 spinner-border"
              style={{display: 'flex', alignItems: 'center', justifyContent: 'center',}} />}

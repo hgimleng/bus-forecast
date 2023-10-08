@@ -1,7 +1,13 @@
 import BusRowDisplay from "./BusRowDisplay";
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import {useEffect} from "react";
 
-function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick, setSelectedStop }) {
+function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick, setSelectedStop, onRendered }) {
+
+    useEffect(() => {
+        // Notify parent that the component has rendered
+        onRendered();
+    }, []);
 
     const sortedTimingData = timingData['services'].sort((a, b) => {
         // Extract numeric and alphabetic parts of bus numbers
