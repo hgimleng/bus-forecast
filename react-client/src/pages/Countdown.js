@@ -58,25 +58,6 @@ function Countdown({ active, data, updateDistanceForStops }) {
     }, [data, getStopList])
 
     useEffect(() => {
-        if (isNearbyClicked && stopList.length > 0){
-            let newBusList = [];
-            for (const stopCode of stopList) {
-                if (data['stop_data'][stopCode]['distance'] > 0.5) {
-                    break;
-                }
-
-                const buses = data['stop_data'][stopCode]['buses'];
-                for (const busNum of buses) {
-                    if (!newBusList.includes(busNum)) {
-                        newBusList.push(busNum);
-                    }
-                }
-            }
-            setBusList(newBusList);
-        }
-    }, [isNearbyClicked, stopList])
-
-    useEffect(() => {
         if (selectedStop && isTimingDisplayRendered) {
             scrollToRef(targetRef);
         }
