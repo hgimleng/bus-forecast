@@ -9,14 +9,14 @@ import useAppData from "./utilities/useAppData";
 
 function App() {
   const [activeTab, setActiveTab] = useState('countdown');
-  const { data, updateDistanceForStops, downloadData } = useAppData()
+  const { data, updateDistanceForStops, downloadData, settings, updateSettings } = useAppData()
 
   return (
     <div className="container d-flex flex-column">
         <div className="flex-grow-1 overflow-auto">
-            <Countdown active={activeTab === 'countdown'} data={data} updateDistanceForStops={updateDistanceForStops} />
+            <Countdown active={activeTab === 'countdown'} data={data} updateDistanceForStops={updateDistanceForStops} settings={settings} />
             <Forecast active={activeTab === 'forecast'} />
-            <Settings active={activeTab === 'settings'} dataTimestamp={data.timestamp} downloadData={downloadData} />
+            <Settings active={activeTab === 'settings'} dataTimestamp={data.timestamp} downloadData={downloadData} settings={settings} updateSettings={updateSettings} />
         </div>
 
         <div className="container-fluid position-fixed bg-light shadow-sm p-2 border-top" style={{ bottom: 0, left: 0, right: 0 }}>

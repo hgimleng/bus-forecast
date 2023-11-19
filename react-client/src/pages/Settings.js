@@ -1,12 +1,22 @@
 import React from 'react';
+import MultiSelection from "../components/Settings/MultiSelection";
 
-function Settings({ active, dataTimestamp, downloadData }) {
+function Settings({ active, dataTimestamp, downloadData, settings, updateSettings }) {
+
     function getLastUpdated() {
         if (!dataTimestamp) {
             return 'N/A';
         }
 
         return new Date(dataTimestamp).toLocaleString();
+    }
+
+    async function handleSortByClick(selected) {
+        await updateSettings('sortBy', selected);
+    }
+
+    async function handleArrivalDisplayClick(selected) {
+        await updateSettings('arrivalDisplay', selected);
     }
 
     return (
@@ -23,6 +33,12 @@ function Settings({ active, dataTimestamp, downloadData }) {
                             style={{textAlign: 'left'}}>
                             <strong>Download Data</strong> (Last updated: {getLastUpdated()})
                         </button>
+                    </div>
+                    <hr />
+                    <h4>Bus Countdown</h4>
+                    <div className="list-group">
+                        <MultiSelection title="Sort by" selections={["Bus number", "Arrival time"]} selected={settings["sortBy"]} handleSelection={handleSortByClick} />
+                        <MultiSelection title="Arrival display" selections={["Countdown", "Static"]} selected={settings["arrivalDisplay"]} handleSelection={handleArrivalDisplayClick} />
                     </div>
                 </div>
             </div>

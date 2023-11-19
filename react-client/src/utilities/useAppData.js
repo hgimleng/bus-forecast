@@ -13,6 +13,10 @@ function useAppData() {
         userDecisionTimeout: 10000,
       });
   const prevCoordsRef = useRef();
+  const [settings, setSettings] = useState({
+    sortBy: 'Bus number',
+    arrivalDisplay: 'Countdown'
+  });
 
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -31,9 +35,17 @@ function useAppData() {
       console.log("Setting data to local data")
       setDataState(localData);
     };
+    const fetchAndSetSettings = async () => {
+      const localSettings = await getData('settings');
+      if (localSettings) {
+        setSettings(localSettings);
+      }
+    };
 
     console.log("Fetching data")
     fetchAndSetData();
+    fetchAndSetSettings();
+
   }, []);
 
   useEffect(() => {
@@ -112,7 +124,14 @@ function useAppData() {
     setDataState(freshData);
   }
 
-  return { data, updateDistanceForStops, downloadData };
+  const updateSettings = async (key, value) => {
+    const newSettings = { ...settings };
+    newSettings[key] = value;
+    await setData('settings', newSettings);
+    setSettings(newSettings);
+  }
+
+  return { data, updateDistanceForStops, downloadData, settings, updateSettings };
 }
 
 export default useAppData;

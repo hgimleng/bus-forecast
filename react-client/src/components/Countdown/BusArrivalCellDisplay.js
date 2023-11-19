@@ -3,7 +3,23 @@ import BDIcon from "../Icon/BDIcon";
 import SDIcon from "../Icon/SDIcon";
 import DDIcon from "../Icon/DDIcon";
 
-function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon}) {
+function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon, settings}) {
+    function convertToTimeDisplay(dateString) {
+        function getTimeString() {
+            const date = new Date(dateString);
+            const hours = date.getHours();
+            const minutes = date.getMinutes();
+            const seconds = date.getSeconds();
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        if (settings["arrivalDisplay"] === "Static") {
+            return getTimeString();
+        } else {
+            return calculateTimeDifference(dateString, currentTime);
+        }
+    }
+
     function calculateTimeDifference(dateString, currentTime) {
         // Parse the date string into a date object
         const targetDate = new Date(dateString);
@@ -80,7 +96,7 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
     return (
         <td>
             <div style={{ height:'1.4em', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                { calculateTimeDifference(time, currentTime) }
+                { convertToTimeDisplay(time) }
                 <small style={{ marginLeft: '0.4em' }}>
                     { convertToIcon(type, load) }
                 </small>

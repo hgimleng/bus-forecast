@@ -7,7 +7,7 @@ import StopSelector from '../components/Countdown/StopSelector';
 import { useGeolocated } from "react-geolocated";
 import TimingErrorAlert from "../components/Countdown/TimingErrorAlert";
 
-function Countdown({ active, data, updateDistanceForStops }) {
+function Countdown({ active, data, updateDistanceForStops, settings }) {
     const [timingData, setTimingData] = useState({})
     const [lastUpdateTime, setLastUpdateTime] = useState('')
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -193,6 +193,7 @@ function Countdown({ active, data, updateDistanceForStops }) {
                                onBusRowClick={onBusRowClick}
                                setSelectedStop={fetchStopInfo}
                                onRendered={() => setIsTimingDisplayRendered(true)}
+                               settings={settings}
                 />}
             </div>
         </div> :

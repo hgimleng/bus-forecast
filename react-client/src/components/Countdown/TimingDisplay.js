@@ -2,7 +2,7 @@ import BusRowDisplay from "./BusRowDisplay";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import {useEffect} from "react";
 
-function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick, setSelectedStop, onRendered }) {
+function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick, setSelectedStop, onRendered, settings }) {
 
     useEffect(() => {
         // Notify parent that the component has rendered
@@ -10,22 +10,37 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
     }, []);
 
     const sortedTimingData = timingData['services'].sort((a, b) => {
-        // Extract numeric and alphabetic parts of bus numbers
-        const matchA = a['no'].match(/^(\d+)([a-zA-Z]?)$/);
-        const matchB = b['no'].match(/^(\d+)([a-zA-Z]?)$/);
-    
-        const numA = parseInt(matchA[1], 10);
-        const numB = parseInt(matchB[1], 10);
-        const letterA = matchA[2];
-        const letterB = matchB[2];
-    
-        // Compare numeric parts
-        if (numA !== numB) {
-            return numA - numB;
+        function compareByBusNum() {
+            // Extract numeric and alphabetic parts of bus numbers
+            const matchA = a['no'].match(/^(\d+)([a-zA-Z]?)$/);
+            const matchB = b['no'].match(/^(\d+)([a-zA-Z]?)$/);
+
+            const numA = parseInt(matchA[1], 10);
+            const numB = parseInt(matchB[1], 10);
+            const letterA = matchA[2];
+            const letterB = matchB[2];
+
+            // Compare numeric parts
+            if (numA !== numB) {
+                return numA - numB;
+            }
+
+            // If numeric parts are the same, compare alphabetic parts
+            return letterA.localeCompare(letterB);
         }
-    
-        // If numeric parts are the same, compare alphabetic parts
-        return letterA.localeCompare(letterB);
+
+        function comparedByArrivalTime() {
+            const arrivalA = a['next']['duration_ms'];
+            const arrivalB = b['next']['duration_ms'];
+
+            return arrivalA - arrivalB;
+        }
+
+        if (settings['sortBy'] === 'Arrival time') {
+            return comparedByArrivalTime();
+        } else {
+            return compareByBusNum();
+        }
     })
     const stopLatLon = [stopData[selectedStop]['lat'], stopData[selectedStop]['lng']];
 
@@ -69,6 +84,7 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                             currentTime={currentTime}
                             stopLatLon={stopLatLon}
                             onBusRowClick={onBusRowClick}
+                            settings={settings}
                         />
                     ))}
                 </tbody>
