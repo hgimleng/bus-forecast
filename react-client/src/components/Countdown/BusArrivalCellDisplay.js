@@ -42,27 +42,27 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
         return `${prefix}${diffMinutes.toString().padStart(2, '0')}:${diffSeconds.toString().padStart(2, '0')}`;
     }
 
-    function convertToIcon(type, load) {
-        const iconType = convertLoad(load)
+    function convertToIcon(type, loadStr) {
+        const load = convertLoad(loadStr)
 
         switch (type) {
             case 'DD':
-                return <DDIcon icon={iconType} />;
+                return <DDIcon load={load} />;
             case 'BD':
-                return <BDIcon icon={iconType} />;
+                return <BDIcon load={load} />;
             default:
-                return <SDIcon icon={iconType} />;
+                return <SDIcon load={load} />;
         }
     }
 
     function convertLoad(load) {
         switch (load) {
             case 'SDA':
-                return 'bi-square-half';
+                return 2;
             case 'LSD':
-                return 'bi-square-fill';
+                return 3;
             default:
-                return 'bi-square';
+                return 1;
         }
     }
 
