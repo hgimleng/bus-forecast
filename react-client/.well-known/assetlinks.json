@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.onrender.bus_forecast.twa",
+        "sha256_cert_fingerprints": ["4A:4B:63:74:B4:CD:AE:D1:81:EB:99:DD:D6:A6:A5:4D:0A:CE:0B:40:B5:84:D3:B5:B6:9C:98:53:8F:71:18:5F"]
+      }
+    }]
