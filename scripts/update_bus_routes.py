@@ -27,7 +27,8 @@ def update_bus_routes():
     headers = {"AccountKey": api_key}
     bus_stops = {
         stop["BusStopCode"]: [
-            stop["Description"], stop["Latitude"], stop["Longitude"], stop["RoadName"]
+            get_bus_stop_description(stop["BusStopCode"], stop["Description"]),
+            stop["Latitude"], stop["Longitude"], stop["RoadName"]
         ]
         for stop in fetch_all_records(URL_STOPS, headers)
     }
@@ -98,6 +99,19 @@ def update_bus_routes():
             # Commit the changes
             connection.commit()
 
+            # Write files to csv locally
+            with open("bus_stops.csv", "w", newline='') as f:
+                csv_writer = csv.writer(f)
+                for stop_code, values in bus_stops.items():
+                        row = [stop_code] + values
+                        csv_writer.writerow(row)
+            with open("bus_services.csv", "w") as f:
+                csv_writer = csv.writer(f)
+                csv_writer.writerows(bus_services.items())
+            with open("bus_routes.csv", "w") as f:
+                csv_writer = csv.writer(f)
+                csv_writer.writerows(bus_routes)
+
     finally:
         # Close the connection
         connection.close()
@@ -122,6 +136,21 @@ def fetch_all_records(url: str, headers: Dict[str, str]):
         except requests.exceptions.RequestException as e:
             print(f"Error fetching {url}: {e}")
             return records
+
+def get_bus_stop_description(bus_stop_code: str, description: str):
+    """
+    Function to extend certain bus stop descriptions
+    """
+    map = {
+        "46101": " (To JB)",
+        "46211": " (To JB)",
+        "46219": " (To SG)",
+        "46109": " (To SG)",
+        "64541": " (Bus Stop)",
+        "95131": " (To Airline Rd)",
+        "95139": " (To Nicoll Dr)"
+    }
+    return description + map.get(bus_stop_code, "")
 
 
 if __name__ == '__main__':
