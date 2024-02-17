@@ -91,7 +91,25 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
         return ` ${distance.toFixed(1)} km`;
     }
 
+    // Function to calculate bearing between two points
+    function getBearing(startLatLon, endLatLon) {
+        const [startLat, startLon] = startLatLon;
+        const [endLat, endLon] = endLatLon;
+
+        const dLon = (endLon - startLon);
+        const x = Math.cos(endLat) * Math.sin(dLon);
+        const y = Math.cos(startLat) * Math.sin(endLat) - Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLon);
+        let bearing = Math.atan2(x, y);
+        bearing = (bearing * 180) / Math.PI;
+
+        // Convert bearing to a positive value
+        bearing = (bearing + 360) % 360;
+
+        return bearing;
+    }
+
     const distance = getDistance(stopLatLon, busLatLon);
+    const bearing = getBearing(busLatLon, stopLatLon);
 
     return (
         <td>
@@ -109,6 +127,7 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
             { distance !== '' &&
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <small>{ distance }</small>
+                    <i className={`bi bi-arrow-up-short`} style={{ marginBottom: '-0.2em', transform: `rotate(${bearing}deg)` }} />
                 </div>
             }
         </td>

@@ -30,6 +30,7 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
                 enableHighAccuracy: false,
             },
             userDecisionTimeout: 10000,
+            watchPosition: true
         });
 
     useEffect(() => {
@@ -168,6 +169,7 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
                         locationEnabled={isGeolocationEnabled}
                         requestLocationPermission={getPosition}
             />
+            {coords && <small>{coords.latitude}, {coords.longitude} ({coords.heading})</small>}
             {busList.length > 0 &&
                 <BusSelector busData={data['bus_data']}
                              busList={busList}
