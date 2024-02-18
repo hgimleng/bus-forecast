@@ -2,8 +2,9 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 import BDIcon from "../Icon/BDIcon";
 import SDIcon from "../Icon/SDIcon";
 import DDIcon from "../Icon/DDIcon";
+import DirectionIcon from "../Icon/DirectionIcon";
 
-function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon, settings}) {
+function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon, settings, getDirection}) {
     function convertToTimeDisplay(dateString) {
         function getTimeString() {
             const date = new Date(dateString);
@@ -91,25 +92,8 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
         return ` ${distance.toFixed(1)} km`;
     }
 
-    // Function to calculate bearing between two points
-    function getBearing(startLatLon, endLatLon) {
-        const [startLat, startLon] = startLatLon;
-        const [endLat, endLon] = endLatLon;
-
-        const dLon = (endLon - startLon);
-        const x = Math.cos(endLat) * Math.sin(dLon);
-        const y = Math.cos(startLat) * Math.sin(endLat) - Math.sin(startLat) * Math.cos(endLat) * Math.cos(dLon);
-        let bearing = Math.atan2(x, y);
-        bearing = (bearing * 180) / Math.PI;
-
-        // Convert bearing to a positive value
-        bearing = (bearing + 360) % 360;
-
-        return bearing;
-    }
-
     const distance = getDistance(stopLatLon, busLatLon);
-    const bearing = getBearing(busLatLon, stopLatLon);
+    const direction = getDirection(busLatLon[0], busLatLon[1]);
 
     return (
         <td>
@@ -123,11 +107,11 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     (+{calculateTimeDifference(time, new Date(prevBusTime))})
                 </div>
-            </>}
+            </> }
             { distance !== '' &&
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <small>{ distance }</small>
-                    <i className={`bi bi-arrow-up-short`} style={{ marginBottom: '-0.2em', transform: `rotate(${bearing}deg)` }} />
+                    <DirectionIcon angle={direction} />
                 </div>
             }
         </td>

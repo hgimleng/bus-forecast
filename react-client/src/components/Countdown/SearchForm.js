@@ -7,7 +7,6 @@ function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, locati
     function handleSubmit(e, inputText = text) {
         e.preventDefault()
         if (!inputText) return
-        console.log("Handling search form submit")
 
         const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
 

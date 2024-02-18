@@ -1,7 +1,7 @@
 import {useEffect} from "react";
 import StopButton from "./StopButton";
 
-function StopSelector({ stopData, stopList, setSelectedStop, selectedStop }) {
+function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, getDistance, getDirection }) {
     useEffect(() => {
         // If there is only 1 stop in the list, select it
         if (stopList.length === 1 && selectedStop === '') {
@@ -24,7 +24,8 @@ function StopSelector({ stopData, stopList, setSelectedStop, selectedStop }) {
                             code={stopCode}
                             name={stopData[stopCode]['name']}
                             road={stopData[stopCode]['road']}
-                            distance={stopData[stopCode]['distance']}
+                            distance={getDistance(stopData[stopCode]['lat'], stopData[stopCode]['lng'])}
+                            direction={getDirection(stopData[stopCode]['lat'], stopData[stopCode]['lng'])}
                             onClick={() => setSelectedStop(stopCode)}
                             selected={false}
                             isLoading={false}

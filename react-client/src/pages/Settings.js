@@ -1,7 +1,7 @@
 import React from 'react';
 import MultiSelection from "../components/Settings/MultiSelection";
 
-function Settings({ active, dataTimestamp, downloadData, settings, updateSettings }) {
+function Settings({ active, dataTimestamp, downloadData, getPosition, isGeolocationEnabled, settings, updateSettings }) {
 
     function getLastUpdated() {
         if (!dataTimestamp) {
@@ -33,6 +33,13 @@ function Settings({ active, dataTimestamp, downloadData, settings, updateSetting
                             style={{textAlign: 'left'}}>
                             <strong>Download Data</strong> (Last updated: {getLastUpdated()})
                         </button>
+                        {!isGeolocationEnabled &&
+                        <button
+                            onClick={getPosition}
+                            className={`list-group-item list-group-item-action`}
+                            style={{textAlign: 'left'}}>
+                            <strong>Allow location permission</strong>
+                        </button>}
                     </div>
                     <hr />
                     <h4>Bus Countdown</h4>

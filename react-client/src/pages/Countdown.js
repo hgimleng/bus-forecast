@@ -4,10 +4,9 @@ import SearchForm from '../components/Countdown/SearchForm';
 import TimingDisplay from '../components/Countdown/TimingDisplay';
 import BusSelector from '../components/Countdown/BusSelector';
 import StopSelector from '../components/Countdown/StopSelector';
-import { useGeolocated } from "react-geolocated";
 import TimingErrorAlert from "../components/Countdown/TimingErrorAlert";
 
-function Countdown({ active, data, updateDistanceForStops, settings }) {
+function Countdown({ active, data, settings, compassDirection, coords, getPosition, isGeolocationEnabled }) {
     const [timingData, setTimingData] = useState({})
     const [lastUpdateTime, setLastUpdateTime] = useState('')
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -17,21 +16,11 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
     const [selectedBus, setSelectedBus] = useState('')
     const [selectedDirection, setSelectedDirection] = useState('')
     const [isNearbyClicked, setIsNearbyClicked] = useState(false)
-    const [getStopList, setGetStopList] = useState(() => (stopData) => [])
     const [showAlert, setShowAlert] = useState(false);
     const [isTimingDisplayRendered, setIsTimingDisplayRendered] = useState(false);
     const targetRef = useRef(null);
 
     const scrollToRef = (ref) => ref.current.scrollIntoView({ behavior: 'smooth' });
-
-    const { coords, getPosition, isGeolocationEnabled } =
-        useGeolocated({
-            positionOptions: {
-                enableHighAccuracy: false,
-            },
-            userDecisionTimeout: 10000,
-            watchPosition: true
-        });
 
     useEffect(() => {
         // Update the time state every 1 second/ 1000 milliseconds
@@ -44,6 +33,9 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
             if (selectedStop) {
                 fetchStopInfo(selectedStop);
             }
+            if (isNearbyClicked) {
+                setStopList(getStopListSortedByDistance(data['stop_data'], 1));
+            }
         }, 15000);
     
         // Clear interval on re-render to avoid memory leaks
@@ -51,12 +43,7 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
             clearInterval(timer);
             clearInterval(dataRefresher);
         };
-      }, [selectedStop])
-
-    useEffect(() => {
-        console.log("[data/getStopList changed] updating stop list from data of "+Object.keys(data['stop_data']).length.toString())
-        setStopList(getStopList(data['stop_data']));
-    }, [data, getStopList])
+      }, [selectedStop, isNearbyClicked])
 
     useEffect(() => {
         if (selectedStop && isTimingDisplayRendered) {
@@ -67,12 +54,20 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
     async function fetchStopInfo(stopCode) {
         if (selectedStop !== stopCode) {
             setSelectedStop(stopCode)
+            // setTimingData([])
         }
-        await updateDistanceForStops()
 
         try {
-            const response = await api_arrival.get(`/?id=${stopCode}`)
+            stopCode = getModifiedStopCode(stopCode);
+
+            let stopCodes = stopCode.split("/")
+            const response = await api_arrival.get(`/?id=${stopCodes[0]}`)
             const data = response.data
+            for (let i = 1; i < stopCodes.length; i++) {
+                const response = await api_arrival.get(`/?id=${stopCodes[i]}`)
+                data['services'] = data['services'].concat(response.data['services'])
+            }
+
             setTimingData(data)
             setLastUpdateTime(new Date().toLocaleTimeString())
             setShowAlert(false)
@@ -83,47 +78,41 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
         }
     }
 
-    async function handleSearch(inputText) {
-        await updateDistanceForStops()
-        const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
+    function getStopListSortedByDistance(data, distanceLimit = Number.MAX_VALUE) {
+        // Sort the stopList by distance in ascending order and limit by distance
+        return [...Object.keys(data)].sort((a, b) => getDistance(data[a]['lat'], data[a]['lng']) - getDistance(data[b]['lat'], data[b]['lng'])).filter((stopCode) => getDistance(data[stopCode]['lat'], data[stopCode]['lng']) < distanceLimit);
+    }
 
-        function getStopListSortedByDistance(data, distanceLimit = Number.MAX_VALUE) {
-            // Sort the stopList by distance in ascending order and limit by distance
-            console.log("Sorting stop list by distance")
-            return [...Object.keys(data)].sort((a, b) => data[a].distance - data[b].distance).filter((stopCode) => data[stopCode].distance < distanceLimit);
-        }
+    async function handleSearch(inputText) {
+        const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
 
         function getStopListSortedByName(data) {
             // Sort the stopList by name in ascending order
-            console.log("Sorting stop list by name")
             return [...Object.keys(data)].sort((a, b) => data[a].name.localeCompare(data[b].name));
         }
 
         if (inputText === 'nearby') {
             setIsNearbyClicked(true)
-            setGetStopList(() =>
-                (stopData) => getStopListSortedByDistance(stopData, 2)
-            )
+            setStopList(getStopListSortedByDistance(data['stop_data'], 1))
         } else {
             setIsNearbyClicked(false)
-            setGetStopList(() =>
-                function (stopData) {
-                    const filteredStopData = Object.fromEntries(
-                        Object.entries(stopData).filter(([stopCode, stopValue]) => {
-                            // Check if stop code matches input text
-                            // or if stop name contains input text
-                            // or if any of the buses at the stop is a variant of the input text
-                            return (
-                                stopCode === inputText ||
-                                cleanString(stopValue['name']).includes(cleanString(inputText)) ||
-                                stopValue['buses'].some(busNum => [cleanString(busNum), busNum.replace(/[a-zA-Z]$/, '')].includes(cleanString(inputText)))
-                            )
-                        })
-                    );
-
-                    return isGeolocationEnabled ? getStopListSortedByDistance(filteredStopData) : getStopListSortedByName(filteredStopData)
-                }
-            )
+            const filteredStopData = Object.fromEntries(
+                Object.entries(data['stop_data']).filter(([stopCode, stopValue]) => {
+                    // Check if stop code matches input text
+                    // or if stop name contains input text
+                    // or if any of the buses at the stop is a variant of the input text
+                    return (
+                        stopCode === inputText ||
+                        cleanString(stopValue['name']).includes(cleanString(inputText)) ||
+                        stopValue['buses'].some(busNum => [cleanString(busNum), busNum.replace(/[a-zA-Z]$/, '')].includes(cleanString(inputText)))
+                    )
+                })
+            );
+            if (isGeolocationEnabled) {
+                setStopList(getStopListSortedByDistance(filteredStopData))
+            } else {
+                setStopList(getStopListSortedByName(filteredStopData))
+            }
         }
         setSelectedBus('')
         setSelectedDirection('')
@@ -132,9 +121,7 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
     function handleBusSelect(busNum, direction) {
         setSelectedBus(busNum)
         setSelectedDirection(direction)
-        setGetStopList(() =>
-            (stopData) => data['bus_data'][busNum][direction]['stops']
-        )
+        setStopList(data['bus_data'][busNum][direction]['stops'])
         setIsNearbyClicked(false)
     }
 
@@ -143,8 +130,8 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
         const direction = Object.keys(busData).find(direction => busData[direction]['stops'].slice(-2).includes(dest_code));
 
         setBusList([busNum])
-        handleBusSelect(busNum, direction)
         setIsNearbyClicked(false)
+        handleBusSelect(busNum, direction)
     }
 
     function showStopSelector() {
@@ -158,6 +145,64 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
         return Object.keys(data['stop_data']).length > 0;
     }
 
+    function getDistance(lat, lon){
+        if (!coords) {
+            return null;
+        }
+
+        // Get distance from coords to the stop
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            function deg2rad(deg) {
+                return deg * (Math.PI / 180);
+            }
+
+            const R = 6371; // Radius of the earth in km
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            const distance = R * c; // Distance in km
+            return distance;
+        }
+
+        return getDistanceFromLatLonInKm(coords.latitude, coords.longitude, lat, lon);
+    }
+
+    function getDirection(lat, lon) {
+        if (!coords || !compassDirection) {
+            return null;
+        }
+
+        // Function to calculate bearing between two points
+        function getBearing(lat1, lon1, lat2, lon2) {
+            const dLon = (lon2 - lon1);
+            const x = Math.cos(lat2) * Math.sin(dLon);
+            const y = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLon);
+            let bearing = Math.atan2(x, y);
+            bearing = (bearing * 180) / Math.PI - compassDirection;
+
+            // Convert bearing to a positive value
+            bearing = ((bearing % 360) + 360) % 360;
+            return bearing;
+        }
+
+        return getBearing(coords.latitude, coords.longitude, lat, lon);
+    }
+
+    // Special case of combining stops for Woodlands and Yishun Int
+    function getModifiedStopCode(stop) {
+        if (stop === '46008' || stop === '46009') {
+            return '46008/46009';
+        }
+        if (stop === '59008' || stop === '59009') {
+            return '59008/59009';
+        }
+        return stop;
+    }
+
     return (
         <>
         {hasData() ?
@@ -169,7 +214,6 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
                         locationEnabled={isGeolocationEnabled}
                         requestLocationPermission={getPosition}
             />
-            {coords && <small>{coords.latitude}, {coords.longitude} ({coords.heading})</small>}
             {busList.length > 0 &&
                 <BusSelector busData={data['bus_data']}
                              busList={busList}
@@ -182,6 +226,8 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
                               stopList={stopList}
                               setSelectedStop={fetchStopInfo}
                               selectedStop={selectedStop}
+                              getDistance={getDistance}
+                              getDirection={getDirection}
                 />}
             <div ref={targetRef}>
             <TimingErrorAlert showAlert={showAlert}
@@ -196,6 +242,9 @@ function Countdown({ active, data, updateDistanceForStops, settings }) {
                                setSelectedStop={fetchStopInfo}
                                onRendered={() => setIsTimingDisplayRendered(true)}
                                settings={settings}
+                               getDistance={getDistance}
+                               getDirection={getDirection}
+                               getModifiedStopCode={getModifiedStopCode}
                 />}
             </div>
         </div> :

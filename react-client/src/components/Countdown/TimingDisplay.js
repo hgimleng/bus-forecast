@@ -1,8 +1,9 @@
 import BusRowDisplay from "./BusRowDisplay";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import {useEffect} from "react";
+import DirectionIcon from "../Icon/DirectionIcon";
 
-function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick, setSelectedStop, onRendered, settings }) {
+function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, currentTime, onBusRowClick, setSelectedStop, onRendered, settings, getDistance, getDirection, getModifiedStopCode }) {
 
     useEffect(() => {
         // Notify parent that the component has rendered
@@ -43,6 +44,9 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
         }
     })
     const stopLatLon = [stopData[selectedStop]['lat'], stopData[selectedStop]['lng']];
+    const stopCode = getModifiedStopCode(selectedStop);
+    const distance = getDistance(stopLatLon[0], stopLatLon[1]);
+    const direction = getDirection(stopLatLon[0], stopLatLon[1]);
 
     function getOppositeStop() {
         const lastDigit = selectedStop.slice(-1);
@@ -59,7 +63,10 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                 <i className="bi bi-shuffle ms-2"
                    onClick={() => setSelectedStop(getOppositeStop())}></i>}
             </div>
-            <h6>{ stopData[selectedStop]['road'] } | {selectedStop}{stopData[selectedStop]['distance'] && ` | ${stopData[selectedStop]['distance'].toFixed(1)}`} km</h6>
+            <h6 style={{ display: 'flex'}}>
+                { stopData[selectedStop]['road'] } | {stopCode}{distance && ` | ${distance.toFixed(1)}`} km
+                <DirectionIcon angle={direction}/>
+            </h6>
             <table className='table table-striped table-bordered'>
                 <caption>
                     Last Updated: { lastUpdateTime }
@@ -74,9 +81,9 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                 </thead>
                 <tbody>
                     {sortedTimingData
-                    .map((bus) => (
+                    .map((bus, index) => (
                         <BusRowDisplay
-                            key={`${bus['no']}-${bus['next']['destination_code']}`}
+                            key={index}
                             busNum={bus['no']}
                             arrival1={bus['next']}
                             arrival2={bus['next2']}
@@ -85,6 +92,7 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                             stopLatLon={stopLatLon}
                             onBusRowClick={onBusRowClick}
                             settings={settings}
+                            getDirection={getDirection}
                         />
                     ))}
                 </tbody>

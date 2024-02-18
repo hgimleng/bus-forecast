@@ -48,17 +48,6 @@ function useAppData() {
 
   }, []);
 
-  useEffect(() => {
-    if(coords) {
-      const prevCoords = prevCoordsRef.current;
-      if (!prevCoords || (Math.abs(prevCoords.latitude - coords.latitude) > 0) || (Math.abs(prevCoords.longitude - coords.longitude) > 0)) {
-        console.log("Location changed, updating distances");
-        updateDataDistance(data);
-        prevCoordsRef.current = coords;
-      }
-    }
-  }, [coords, data]);
-
   const isDataOutdated = (data) => {
     const oneDay = 24 * 60 * 60 * 1000;
     const now = Date.now();
@@ -71,51 +60,6 @@ function useAppData() {
     data.timestamp = Date.now();
     console.log("Downloaded data")
     return data;
-  };
-
-  function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-    function deg2rad(deg) {
-      return deg * (Math.PI / 180);
-    }
-
-    const R = 6371; // Radius of the earth in km
-    const dLat = deg2rad(lat2 - lat1);
-    const dLon = deg2rad(lon2 - lon1);
-    const a =
-        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c; // Distance in km
-    return distance;
-  }
-
-  async function updateDataDistance(data) {
-    getPosition();
-    let updatedData = JSON.parse(JSON.stringify(data));
-    if (isGeolocationEnabled && coords) {
-      const updatedStopData = { ...updatedData['stop_data'] };
-      for (let stopCode in updatedStopData) {
-        const stopLat = updatedStopData[stopCode].lat;
-        const stopLon = updatedStopData[stopCode].lng;
-        updatedStopData[stopCode].distance = getDistanceFromLatLonInKm(coords.latitude, coords.longitude, stopLat, stopLon);
-      }
-
-      updatedData['stop_data'] = updatedStopData;
-      console.log("Updated stop data with distance");
-      console.log("Current location: "+coords.latitude.toString()+", "+coords.longitude.toString());
-
-      return updatedData;
-    } else {
-      console.log("Location not enabled, not updating distances");
-      return updatedData;
-    }
-  }
-
-  const updateDistanceForStops = async () => {
-    const newData = await updateDataDistance(data);
-    setDataState(newData);
-    return newData;
   };
 
   const downloadData = async () => {
@@ -131,7 +75,7 @@ function useAppData() {
     setSettings(newSettings);
   }
 
-  return { data, updateDistanceForStops, downloadData, settings, updateSettings };
+  return { data, downloadData, settings, updateSettings };
 }
 
 export default useAppData;

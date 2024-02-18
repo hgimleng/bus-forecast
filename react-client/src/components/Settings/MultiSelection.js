@@ -8,6 +8,7 @@ function MultiSelection({ title, selections, selected, handleSelection }) {
             {selections.map(selection => {
                 return (
                     <button
+                        key={selection}
                         className={`list-group-item list-group-item-action ${selection === selected ? 'active disabled' : ''}`}
                         style={{textAlign: 'left'}}
                         onClick={() => handleSelection(selection)}>
