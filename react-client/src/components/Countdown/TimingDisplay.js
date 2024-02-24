@@ -74,9 +74,9 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                 <thead>
                     <tr>
                         <th scope='col'></th>
-                        <th scope='col'>Bus 1</th>
-                        <th scope='col'>Bus 2</th>
-                        <th scope='col'>Bus 3</th>
+                        <th scope='col' className="text-center">Bus 1</th>
+                        <th scope='col' className="text-center">Bus 2</th>
+                        <th scope='col' className="text-center">Bus 3</th>
                     </tr>
                 </thead>
                 <tbody>

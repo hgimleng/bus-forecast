@@ -6,9 +6,9 @@ function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, locati
 
     function handleSubmit(e, inputText = text) {
         e.preventDefault()
-        if (!inputText) return
-
         const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
+
+        if (!inputText || !cleanString(inputText)) return
 
         const newBusList = Object.keys(busData).filter(busNum => [cleanString(busNum), busNum.slice(0, -1)].includes(cleanString(inputText)))
         setBusList(newBusList)
