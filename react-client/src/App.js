@@ -15,7 +15,7 @@ function App() {
   const { coords, getPosition, isGeolocationEnabled } =
       useGeolocated({
           positionOptions: {
-                enableHighAccuracy: false,
+              enableHighAccuracy: false,
             },
           userDecisionTimeout: 10000,
           watchPosition: true
@@ -67,11 +67,12 @@ function App() {
                         <i className={`fa fa-clock-o fa-lg ${activeTab === 'countdown' ? 'text-primary' : 'text-secondary'}`}></i>
                     </button>
                 </div>
-                <div className="col p-0">
-                    <button className={`btn w-100 ${activeTab === 'forecast' ? '' : 'text-muted'}`} onClick={() => setActiveTab('forecast')}>
+                {settings['forecastDisplay'] && <div className="col p-0">
+                    <button className={`btn w-100 ${activeTab === 'forecast' ? '' : 'text-muted'}`}
+                            onClick={() => setActiveTab('forecast')}>
                         <i className={`fa fa-cloud fa-lg ${activeTab === 'forecast' ? 'text-primary' : 'text-secondary'}`}></i>
                     </button>
-                </div>
+                </div>}
                 <div className="col p-0">
                     <button className={`btn w-100 ${activeTab === 'settings' ? '' : 'text-muted'}`} onClick={() => setActiveTab('settings')}>
                         <i className={`fa fa-cogs fa-lg ${activeTab === 'settings' ? 'text-primary' : 'text-secondary'}`}></i>

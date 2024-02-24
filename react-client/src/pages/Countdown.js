@@ -33,9 +33,6 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
             if (selectedStop) {
                 fetchStopInfo(selectedStop);
             }
-            if (isNearbyClicked) {
-                setStopList(getStopListSortedByDistance(data['stop_data'], 1));
-            }
         }, 15000);
     
         // Clear interval on re-render to avoid memory leaks
@@ -51,10 +48,16 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
         }
     }, [selectedStop, isTimingDisplayRendered])
 
+    // Update nearby stop list every five seconds
+    useEffect(() => {
+        if (isNearbyClicked && currentTime.getSeconds() % 5 === 0) {
+            setStopList(getStopListSortedByDistance(data['stop_data'], 1));
+        }
+    }, [currentTime])
+
     async function fetchStopInfo(stopCode) {
         if (selectedStop !== stopCode) {
             setSelectedStop(stopCode)
-            // setTimingData([])
         }
 
         try {
@@ -80,7 +83,16 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
 
     function getStopListSortedByDistance(data, distanceLimit = Number.MAX_VALUE) {
         // Sort the stopList by distance in ascending order and limit by distance
-        return [...Object.keys(data)].sort((a, b) => getDistance(data[a]['lat'], data[a]['lng']) - getDistance(data[b]['lat'], data[b]['lng'])).filter((stopCode) => getDistance(data[stopCode]['lat'], data[stopCode]['lng']) < distanceLimit);
+        let stopsWithDistanceSorted = Object.keys(data).map((stopCode) => {
+            return {stopCode: stopCode, distance: getDistance(data[stopCode]['lat'], data[stopCode]['lng'])};
+        }).sort((a, b) => a.distance - b.distance);
+        let stopList = [];
+        for (let i = 0; i < stopsWithDistanceSorted.length; i++) {
+            if (i < 5 || stopsWithDistanceSorted[i].distance < distanceLimit) {
+                stopList.push(stopsWithDistanceSorted[i].stopCode);
+            }
+        }
+        return stopList;
     }
 
     async function handleSearch(inputText) {
@@ -91,7 +103,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
             return [...Object.keys(data)].sort((a, b) => data[a].name.localeCompare(data[b].name));
         }
 
-        if (inputText === 'nearby') {
+        if (inputText === 'nearby' && isGeolocationEnabled) {
             setIsNearbyClicked(true)
             setStopList(getStopListSortedByDistance(data['stop_data'], 1))
         } else {

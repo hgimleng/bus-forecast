@@ -11,6 +11,14 @@ function Settings({ active, dataTimestamp, downloadData, getPosition, isGeolocat
         return new Date(dataTimestamp).toLocaleString();
     }
 
+    async function handleForecastDisplayToggle() {
+        // Determine the new value based on the current value
+        const newForecastDisplayValue = !settings.forecastDisplay;
+
+        // Call updateSettings with the new value
+        await updateSettings('forecastDisplay', newForecastDisplayValue);
+    }
+
     async function handleSortByClick(selected) {
         await updateSettings('sortBy', selected);
     }
@@ -34,18 +42,32 @@ function Settings({ active, dataTimestamp, downloadData, getPosition, isGeolocat
                             <strong>Download Data</strong> (Last updated: {getLastUpdated()})
                         </button>
                         {!isGeolocationEnabled &&
-                        <button
-                            onClick={getPosition}
-                            className={`list-group-item list-group-item-action`}
-                            style={{textAlign: 'left'}}>
-                            <strong>Allow location permission</strong>
-                        </button>}
+                            <button
+                                onClick={getPosition}
+                                className={`list-group-item list-group-item-action`}
+                                style={{textAlign: 'left'}}>
+                                <strong>Allow location permission</strong>
+                            </button>}
                     </div>
-                    <hr />
+                    <hr/>
+                    <h4>Bus Forecast (Beta)</h4>
+                    <div className="form-check form-switch">
+                        <input className="form-check-input"
+                               type="checkbox"
+                               role="switch"
+                               id="forecastDisplaySwitch"
+                               checked={settings.forecastDisplay}
+                               onChange={handleForecastDisplayToggle}/>
+                        <label className="form-check-label" htmlFor="forecastDisplaySwitch">Show forecast tab</label>
+                    </div>
+                    <hr/>
                     <h4>Bus Countdown</h4>
                     <div className="list-group">
-                        <MultiSelection title="Sort by" selections={["Bus number", "Arrival time"]} selected={settings["sortBy"]} handleSelection={handleSortByClick} />
-                        <MultiSelection title="Arrival display" selections={["Countdown", "Static"]} selected={settings["arrivalDisplay"]} handleSelection={handleArrivalDisplayClick} />
+                        <MultiSelection title="Sort by" selections={["Bus number", "Arrival time"]}
+                                        selected={settings["sortBy"]} handleSelection={handleSortByClick}/>
+                        <MultiSelection title="Arrival display" selections={["Countdown", "Static"]}
+                                        selected={settings["arrivalDisplay"]}
+                                        handleSelection={handleArrivalDisplayClick}/>
                     </div>
                 </div>
             </div>

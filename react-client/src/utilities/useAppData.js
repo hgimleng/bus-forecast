@@ -5,15 +5,15 @@ import { useGeolocated } from "react-geolocated";
 
 function useAppData() {
   const [data, setDataState] = useState({'bus_data': {}, 'stop_data': {}});
-  const { coords, getPosition, isGeolocationEnabled } =
+  const { _, getPosition, __ } =
       useGeolocated({
         positionOptions: {
           enableHighAccuracy: false,
         },
         userDecisionTimeout: 10000,
       });
-  const prevCoordsRef = useRef();
   const [settings, setSettings] = useState({
+    forecastDisplay: false,
     sortBy: 'Bus number',
     arrivalDisplay: 'Countdown'
   });
