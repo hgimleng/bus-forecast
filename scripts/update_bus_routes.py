@@ -18,6 +18,8 @@ URL_ROUTES = "http://datamall2.mytransport.sg/ltaodataservice/BusRoutes?$skip="
 URL_STOPS = "http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip="
 URL_SERVICES = "http://datamall2.mytransport.sg/ltaodataservice/BusServices?$skip="
 
+# Services/directions that are not in operation
+DEFUNCT_SERVICES = [("359", 2), ("382", 1), ("382", 2), ("812T", 1)]
 
 def update_bus_routes():
     """
@@ -43,6 +45,7 @@ def update_bus_routes():
         (record["ServiceNo"], record["Direction"],
         record["StopSequence"], record["BusStopCode"], record["Distance"])
         for record in fetch_all_records(URL_ROUTES, headers)
+        if (record["ServiceNo"], record["Direction"]) not in DEFUNCT_SERVICES
     ]
     buses_to_show_destination = get_buses_to_show_destination(bus_routes)
 
@@ -58,6 +61,15 @@ def update_bus_routes():
             *bus_stops[record[3]], record[4],
             *bus_services[(record[0], record[1])],
             "", "", show_destination))
+
+    # Remove stops that appear twice in a row
+    for i in range(len(bus_routes)-1, 0, -1):
+        # If service number, direction, and stop code is same for consecutive stops, remove the second stop
+        route_info1 = bus_routes[i]
+        route_info2 = bus_routes[i-1]
+        if route_info1[0] == route_info2[0] and route_info1[1] == route_info2[1] and route_info1[3] == route_info2[3]:
+            print(f"Removing duplicate stop {route_info1[4]} from route {route_info1[0]} direction {route_info1[1]}")
+            bus_routes.pop(i)
 
     # Connect to mysql to update database
     connection = psycopg2.connect(host=host,
@@ -139,6 +151,7 @@ def update_bus_routes():
     finally:
         # Close the connection
         connection.close()
+    print("Update completed")
 
 
 def fetch_all_records(url: str, headers: Dict[str, str]):
