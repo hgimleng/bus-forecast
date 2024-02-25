@@ -23,12 +23,12 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
     const scrollToRef = (ref) => ref.current.scrollIntoView({ behavior: 'smooth' });
 
     useEffect(() => {
-        // Update the time state every 1 second/ 1000 milliseconds
+        // Update the time state every 1 second
         const timer = setInterval(() => {
           setCurrentTime(new Date());
         }, 1000);
 
-        // Fetch the timing data every 15 seconds/ 15000 milliseconds
+        // Fetch the timing data every 15 seconds
         const dataRefresher = setInterval(() => {
             if (selectedStop) {
                 fetchStopInfo(selectedStop);
@@ -40,7 +40,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
             clearInterval(timer);
             clearInterval(dataRefresher);
         };
-      }, [selectedStop, isNearbyClicked])
+      }, [selectedStop])
 
     useEffect(() => {
         if (selectedStop && isTimingDisplayRendered) {
@@ -48,10 +48,23 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
         }
     }, [selectedStop, isTimingDisplayRendered])
 
-    // Update nearby stop list every five seconds
     useEffect(() => {
-        if (isNearbyClicked && currentTime.getSeconds() % 5 === 0) {
+        if (currentTime.getSeconds() % 5 !== 0) {
+            return;
+        }
+
+        // Update stop list every five seconds
+        if (isNearbyClicked) {
+            // Re calculate and sort distance to all stops
             setStopList(getStopListSortedByDistance(data['stop_data'], 1));
+        } else if (isGeolocationEnabled && selectedBus === '') {
+            // Re sort distances to displayed stops
+            const filteredStopData = Object.fromEntries(
+                Object.entries(data['stop_data']).filter(([stopCode, stopValue]) => {
+                    return stopList.includes(stopCode);
+                })
+            );
+            setStopList(getStopListSortedByDistance(filteredStopData));
         }
     }, [currentTime])
 
