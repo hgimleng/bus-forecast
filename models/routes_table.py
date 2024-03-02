@@ -20,6 +20,9 @@ class RoutesTable(db.Model):
     origin_code = db.Column(db.String(100), nullable=False)
     destination_code = db.Column(db.String(100), nullable=False)
     loop_desc = db.Column(db.String(100))
+    first_visit_desc = db.Column(db.String(100))
+    second_visit_desc = db.Column(db.String(100))
+    show_destination = db.Column(db.Boolean)
 
     def to_dict(self):
         return {
@@ -34,4 +37,7 @@ class RoutesTable(db.Model):
             "distance": self.distance,
             "dest_code": self.destination_code,
             "loop_desc": self.loop_desc,
+            "first_visit_desc": self.first_visit_desc,
+            "second_visit_desc": self.second_visit_desc,
+            "show_destination": self.show_destination
         }

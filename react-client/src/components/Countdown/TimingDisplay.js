@@ -47,11 +47,19 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
     const stopCode = getModifiedStopCode(selectedStop);
     const distance = getDistance(stopLatLon[0], stopLatLon[1]);
     const direction = getDirection(stopLatLon[0], stopLatLon[1]);
+    const showDestinationBuses = stopData[selectedStop]['show_destination'];
 
     function getOppositeStop() {
         const lastDigit = selectedStop.slice(-1);
         const oppositeStop = selectedStop.slice(0, -1) + (10 - parseInt(lastDigit, 10)).toString();
         return stopData[oppositeStop] ? oppositeStop : '';
+    }
+
+    function getDestinationInfo(busNum, destinationCode) {
+        if (showDestinationBuses.includes(busNum)) {
+            return stopData[destinationCode]['name'];
+        }
+        return "";
     }
 
     return (
@@ -93,6 +101,7 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                             onBusRowClick={onBusRowClick}
                             settings={settings}
                             getDirection={getDirection}
+                            destinationInfo={getDestinationInfo(bus['no'], bus['next']['destination_code'])}
                         />
                     ))}
                 </tbody>

@@ -41,11 +41,23 @@ def update_bus_routes():
     }
     bus_routes = [
         (record["ServiceNo"], record["Direction"],
-         record["StopSequence"], record["BusStopCode"],
-         *bus_stops[record["BusStopCode"]], record["Distance"],
-         *bus_services[(record["ServiceNo"], record["Direction"])],)
+        record["StopSequence"], record["BusStopCode"], record["Distance"])
         for record in fetch_all_records(URL_ROUTES, headers)
     ]
+    buses_to_show_destination = get_buses_to_show_destination(bus_routes)
+
+    bus_data = []
+    for record, next_record in zip(bus_routes, bus_routes[1:]+[bus_routes[0]]):
+        # Skip records with same bus number, direction and bus stop twice in a row
+        if (record[0], record[1], record[3]) == (next_record[0], next_record[1], next_record[3]):
+            print(f"Skipping duplicate record: {record}")
+            continue
+        show_destination = (record[0], record[3]) in buses_to_show_destination
+        bus_data.append((
+            record[0], record[1], record[2], record[3],
+            *bus_stops[record[3]], record[4],
+            *bus_services[(record[0], record[1])],
+            "", "", show_destination))
 
     # Connect to mysql to update database
     connection = psycopg2.connect(host=host,
@@ -76,6 +88,9 @@ def update_bus_routes():
                 origin_code VARCHAR(100) NOT NULL,
                 destination_code VARCHAR(100) NOT NULL,
                 loop_desc VARCHAR(100),
+                first_visit_desc VARCHAR(100),
+                second_visit_desc VARCHAR(100),
+                show_destination BOOLEAN,
                 PRIMARY KEY (bus_num, direction, stop_seq)
             );
             """
@@ -87,7 +102,7 @@ def update_bus_routes():
             # Create a temporary file with the data in CSV format
             csv_file = io.StringIO()
             csv_writer = csv.writer(csv_file)
-            csv_writer.writerows(bus_routes)
+            csv_writer.writerows(bus_data)
             csv_file.seek(0)
 
             # Use COPY command to load data from the file to the database
@@ -95,7 +110,8 @@ def update_bus_routes():
                 "COPY routes_table "
                 "(bus_num, direction, stop_seq, "
                 "stop_code, stop_name, latitude, longitude, road_name, "
-                "distance, category, origin_code, destination_code, loop_desc)"
+                "distance, category, origin_code, destination_code, loop_desc, "
+                "first_visit_desc, second_visit_desc, show_destination)"
                 "FROM STDIN WITH CSV"
             )
             cursor.copy_expert(copy_command, csv_file)
@@ -115,6 +131,9 @@ def update_bus_routes():
             with open("bus_routes.csv", "w") as f:
                 csv_writer = csv.writer(f)
                 csv_writer.writerows(bus_routes)
+            with open("bus_data.csv", "w") as f:
+                csv_writer = csv.writer(f)
+                csv_writer.writerows(bus_data)
 
             print("Update successful")
     finally:
@@ -157,6 +176,29 @@ def get_bus_stop_description(bus_stop_code: str, description: str):
     }
     return description + map.get(bus_stop_code, "")
 
+
+def get_buses_to_show_destination(bus_routes):
+    """
+    Function to get buses that show destination
+    """
+    buses_to_show_destination = []
+    bus_routes_dict = {}
+    for record in bus_routes:
+        bus_num, direction, stop_seq, stop_code, distance = record
+        if bus_num not in bus_routes_dict:
+            bus_routes_dict[bus_num] = {}
+        if direction not in bus_routes_dict[bus_num]:
+            bus_routes_dict[bus_num][direction] = []
+        bus_routes_dict[bus_num][direction].append(stop_code)
+    # Remove last stop from each route
+    for bus_num, directions in bus_routes_dict.items():
+        for direction, stops in directions.items():
+            bus_routes_dict[bus_num][direction] = stops[:-1]
+        if len(directions) == 2:
+            # Get stop codes that appear in both directions
+            common_stops = set(bus_routes_dict[bus_num][1]) & set(bus_routes_dict[bus_num][2])
+            buses_to_show_destination.extend([(bus_num, stop) for stop in common_stops])
+    return buses_to_show_destination
 
 if __name__ == '__main__':
     update_bus_routes()

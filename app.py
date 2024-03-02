@@ -82,6 +82,7 @@ def get_all_bus_info():
         dest_code = record_dict["dest_code"]
         stop_code = record_dict["stop_code"]
         loop_desc = record_dict["loop_desc"]
+        show_destination = record_dict["show_destination"]
 
         # Add stop data
         if stop_code not in result["stop_data"]:
@@ -90,7 +91,8 @@ def get_all_bus_info():
                 "lng": record_dict["longitude"],
                 "name": record_dict["stop_name"],
                 "road": record_dict["road_name"],
-                "buses": []
+                "buses": [],
+                "show_destination": []
             }
 
         # Add bus data
@@ -105,6 +107,8 @@ def get_all_bus_info():
         result["bus_data"][bus_num][direction]["stops"].append(stop_code)
         if bus_num not in result["stop_data"][stop_code]["buses"]:
             result["stop_data"][stop_code]["buses"].append(bus_num)
+            if show_destination:
+                result["stop_data"][stop_code]["show_destination"].append(bus_num)
 
     # Add destination name
     for bus_num in result["bus_data"]:
