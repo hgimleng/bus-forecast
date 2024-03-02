@@ -47,29 +47,24 @@ def update_bus_routes():
         for record in fetch_all_records(URL_ROUTES, headers)
         if (record["ServiceNo"], record["Direction"]) not in DEFUNCT_SERVICES
     ]
-    buses_to_show_destination = get_buses_to_show_destination(bus_routes)
-
-    bus_data = []
-    for record, next_record in zip(bus_routes, bus_routes[1:]+[bus_routes[0]]):
-        # Skip records with same bus number, direction and bus stop twice in a row
-        if (record[0], record[1], record[3]) == (next_record[0], next_record[1], next_record[3]):
-            print(f"Skipping duplicate record: {record}")
-            continue
-        show_destination = (record[0], record[3]) in buses_to_show_destination
-        bus_data.append((
-            record[0], record[1], record[2], record[3],
-            *bus_stops[record[3]], record[4],
-            *bus_services[(record[0], record[1])],
-            "", "", show_destination))
-
     # Remove stops that appear twice in a row
     for i in range(len(bus_routes)-1, 0, -1):
         # If service number, direction, and stop code is same for consecutive stops, remove the second stop
         route_info1 = bus_routes[i]
         route_info2 = bus_routes[i-1]
         if route_info1[0] == route_info2[0] and route_info1[1] == route_info2[1] and route_info1[3] == route_info2[3]:
-            print(f"Removing duplicate stop {route_info1[4]} from route {route_info1[0]} direction {route_info1[1]}")
+            print(f"Removing duplicate stop {route_info1[3]} from bus {route_info1[0]} direction {route_info1[1]}")
             bus_routes.pop(i)
+    buses_to_show_destination = get_buses_to_show_destination(bus_routes)
+
+    bus_data = []
+    for record in bus_routes:
+        show_destination = (record[0], record[3]) in buses_to_show_destination
+        bus_data.append((
+            record[0], record[1], record[2], record[3],
+            *bus_stops[record[3]], record[4],
+            *bus_services[(record[0], record[1])],
+            "", "", show_destination))
 
     # Connect to mysql to update database
     connection = psycopg2.connect(host=host,
@@ -146,8 +141,6 @@ def update_bus_routes():
             with open("bus_data.csv", "w") as f:
                 csv_writer = csv.writer(f)
                 csv_writer.writerows(bus_data)
-
-            print("Update successful")
     finally:
         # Close the connection
         connection.close()
