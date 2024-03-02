@@ -1,14 +1,14 @@
 import React from 'react';
 import MultiSelection from "../components/Settings/MultiSelection";
 
-function Settings({ active, dataTimestamp, downloadData, getPosition, isGeolocationEnabled, settings, updateSettings }) {
+function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateData, getPosition, isGeolocationEnabled, settings, updateSettings }) {
 
-    function getLastUpdated() {
-        if (!dataTimestamp) {
+    function getLastUpdated(timestamp) {
+        if (!timestamp) {
             return 'N/A';
         }
 
-        return new Date(dataTimestamp).toLocaleString();
+        return new Date(timestamp).toLocaleString();
     }
 
     async function handleForecastDisplayToggle() {
@@ -36,10 +36,10 @@ function Settings({ active, dataTimestamp, downloadData, getPosition, isGeolocat
                     <h4>General</h4>
                     <div className="list-group">
                         <button
-                            onClick={downloadData}
+                            onClick={updateData}
                             className={`list-group-item list-group-item-action`}
                             style={{textAlign: 'left'}}>
-                            <strong>Download Data</strong> (Last updated: {getLastUpdated()})
+                            <strong>Download Data</strong> (Last checked: {getLastUpdated(lastCheckedTimestamp)}, Last updated: {getLastUpdated(lastUpdatedTimestamp)})
                         </button>
                         {!isGeolocationEnabled &&
                             <button

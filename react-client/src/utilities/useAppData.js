@@ -22,7 +22,7 @@ function useAppData() {
     const fetchAndSetData = async () => {
       let localData = await getData('busInfo');
 
-      if (!localData || isDataOutdated(localData)) {
+      if (!localData || await isDataOutdated(localData)) {
         if (!localData) {
           getPosition()
         }
@@ -48,19 +48,31 @@ function useAppData() {
 
   }, []);
 
-  const isDataOutdated = (data) => {
+  const isDataOutdated = async (data) => {
     const oneDay = 24 * 60 * 60 * 1000;
     const now = Date.now();
-    return (now - data.timestamp) > oneDay;
+    if (now - data.lastCheckedTimestamp < oneDay) {
+        return false;
+    } else {
+      const lastUpdatedResponse = await api_forecast.get('/last-updated');
+      data.lastCheckedTimestamp = now;
+      return (data.lastUpdatedTimestamp < lastUpdatedResponse.data.timestamp);
+    }
   };
 
   const fetchDataFromAPI = async () => {
     const response = await api_forecast.get('/all-bus-info');
     const data = response.data;
-    data.timestamp = Date.now();
-    console.log("Downloaded data")
+    data.lastCheckedTimestamp = Date.now();
+    data.lastUpdatedTimestamp = await getDataLastUpdated();
+    console.log("Downloaded data updated on", data.lastUpdatedTimestamp);
     return data;
   };
+
+  const getDataLastUpdated = async () => {
+    const lastUpdatedResponse = await api_forecast.get('/last-updated');
+    return Date.parse(lastUpdatedResponse.data.last_updated);
+  }
 
   const downloadData = async () => {
     const freshData = await fetchDataFromAPI();
@@ -75,7 +87,14 @@ function useAppData() {
     setSettings(newSettings);
   }
 
-  return { data, downloadData, settings, updateSettings };
+  const updateLastChecked = async () => {
+    const newData = { ...data };
+    newData.lastCheckedTimestamp = Date.now();
+    await setData('busInfo', newData);
+    setDataState(newData);
+  }
+
+  return { data, getDataLastUpdated, downloadData, settings, updateSettings, updateLastChecked };
 }
 
 export default useAppData;

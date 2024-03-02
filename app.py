@@ -6,6 +6,7 @@ from sqlalchemy import func, exc
 
 from models.database import init_db
 from models.routes_table import RoutesTable
+from models.last_updated_table import LastUpdatedTable
 from utils.forecaster import fetch_arrival_timing
 from utils.helpers import transform_route_records
 
@@ -113,6 +114,17 @@ def get_all_bus_info():
             route_info["dest_name"] = result["stop_data"][dest_code]["name"]
 
     return jsonify(result)
+
+
+@app.route('/api/last-updated')
+def get_last_updated():
+    # Select last row from last_updated_table
+    last_updated = LastUpdatedTable.query.order_by(LastUpdatedTable.id.desc()).first()
+    if last_updated:
+        return jsonify(last_updated.to_dict())
+    else:
+        # Return default last updated time if table is empty
+        return jsonify({"id": 0, "last_updated": "2024-01-01 00:00:00"})
 
 
 if __name__ == '__main__':

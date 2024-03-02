@@ -55,6 +55,10 @@ def update_bus_routes():
 
     try:
         with connection.cursor() as cursor:
+            # Create a new last_updated_table if not exists and insert new last updated time
+            cursor.execute("CREATE TABLE IF NOT EXISTS last_updated_table (id SERIAL PRIMARY KEY, last_updated TIMESTAMP);")
+            cursor.execute("INSERT INTO last_updated_table (last_updated) VALUES (NOW());")
+
             cursor.execute("DROP TABLE routes_table;")
             # Create new table if required
             create_table_query = """
@@ -112,6 +116,7 @@ def update_bus_routes():
                 csv_writer = csv.writer(f)
                 csv_writer.writerows(bus_routes)
 
+            print("Update successful")
     finally:
         # Close the connection
         connection.close()

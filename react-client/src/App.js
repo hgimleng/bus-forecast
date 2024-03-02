@@ -10,7 +10,7 @@ import {useGeolocated} from "react-geolocated";
 
 function App() {
   const [activeTab, setActiveTab] = useState('countdown');
-  const { data, downloadData, settings, updateSettings } = useAppData()
+  const { data, getDataLastUpdated, downloadData, settings, updateSettings, updateLastChecked } = useAppData()
   const [compassDirection, setCompassDirection] = useState(null);
   const { coords, getPosition, isGeolocationEnabled } =
       useGeolocated({
@@ -41,6 +41,15 @@ function App() {
         };
     }, []);
 
+  async function updateData() {
+      let lastUpdated = await getDataLastUpdated();
+      if (data.lastUpdatedTimestamp < lastUpdated)  {
+          await downloadData();
+      } else {
+          await updateLastChecked();
+      }
+  }
+
   return (
     <div className="container d-flex flex-column">
         <div className="flex-grow-1 overflow-auto">
@@ -52,8 +61,9 @@ function App() {
                        isGeolocationEnabled={isGeolocationEnabled} />
             <Forecast active={activeTab === 'forecast'} />
             <Settings active={activeTab === 'settings'}
-                      dataTimestamp={data.timestamp}
-                      downloadData={downloadData}
+                      lastCheckedTimestamp={data.lastCheckedTimestamp}
+                      lastUpdatedTimestamp={data.lastUpdatedTimestamp}
+                      updateData={updateData}
                       getPosition={getPosition}
                       isGeolocationEnabled={isGeolocationEnabled}
                       settings={settings}
