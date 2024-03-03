@@ -55,16 +55,17 @@ def update_bus_routes():
         if route_info1[0] == route_info2[0] and route_info1[1] == route_info2[1] and route_info1[3] == route_info2[3]:
             print(f"Removing duplicate stop {route_info1[3]} from bus {route_info1[0]} direction {route_info1[1]}")
             bus_routes.pop(i)
-    buses_to_show_destination = get_buses_to_show_destination(bus_routes)
+    buses_to_show_destination, multi_visit_stops = get_buses_visit_info(bus_routes)
 
     bus_data = []
     for record in bus_routes:
         show_destination = (record[0], record[3]) in buses_to_show_destination
+        first_visit_desc, second_visit_desc = get_visit_descriptions(record, multi_visit_stops)
         bus_data.append((
             record[0], record[1], record[2], record[3],
             *bus_stops[record[3]], record[4],
             *bus_services[(record[0], record[1])],
-            "", "", show_destination))
+            first_visit_desc, second_visit_desc, show_destination))
 
     # Connect to mysql to update database
     connection = psycopg2.connect(host=host,
@@ -167,6 +168,7 @@ def fetch_all_records(url: str, headers: Dict[str, str]):
             print(f"Error fetching {url}: {e}")
             return records
 
+
 def get_bus_stop_description(bus_stop_code: str, description: str):
     """
     Function to extend certain bus stop descriptions
@@ -183,11 +185,54 @@ def get_bus_stop_description(bus_stop_code: str, description: str):
     return description + map.get(bus_stop_code, "")
 
 
-def get_buses_to_show_destination(bus_routes):
+def get_visit_descriptions(record, multi_visit_stops):
     """
-    Function to get buses that show destination
+    Function to get first and second visit descriptions
+    """
+    map = {
+        ("11", 1, "80199"): ("Tanjong Rhu", "Lor 1 Geylang"),
+        ("11", 1, "80191"): ("Tanjong Rhu", "Lor 1 Geylang"),
+        ("121", 1, "03218"): ("", "No Boarding"),
+        ("123M", 1, "14389"): ("Tiong Bahru", "Harbourfront"),
+        ("123M", 1, "14381"): ("Tiong Bahru", "Harbourfront"),
+        ("125", 1, "52109"): ("St. Michael's Ter", "Aljunied"),
+        ("125", 1, "52129"): ("St. Michael's Ter", "Aljunied"),
+        ("177", 1, "43719"): ("Bukit Panjang", "Bukit Batok"),
+        ("182", 1, "25269"): ("Tuas South", "Joo Koon"),
+        ("265", 1, "54009"): ("Ang Mo Kio Ave 10", "Mayflower"),
+        ("291", 1, "75009"): ("Tampines St 81 (West)", "Tampines St 32 (East)"),
+        ("293", 1, "75009"): ("Tampines St 71 (West)", "Tampines Ave 7 (East)"),
+        ("315", 1, "66271"): ("Serangoon North", "Serangoon Int"),
+        ("317", 1, "66271"): ("Berwick Dr", "Serangoon Int"),
+        ("35", 1, "96219"): ("Alps Ave", "Bedok"),
+        ("358", 1, "77009"): ("Pasir Ris Dr 10 (West)", "Pasir Ris Dr 4 (East)"),
+        ("359", 1, "77009"): ("Pasir Ris St 71 (West)", "Pasir Ris Dr 2 (East)"),
+        ("60", 1, "84511"): ("Bedok", "Eunos"),
+        ("60", 1, "84501"): ("Bedok", "Eunos"),
+        ("73", 1, "66271"): ("Toa Payoh", "Ang Mo Kio"),
+        ("883", 1, "58621"): ("Canberra", "Sembawang"),
+        ("883M", 1, "58621"): ("Canberra", "Sembawang"),
+        ("98", 1, "21069"): ("Jurong Island Checkpoint", "Jurong East"),
+        ("98", 1, "21079"): ("Jurong Island Checkpoint", "Jurong East"),
+        ("98", 1, "21109"): ("Jurong Island Checkpoint", "Jurong East"),
+        ("98", 1, "21089"): ("Jurong Island Checkpoint", "Jurong East")
+    }
+
+    if (record[0], record[1]) in multi_visit_stops and record[3] in multi_visit_stops[(record[0], record[1])]:
+        description = map.get((record[0], record[1], record[3]), ("Visit 1", "Visit 2"))
+        if description[0] == "Visit 1":
+            print(f"Visit description not found for bus {record[0]} direction {record[1]} stop {record[3]}")
+        return description
+    else:
+        return ("", "")
+
+
+def get_buses_visit_info(bus_routes):
+    """
+    Function to get buses that show destination and visit info
     """
     buses_to_show_destination = []
+    multi_visit_stops = {}
     bus_routes_dict = {}
     for record in bus_routes:
         bus_num, direction, stop_seq, stop_code, distance = record
@@ -199,12 +244,17 @@ def get_buses_to_show_destination(bus_routes):
     # Remove last stop from each route
     for bus_num, directions in bus_routes_dict.items():
         for direction, stops in directions.items():
-            bus_routes_dict[bus_num][direction] = stops[:-1]
+            stops = stops[:-1]
+            bus_routes_dict[bus_num][direction] = stops
+            # Get stops that appear more than once
+            duplicate_stops = [stop for stop in stops if stops.count(stop) > 1]
+            if duplicate_stops:
+                multi_visit_stops[(bus_num, direction)] = duplicate_stops
         if len(directions) == 2:
             # Get stop codes that appear in both directions
             common_stops = set(bus_routes_dict[bus_num][1]) & set(bus_routes_dict[bus_num][2])
             buses_to_show_destination.extend([(bus_num, stop) for stop in common_stops])
-    return buses_to_show_destination
+    return (buses_to_show_destination, multi_visit_stops)
 
 if __name__ == '__main__':
     update_bus_routes()

@@ -1,6 +1,6 @@
 import BusArrivalCellDisplay from "./BusArrivalCellDisplay";
 
-function BusRowDisplay({busNum, arrival1, arrival2, arrival3, currentTime, stopLatLon, onBusRowClick, settings, getDirection, destinationInfo}) {
+function BusRowDisplay({busNum, arrival1, arrival2, arrival3, currentTime, stopLatLon, onBusRowClick, settings, getDirection, destinationInfo, visitInfo}) {
     return (
         <tr>
             <td className="align-middle text-center">
@@ -12,9 +12,9 @@ function BusRowDisplay({busNum, arrival1, arrival2, arrival3, currentTime, stopL
             </td>
             <BusArrivalCellDisplay time={arrival1['time']} type={arrival1['type']} load={arrival1['load']}
                                    currentTime={currentTime} stopLatLon={stopLatLon}
-                                   busLatLon={[arrival1['lat'], arrival1['lng']]} settings={settings} getDirection={getDirection} />
-            {arrival2 && <BusArrivalCellDisplay time={arrival2['time']} type={arrival2['type']} load={arrival2['load']} prevBusTime={arrival1['time']} currentTime={currentTime} stopLatLon={stopLatLon} busLatLon={[arrival2['lat'], arrival2['lng']]} settings={settings} getDirection={getDirection} />}
-            {arrival3 && <BusArrivalCellDisplay time={arrival3['time']} type={arrival3['type']} load={arrival3['load']} prevBusTime={arrival2['time']} currentTime={currentTime} stopLatLon={stopLatLon} busLatLon={[arrival3['lat'], arrival3['lng']]} settings={settings} getDirection={getDirection} />}
+                                   busLatLon={[arrival1['lat'], arrival1['lng']]} settings={settings} getDirection={getDirection} visitInfo={visitInfo[arrival1['visit_number']-1]} />
+            {arrival2 && <BusArrivalCellDisplay time={arrival2['time']} type={arrival2['type']} load={arrival2['load']} prevBusTime={arrival1['time']} currentTime={currentTime} stopLatLon={stopLatLon} busLatLon={[arrival2['lat'], arrival2['lng']]} settings={settings} getDirection={getDirection} visitInfo={visitInfo[arrival2['visit_number']-1]} />}
+            {arrival3 && <BusArrivalCellDisplay time={arrival3['time']} type={arrival3['type']} load={arrival3['load']} prevBusTime={arrival2['time']} currentTime={currentTime} stopLatLon={stopLatLon} busLatLon={[arrival3['lat'], arrival3['lng']]} settings={settings} getDirection={getDirection} visitInfo={visitInfo[arrival3['visit_number']-1]} />}
         </tr>
     )
 }

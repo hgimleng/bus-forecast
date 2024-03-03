@@ -55,11 +55,28 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
         return stopData[oppositeStop] ? oppositeStop : '';
     }
 
-    function getDestinationInfo(busNum, destinationCode) {
+    function getDestinationInfo(busNum, nextBusTimingInfo) {
+        const specialStops = ["46008", "46009", "59008", "59009"];
+        const specialBuses = ["812", "911", "912", "913"];
+        const specialDestinationInfoMap = {
+            "812": ["Yishun Ave 4 (East)", "Yishun Ave 3 (West)"],
+            "911": ["Woodlands Ave 2 (East)", "Woodlands Centre Road (West)"],
+            "912": ["Woodlands Ave 7 (East)", "Woodlands Centre Road (West)"],
+            "913": ["Woodlands Circle (East)", "Woodlands Ave 3 (West)"]
+        };
         if (showDestinationBuses.includes(busNum)) {
-            return stopData[destinationCode]['name'];
+            return stopData[nextBusTimingInfo['destination_code']]['name'];
+        } else if (specialStops.includes(selectedStop) && specialBuses.includes(busNum)) {
+            return specialDestinationInfoMap[busNum][nextBusTimingInfo['visit_number'] - 1];
         }
         return "";
+    }
+
+    function getVisitInfo(busNum) {
+        if (stopData[selectedStop]['visit_info'][busNum]) {
+            return stopData[selectedStop]['visit_info'][busNum];
+        }
+        return ['', ''];
     }
 
     return (
@@ -101,7 +118,8 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                             onBusRowClick={onBusRowClick}
                             settings={settings}
                             getDirection={getDirection}
-                            destinationInfo={getDestinationInfo(bus['no'], bus['next']['destination_code'])}
+                            destinationInfo={getDestinationInfo(bus['no'], bus['next'])}
+                            visitInfo={getVisitInfo(bus['no'])}
                         />
                     ))}
                 </tbody>

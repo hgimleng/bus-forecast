@@ -76,11 +76,25 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
         try {
             stopCode = getModifiedStopCode(stopCode);
 
-            let stopCodes = stopCode.split("/")
+            let stopCodes = stopCode.split("/").reverse()
             const response = await api_arrival.get(`/?id=${stopCodes[0]}`)
             const data = response.data
             for (let i = 1; i < stopCodes.length; i++) {
                 const response = await api_arrival.get(`/?id=${stopCodes[i]}`)
+                for (let j = 0; j < response.data['services'].length; j++) {
+                    if (response.data['services'][j]['next']) {
+                        response.data['services'][j]['next']['visit_number'] = 2
+                    }
+                    if (response.data['services'][j]['subsequent']) {
+                        response.data['services'][j]['subsequent']['visit_number'] = 2
+                    }
+                    if (response.data['services'][j]['next2']) {
+                        response.data['services'][j]['next2']['visit_number'] = 2
+                    }
+                    if (response.data['services'][j]['next3']) {
+                        response.data['services'][j]['next3']['visit_number'] = 2
+                    }
+                }
                 data['services'] = data['services'].concat(response.data['services'])
             }
 

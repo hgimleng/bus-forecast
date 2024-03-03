@@ -4,7 +4,7 @@ import SDIcon from "../Icon/SDIcon";
 import DDIcon from "../Icon/DDIcon";
 import DirectionIcon from "../Icon/DirectionIcon";
 
-function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon, settings, getDirection}) {
+function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon, settings, getDirection, visitInfo}) {
     function convertToTimeDisplay(dateString) {
         function getTimeString() {
             const date = new Date(dateString);
@@ -103,6 +103,11 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
                     { convertToIcon(type, load) }
                 </small>
             </div>
+            { visitInfo !== '' &&
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    { visitInfo }
+                </div>
+            }
             { prevBusTime && <>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     (+{calculateTimeDifference(time, new Date(prevBusTime))})
