@@ -104,7 +104,7 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
                 </small>
             </div>
             { visitInfo !== '' &&
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ textAlign: 'center' }}>
                     { visitInfo }
                 </div>
             }
