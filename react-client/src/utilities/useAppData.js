@@ -1,4 +1,4 @@
-import {useState, useEffect, useRef} from 'react';
+import { useState, useEffect } from 'react';
 import { getData, setData } from './storage';
 import { api_forecast } from '../api';
 import { useGeolocated } from "react-geolocated";
@@ -18,21 +18,25 @@ function useAppData() {
     arrivalDisplay: 'Countdown'
   });
 
+  const BUS_INFO_KEY = 'busInfo';
+  const LAST_CHECKED_TIMESTAMP_KEY = 'lastCheckedTimestamp';
+
   useEffect(() => {
     const fetchAndSetData = async () => {
-      let localData = await getData('busInfo');
+      let localData = await getData(BUS_INFO_KEY);
 
-      if (!localData || await isDataOutdated(localData)) {
+      if (!localData || await isDataOutdated()) {
         if (!localData) {
           getPosition()
         }
 
         const freshData = await fetchDataFromAPI();
-        await setData('busInfo', freshData);
+        await setData(BUS_INFO_KEY, freshData);
+        await setData(LAST_CHECKED_TIMESTAMP_KEY, Date.now());
         localData = freshData;
       }
+      localData.lastCheckedTimestamp = await getData(LAST_CHECKED_TIMESTAMP_KEY);
 
-      console.log("Setting data to local data")
       setDataState(localData);
     };
     const fetchAndSetSettings = async () => {
@@ -48,14 +52,15 @@ function useAppData() {
 
   }, []);
 
-  const isDataOutdated = async (data) => {
+  const isDataOutdated = async () => {
     const oneDay = 24 * 60 * 60 * 1000;
     const now = Date.now();
-    if (now - data.lastCheckedTimestamp < oneDay) {
+    const lastCheckedTimestamp = await getData(LAST_CHECKED_TIMESTAMP_KEY)
+    if (lastCheckedTimestamp && now - lastCheckedTimestamp < oneDay) {
         return false;
     } else {
       const lastUpdatedResponse = await api_forecast.get('/last-updated');
-      data.lastCheckedTimestamp = now;
+      await setData(LAST_CHECKED_TIMESTAMP_KEY, now);
       return (data.lastUpdatedTimestamp < lastUpdatedResponse.data.timestamp);
     }
   };
@@ -76,7 +81,7 @@ function useAppData() {
 
   const downloadData = async () => {
     const freshData = await fetchDataFromAPI();
-    await setData('busInfo', freshData);
+    await setData(BUS_INFO_KEY, freshData);
     setDataState(freshData);
   }
 
@@ -88,10 +93,10 @@ function useAppData() {
   }
 
   const updateLastChecked = async () => {
-    const newData = { ...data };
-    newData.lastCheckedTimestamp = Date.now();
-    await setData('busInfo', newData);
-    setDataState(newData);
+    const now = Date.now();
+    await setData(LAST_CHECKED_TIMESTAMP_KEY, now);
+    data.lastCheckedTimestamp = now;
+    setDataState(data);
   }
 
   return { data, getDataLastUpdated, downloadData, settings, updateSettings, updateLastChecked };
