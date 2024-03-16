@@ -73,6 +73,10 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
             setSelectedStop(stopCode)
         }
 
+        if (!stopList.includes(stopCode)) {
+            setStopList(stopList.concat([stopCode]));
+        }
+
         try {
             stopCode = getModifiedStopCode(stopCode);
 
@@ -122,9 +126,24 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
         return stopList;
     }
 
-    async function handleSearch(inputText) {
-        const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
+    function getFilteredStopData(inputText) {
+        const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase();
 
+        return Object.fromEntries(
+            Object.entries(data['stop_data']).filter(([stopCode, stopValue]) => {
+                // Check if stop code matches input text
+                // or if stop name contains input text
+                // or if any of the buses at the stop is a variant of the input text
+                return (
+                    stopCode === inputText ||
+                    cleanString(stopValue['name']).includes(cleanString(inputText)) ||
+                    stopValue['buses'].some(busNum => [cleanString(busNum), busNum.replace(/[a-zA-Z]$/, '')].includes(cleanString(inputText)))
+                )
+            })
+        );
+    }
+
+    async function handleSearch(inputText) {
         function getStopListSortedByName(data) {
             // Sort the stopList by name in ascending order
             return [...Object.keys(data)].sort((a, b) => data[a].name.localeCompare(data[b].name));
@@ -135,18 +154,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
             setStopList(getStopListSortedByDistance(data['stop_data'], 1))
         } else {
             setIsNearbyClicked(false)
-            const filteredStopData = Object.fromEntries(
-                Object.entries(data['stop_data']).filter(([stopCode, stopValue]) => {
-                    // Check if stop code matches input text
-                    // or if stop name contains input text
-                    // or if any of the buses at the stop is a variant of the input text
-                    return (
-                        stopCode === inputText ||
-                        cleanString(stopValue['name']).includes(cleanString(inputText)) ||
-                        stopValue['buses'].some(busNum => [cleanString(busNum), busNum.replace(/[a-zA-Z]$/, '')].includes(cleanString(inputText)))
-                    )
-                })
-            );
+            const filteredStopData = getFilteredStopData(inputText);
             if (isGeolocationEnabled) {
                 setStopList(getStopListSortedByDistance(filteredStopData))
             } else {
@@ -166,7 +174,11 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
 
     function onBusRowClick(busNum, dest_code) {
         const busData = data['bus_data'][busNum]
-        const direction = Object.keys(busData).find(direction => busData[direction]['stops'].slice(-2).includes(dest_code));
+        let direction = Object.keys(busData).find(direction => busData[direction]['stops'].slice(-2).includes(dest_code));
+        if (direction === undefined) {
+            // For certain buses like 160, the destination code is not the route's destination. Default to direction 1 in this case.
+            direction = "1";
+        }
 
         setBusList([busNum])
         setIsNearbyClicked(false)
@@ -250,6 +262,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
                         setBusList={setBusList}
                         isNearbyClicked={isNearbyClicked}
                         handleSearch={handleSearch}
+                        getFilteredStopDataLength={(inputText) => Object.keys(getFilteredStopData(inputText)).length}
                         locationEnabled={isGeolocationEnabled}
                         requestLocationPermission={getPosition}
             />

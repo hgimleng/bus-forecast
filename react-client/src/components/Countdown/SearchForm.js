@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, locationEnabled, requestLocationPermission }) {
+function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, getFilteredStopDataLength, locationEnabled, requestLocationPermission }) {
     const [text, setText] = useState('')
 
     function cleanString(str) {
@@ -21,7 +21,7 @@ function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, locati
     function handleChange(e) {
         let inputValue = e.target.value;
         setText(inputValue);
-        if (cleanString(inputValue).length > 4)  {
+        if (cleanString(inputValue).length > 2 && getFilteredStopDataLength(inputValue) < 100) {
             handleSubmit(e, inputValue);
         }
     }
