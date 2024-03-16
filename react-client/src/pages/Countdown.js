@@ -265,6 +265,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
                               stopList={stopList}
                               setSelectedStop={fetchStopInfo}
                               selectedStop={selectedStop}
+                              selectedBus={selectedBus}
                               getDistance={getDistance}
                               getDirection={getDirection}
                 />}
