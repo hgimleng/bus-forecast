@@ -4,9 +4,12 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, locationEnabled, requestLocationPermission }) {
     const [text, setText] = useState('')
 
+    function cleanString(str) {
+        return str.replace(/[^\w\s]/gi, '').toUpperCase()
+    }
+
     function handleSubmit(e, inputText = text) {
         e.preventDefault()
-        const cleanString = (str) => str.replace(/[^\w\s]/gi, '').toUpperCase()
 
         if (!inputText || !cleanString(inputText)) return
 
@@ -18,6 +21,9 @@ function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, locati
     function handleChange(e) {
         let inputValue = e.target.value;
         setText(inputValue);
+        if (cleanString(inputValue).length > 4)  {
+            handleSubmit(e, inputValue);
+        }
     }
 
     async function handleNearbyClick(e) {

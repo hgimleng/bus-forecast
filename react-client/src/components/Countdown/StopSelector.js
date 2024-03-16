@@ -4,7 +4,7 @@ import StopButton from "./StopButton";
 function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, getDistance, getDirection }) {
     useEffect(() => {
         // If there is only 1 stop in the list, select it
-        if (stopList.length === 1 && selectedStop === '') {
+        if (stopList.length === 1) {
             setSelectedStop(stopList[0])
         }
     }, [stopList])
