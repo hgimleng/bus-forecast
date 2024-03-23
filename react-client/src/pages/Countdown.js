@@ -284,6 +284,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
                               setSelectedStop={fetchStopInfo}
                               selectedStop={selectedStop}
                               selectedBus={selectedBus}
+                              isNearbyClicked={isNearbyClicked}
                               getDistance={getDistance}
                               getDirection={getDirection}
                 />}

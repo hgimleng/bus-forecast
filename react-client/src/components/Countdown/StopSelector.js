@@ -1,7 +1,7 @@
 import {useEffect, useRef} from "react";
 import StopButton from "./StopButton";
 
-function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, selectedBus, getDistance, getDirection }) {
+function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, selectedBus, isNearbyClicked, getDistance, getDirection }) {
     const scrollRef = useRef(null);
 
     useEffect(() => {
@@ -16,7 +16,15 @@ function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, selec
         if (scrollRef.current) {
             scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-    }, [selectedBus])
+    }, [selectedBus, isNearbyClicked])
+
+    function scrollToStop(stopCode, index) {
+        if (isNearbyClicked) {
+            return index === 0;
+        } else {
+            return selectedStop === stopCode;
+        }
+    }
 
     return (
     <>
@@ -28,7 +36,7 @@ function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, selec
                 style={{'maxHeight': '300px'}}>
                     {stopList.map((stopCode, index) => {
                         return (
-                            <div ref={selectedStop === stopCode ? scrollRef : null} key={`${stopCode}-${index}`}>
+                            <div ref={scrollToStop(stopCode, index) ? scrollRef : null} key={`${stopCode}-${index}`}>
                                 <StopButton
                                 key={`${stopCode}-${index}`}
                                 code={stopCode}
