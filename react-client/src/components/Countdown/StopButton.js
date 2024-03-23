@@ -12,7 +12,7 @@ function StopButton({ code, name, road, distance, direction, onClick, selected, 
                     <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>}
                 <br/>
                 <small style={{ display: 'flex'}}>
-                    {road} | {code}{distance && ` | ${distance.toFixed(1)}`} km
+                    {road} | {code}{distance && ` | ${distance.toFixed(1)} km`}
                     <DirectionIcon angle={direction}/>
                 </small>
             </div>

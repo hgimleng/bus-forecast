@@ -89,7 +89,7 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                    onClick={() => setSelectedStop(getOppositeStop())}></i>}
             </div>
             <h6 style={{ display: 'flex'}}>
-                { stopData[selectedStop]['road'] } | {stopCode}{distance && ` | ${distance.toFixed(1)}`} km
+                { stopData[selectedStop]['road'] } | {stopCode}{distance && ` | ${distance.toFixed(1)} km`}
                 <DirectionIcon angle={direction}/>
             </h6>
             <table className='table table-striped table-bordered'>
@@ -106,9 +106,9 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                 </thead>
                 <tbody>
                     {sortedTimingData
-                    .map((bus, index) => (
+                    .map((bus) => (
                         <BusRowDisplay
-                            key={index}
+                            key={`${bus['no']}-${bus['next']['destination_code']}`}
                             busNum={bus['no']}
                             arrival1={bus['next']}
                             arrival2={bus['next2']}
