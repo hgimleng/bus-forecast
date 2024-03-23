@@ -25,7 +25,7 @@ function useAppData() {
     const fetchAndSetData = async () => {
       let localData = await getData(BUS_INFO_KEY);
 
-      if (!localData || await isDataOutdated()) {
+      if (!localData || await isDataOutdated(localData)) {
         if (!localData) {
           getPosition()
         }
@@ -52,7 +52,7 @@ function useAppData() {
 
   }, []);
 
-  const isDataOutdated = async () => {
+  const isDataOutdated = async (localData) => {
     const oneDay = 24 * 60 * 60 * 1000;
     const now = Date.now();
     const lastCheckedTimestamp = await getData(LAST_CHECKED_TIMESTAMP_KEY)
@@ -61,7 +61,7 @@ function useAppData() {
     } else {
       const lastUpdatedResponse = await api_forecast.get('/last-updated');
       await setData(LAST_CHECKED_TIMESTAMP_KEY, now);
-      return (data.lastUpdatedTimestamp < lastUpdatedResponse.data.timestamp);
+      return (new Date(localData.lastUpdatedTimestamp) < new Date(lastUpdatedResponse.data.last_updated));
     }
   };
 

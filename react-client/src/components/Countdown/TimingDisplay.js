@@ -59,10 +59,10 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
         const specialStops = ["46008", "46009", "59008", "59009"];
         const specialBuses = ["812", "911", "912", "913"];
         const specialDestinationInfoMap = {
-            "812": ["Yishun Ave 4 (East)", "Yishun Ave 3 (West)"],
-            "911": ["Woodlands Ave 2 (East)", "Woodlands Centre Road (West)"],
-            "912": ["Woodlands Ave 7 (East)", "Woodlands Centre Road (West)"],
-            "913": ["Woodlands Circle (East)", "Woodlands Ave 3 (West)"]
+            "812": ["East", "West"],
+            "911": ["East", "West"],
+            "912": ["East", "West"],
+            "913": ["East", "West"]
         };
         if (showDestinationBuses.includes(busNum)) {
             return stopData[nextBusTimingInfo['destination_code']]['name'];
