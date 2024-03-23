@@ -69,10 +69,10 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
     }, [currentTime])
 
     async function fetchStopInfo(stopCode) {
-        let clearTimingDataIfFailed = false;
+        let stopChanged = false;
         if (selectedStop !== stopCode) {
             setSelectedStop(stopCode)
-            clearTimingDataIfFailed = true;
+            stopChanged = true;
         }
 
         if (!stopList.includes(stopCode)) {
@@ -111,7 +111,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
             console.error('Error fetching data:', error)
 
             setShowAlert(true)
-            if (clearTimingDataIfFailed) {
+            if (stopChanged) {
                 setTimingData({"services": []});
             }
         }
