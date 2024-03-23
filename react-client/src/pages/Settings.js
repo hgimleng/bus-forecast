@@ -1,5 +1,6 @@
 import React from 'react';
 import MultiSelection from "../components/Settings/MultiSelection";
+import InputSelection from "../components/Settings/InputSelection";
 
 function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateData, getPosition, isGeolocationEnabled, settings, updateSettings }) {
 
@@ -25,6 +26,10 @@ function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateDa
 
     async function handleArrivalDisplayClick(selected) {
         await updateSettings('arrivalDisplay', selected);
+    }
+
+    async function handleDefaultSearchInput(input) {
+        await updateSettings('defaultSearch', input);
     }
 
     return (
@@ -68,6 +73,8 @@ function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateDa
                         <MultiSelection title="Arrival display" selections={["Countdown", "Static"]}
                                         selected={settings["arrivalDisplay"]}
                                         handleSelection={handleArrivalDisplayClick}/>
+                        <InputSelection title="Default search" input={settings["defaultSearch"]}
+                                        handleInput={handleDefaultSearchInput}/>
                     </div>
                 </div>
             </div>

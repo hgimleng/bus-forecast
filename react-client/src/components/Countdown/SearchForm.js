@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, getFilteredStopDataLength, locationEnabled, requestLocationPermission }) {
+function SearchForm({ busData, setBusList, isNearbyClicked, handleSearch, getFilteredStopDataLength, locationEnabled, requestLocationPermission, defaultSearch }) {
     const [text, setText] = useState('')
+
+    useEffect(() => {
+        setText(defaultSearch)
+        handleSubmit({ preventDefault: () => {} }, defaultSearch)
+    }, []);
 
     function cleanString(str) {
         return str.replace(/[^\w\s]/gi, '').toUpperCase()

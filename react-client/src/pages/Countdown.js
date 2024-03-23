@@ -270,6 +270,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
                         getFilteredStopDataLength={(inputText) => Object.keys(getFilteredStopData(inputText)).length}
                         locationEnabled={isGeolocationEnabled}
                         requestLocationPermission={getPosition}
+                        defaultSearch={settings.defaultSearch}
             />
             {busList.length > 0 &&
                 <BusSelector busData={data['bus_data']}
