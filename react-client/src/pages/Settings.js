@@ -3,6 +3,7 @@ import MultiSelection from "../components/Settings/MultiSelection";
 import InputSelection from "../components/Settings/InputSelection";
 
 function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateData, getPosition, isGeolocationEnabled, settings, updateSettings }) {
+    const privacyPolicyLink = "https://github.com/hgimleng/bus-forecast/blob/main/PRIVACY.md"
 
     function getLastUpdated(timestamp) {
         if (!timestamp) {
@@ -44,7 +45,8 @@ function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateDa
                             onClick={updateData}
                             className={`list-group-item list-group-item-action`}
                             style={{textAlign: 'left'}}>
-                            <strong>Download Data</strong> (Last checked: {getLastUpdated(lastCheckedTimestamp)}, Last updated: {getLastUpdated(lastUpdatedTimestamp)})
+                            <strong>Update Data</strong> (Last checked: {getLastUpdated(lastCheckedTimestamp)}, Last
+                            updated: {getLastUpdated(lastUpdatedTimestamp)})
                         </button>
                         {!isGeolocationEnabled &&
                             <button
@@ -75,6 +77,11 @@ function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateDa
                                         handleSelection={handleArrivalDisplayClick}/>
                         <InputSelection title="Default search" input={settings["defaultSearch"]}
                                         handleInput={handleDefaultSearchInput}/>
+                    </div>
+                    <hr/>
+                    <h4>Privacy Policy</h4>
+                    <div className="container row mb-4">
+                        <a href={privacyPolicyLink} target="_blank" className="mb-4">{privacyPolicyLink}</a>
                     </div>
                 </div>
             </div>

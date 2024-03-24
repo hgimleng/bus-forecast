@@ -1,6 +1,6 @@
 function InputSelection({ title, input, handleInput }) {
     return (
-        <div className='row g-0 mb-5' style={{ display: 'flex', alignItems: 'stretch' }}>
+        <div className='row g-0 mb-2' style={{ display: 'flex', alignItems: 'stretch' }}>
             <div className='col-2' style={{ display: 'flex', alignItems: 'center' }}>
                 <strong>{title}</strong>
             </div>
