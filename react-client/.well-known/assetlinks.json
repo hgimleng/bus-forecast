@@ -1,8 +1,17 @@
 [{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "com.onrender.bus_forecast.twa",
-        "sha256_cert_fingerprints": ["4A:4B:63:74:B4:CD:AE:D1:81:EB:99:DD:D6:A6:A5:4D:0A:CE:0B:40:B5:84:D3:B5:B6:9C:98:53:8F:71:18:5F"]
-      }
-    }]
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.onrender.bus_forecast.twa",
+      "sha256_cert_fingerprints": ["4A:4B:63:74:B4:CD:AE:D1:81:EB:99:DD:D6:A6:A5:4D:0A:CE:0B:40:B5:84:D3:B5:B6:9C:98:53:8F:71:18:5F"]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.gheng.bus_forecast.twa",
+      "sha256_cert_fingerprints": ["88:F0:01:BE:E2:EE:98:86:E7:FB:06:C3:CA:DF:5E:62:1C:86:D3:58:BE:1C:2F:94:87:F0:4A:FA:AA:2F:D0:3C"]
+    }
+  }
+]
