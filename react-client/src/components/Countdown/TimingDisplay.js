@@ -48,6 +48,8 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
     const distance = getDistance(stopLatLon[0], stopLatLon[1]);
     const direction = getDirection(stopLatLon[0], stopLatLon[1]);
     const showDestinationBuses = stopData[selectedStop]['show_destination'];
+    const serviceBuses = timingData['services'].map(bus => bus['no']);
+    const nonServiceBuses = stopData[selectedStop]['buses'].filter(bus => !serviceBuses.includes(bus));
 
     function getOppositeStop() {
         const lastDigit = selectedStop.slice(-1);
@@ -79,6 +81,12 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
         return ['', ''];
     }
 
+    function getNotInServiceBuses() {
+        const serviceBuses = timingData['services'].map(bus => bus['no']);
+        return stopData[selectedStop]['buses']
+            .filter(bus => !serviceBuses.includes(bus));
+    }
+
     return (
         <div className='col-auto mb-5'>
             <hr />
@@ -94,6 +102,7 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
             </h6>
             <table className='table table-striped table-bordered'>
                 <caption>
+                    {nonServiceBuses.length > 0 && <>Not in service: { getNotInServiceBuses().join(', ') }<br /></>}
                     Last Updated: { lastUpdateTime }
                 </caption>
                 <thead>

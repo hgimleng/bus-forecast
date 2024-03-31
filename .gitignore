@@ -4,6 +4,4 @@ utils/__pycache__/
 test-server/test_arrivals.json
 .vscode
 .env
-/scripts/bus_services.csv
-/scripts/bus_stops.csv
-/scripts/bus_routes.csv
+/scripts/*.csv
