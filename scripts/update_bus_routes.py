@@ -30,7 +30,7 @@ def update_bus_routes():
     bus_stops = {
         stop["BusStopCode"]: [
             get_bus_stop_description(stop["BusStopCode"], stop["Description"]),
-            stop["Latitude"], stop["Longitude"], stop["RoadName"]
+            stop["Latitude"], stop["Longitude"], stop["RoadName"], []
         ]
         for stop in fetch_all_records(URL_STOPS, headers)
     }
@@ -42,11 +42,13 @@ def update_bus_routes():
         for record in fetch_all_records(URL_SERVICES, headers)
     }
     bus_routes = [
-        (record["ServiceNo"], record["Direction"],
-        record["StopSequence"], record["BusStopCode"], record["Distance"])
+        [record["ServiceNo"], record["Direction"],
+        record["StopSequence"], record["BusStopCode"], record["Distance"]]
         for record in fetch_all_records(URL_ROUTES, headers)
         if (record["ServiceNo"], record["Direction"]) not in DEFUNCT_SERVICES
     ]
+
+    # Post processing of bus data
     # Remove stops that appear twice in a row
     for i in range(len(bus_routes)-1, 0, -1):
         # If service number, direction, and stop code is same for consecutive stops, remove the second stop
@@ -56,7 +58,22 @@ def update_bus_routes():
             print(f"Removing duplicate stop {route_info1[3]} from bus {route_info1[0]} direction {route_info1[1]}")
             bus_routes.pop(i)
     buses_to_show_destination, multi_visit_stops = get_buses_visit_info(bus_routes)
+    # Add road name of subsequent stop
+    for i in range(len(bus_routes)-1):
+        route_info = bus_routes[i]
+        next_route_info = bus_routes[i+1]
+        # Ignore express buses
+        if is_express_bus(route_info[0]):
+            continue
+        # If same service no and direction, add next stop's road name to list in current stop
+        if route_info[0] == next_route_info[0] and route_info[1] == next_route_info[1]:
+            bus_stops[route_info[3]][4].append(bus_stops[next_route_info[3]][3])
+    for values in bus_stops.values():
+        new_roads = [road for road in values[4] if road != values[3]]
+        # Get count of each road name and sort from most to least common
+        values[4] = "/".join(sorted(set(new_roads), key=lambda x: new_roads.count(x), reverse=True)) if new_roads else ""
 
+    # Combine bus routes, stops, and services data
     bus_data = []
     for record in bus_routes:
         show_destination = (record[0], record[3]) in buses_to_show_destination
@@ -91,6 +108,7 @@ def update_bus_routes():
                 latitude FLOAT NOT NULL,
                 longitude FLOAT NOT NULL,
                 road_name VARCHAR(100) NOT NULL,
+                next_road_name VARCHAR(200),
                 distance FLOAT NOT NULL,
                 category VARCHAR(100) NOT NULL,
                 origin_code VARCHAR(100) NOT NULL,
@@ -117,7 +135,7 @@ def update_bus_routes():
             copy_command = (
                 "COPY routes_table "
                 "(bus_num, direction, stop_seq, "
-                "stop_code, stop_name, latitude, longitude, road_name, "
+                "stop_code, stop_name, latitude, longitude, road_name, next_road_name, "
                 "distance, category, origin_code, destination_code, loop_desc, "
                 "first_visit_desc, second_visit_desc, show_destination)"
                 "FROM STDIN WITH CSV"
@@ -255,6 +273,13 @@ def get_buses_visit_info(bus_routes):
             common_stops = set(bus_routes_dict[bus_num][1]) & set(bus_routes_dict[bus_num][2])
             buses_to_show_destination.extend([(bus_num, stop) for stop in common_stops])
     return (buses_to_show_destination, multi_visit_stops)
+
+def is_express_bus(bus_num):
+    """
+    Function to check if bus is an express bus
+    """
+    # True if bus ends with E or e or has 3 characters and start with 5 or 6
+    return bus_num[-1].lower() == "e" or (len(bus_num) == 3 and bus_num[0] in ["5", "6"])
 
 if __name__ == '__main__':
     update_bus_routes()

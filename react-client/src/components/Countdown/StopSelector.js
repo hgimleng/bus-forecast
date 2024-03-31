@@ -1,7 +1,7 @@
 import {useEffect, useRef} from "react";
 import StopButton from "./StopButton";
 
-function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, selectedBus, isNearbyClicked, getDistance, getDirection }) {
+function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, selectedBus, isNearbyClicked, getDistance, getDirection, showNextRoadName }) {
     const scrollRef = useRef(null);
 
     useEffect(() => {
@@ -42,6 +42,7 @@ function StopSelector({ stopData, stopList, setSelectedStop, selectedStop, selec
                                 code={stopCode}
                                 name={stopData[stopCode]['name']}
                                 road={stopData[stopCode]['road']}
+                                nextRoad={showNextRoadName ? stopData[stopCode]['next_road_name'] : ''}
                                 distance={getDistance(stopData[stopCode]['lat'], stopData[stopCode]['lng'])}
                                 direction={getDirection(stopData[stopCode]['lat'], stopData[stopCode]['lng'])}
                                 onClick={() => setSelectedStop(stopCode)}

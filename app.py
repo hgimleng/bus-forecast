@@ -93,6 +93,7 @@ def get_all_bus_info():
                 "lng": record_dict["longitude"],
                 "name": record_dict["stop_name"],
                 "road": record_dict["road_name"],
+                "next_road_name": record_dict["next_road_name"],
                 "buses": [],
                 "show_destination": [],
                 "visit_info": {}

@@ -288,6 +288,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
                               isNearbyClicked={isNearbyClicked}
                               getDistance={getDistance}
                               getDirection={getDirection}
+                              showNextRoadName={settings.nextStopRoadName === 'Show'}
                 />}
             <div ref={targetRef}>
             <TimingErrorAlert showAlert={showAlert}

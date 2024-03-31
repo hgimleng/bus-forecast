@@ -15,6 +15,7 @@ class RoutesTable(db.Model):
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     road_name = db.Column(db.String(100), nullable=False)
+    next_road_name = db.Column(db.String(200), nullable=False)
     distance = db.Column(db.Float, nullable=False)
     category = db.Column(db.String(100), nullable=False)
     origin_code = db.Column(db.String(100), nullable=False)
@@ -34,6 +35,7 @@ class RoutesTable(db.Model):
             "latitude": self.latitude,
             "longitude": self.longitude,
             "road_name": self.road_name,
+            "next_road_name": self.next_road_name,
             "distance": self.distance,
             "dest_code": self.destination_code,
             "loop_desc": self.loop_desc,

@@ -15,7 +15,8 @@ function useAppData() {
   const [settings, setSettings] = useState({
     forecastDisplay: false,
     sortBy: 'Bus number',
-    arrivalDisplay: 'Countdown'
+    arrivalDisplay: 'Countdown',
+    nextStopRoadName: 'Show',
   });
 
   const BUS_INFO_KEY = 'busInfo';

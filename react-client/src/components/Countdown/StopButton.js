@@ -1,13 +1,13 @@
 import DirectionIcon from "../Icon/DirectionIcon";
 
-function StopButton({ code, name, road, distance, direction, onClick, selected, isLoading }) {
+function StopButton({ code, name, road, nextRoad, distance, direction, onClick, selected, isLoading }) {
     return (
         <button
         onClick={onClick}
         className={`list-group-item ${selected ? 'active disabled' : ''} list-group-item-action`}
         style={{textAlign: 'left'}}>
             <div>
-                <strong>{name}</strong>
+                <strong>{name}</strong> {nextRoad && <span className="badge bg-light text-dark">→{nextRoad}</span>}
                 {selected && isLoading &&
                     <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>}
                 <br/>

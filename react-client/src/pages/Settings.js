@@ -29,6 +29,10 @@ function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateDa
         await updateSettings('arrivalDisplay', selected);
     }
 
+    async function handleNextRoadClick(selected) {
+        await updateSettings('nextStopRoadName', selected);
+    }
+
     async function handleDefaultSearchInput(input) {
         await updateSettings('defaultSearch', input);
     }
@@ -75,6 +79,9 @@ function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateDa
                         <MultiSelection title="Arrival display" selections={["Countdown", "Static"]}
                                         selected={settings["arrivalDisplay"]}
                                         handleSelection={handleArrivalDisplayClick}/>
+                        <MultiSelection title="Next bus stop road name" selections={["Show", "Hide"]}
+                                        selected={settings["nextStopRoadName"]}
+                                        handleSelection={handleNextRoadClick}/>
                         <InputSelection title="Default search" input={settings["defaultSearch"]}
                                         handleInput={handleDefaultSearchInput}/>
                     </div>
