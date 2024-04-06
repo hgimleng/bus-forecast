@@ -87,6 +87,10 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
             .filter(bus => !serviceBuses.includes(bus));
     }
 
+    function getKeyByBus(busNum, nextBusTimingInfo) {
+        return `${busNum}-${nextBusTimingInfo['destination_code']}-${nextBusTimingInfo['visit_number']}`;
+    }
+
     return (
         <div className='col-auto mb-5'>
             <hr />
@@ -117,7 +121,7 @@ function TimingDisplay({ selectedStop, timingData, stopData, lastUpdateTime, cur
                     {sortedTimingData
                     .map((bus) => (
                         <BusRowDisplay
-                            key={`${bus['no']}-${bus['next']['destination_code']}`}
+                            key={getKeyByBus(bus['no'], bus['next'])}
                             busNum={bus['no']}
                             arrival1={bus['next']}
                             arrival2={bus['next2']}
