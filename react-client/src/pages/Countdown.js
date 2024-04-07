@@ -104,6 +104,9 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
                 data['services'] = data['services'].concat(response.data['services'])
             }
 
+            // Remove services where next is null
+            data['services'] = data['services'].filter(bus => bus['next'] !== null)
+
             setTimingData(data)
             setLastUpdateTime(new Date().toLocaleTimeString())
             setShowAlert(false)
