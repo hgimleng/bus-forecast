@@ -49,11 +49,11 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
     }, [selectedStop, isTimingDisplayRendered])
 
     useEffect(() => {
-        if (currentTime.getSeconds() % 5 !== 0) {
+        if (currentTime.getSeconds() % 3 !== 0) {
             return;
         }
 
-        // Update stop list every five seconds
+        // Update stop list every 3 seconds
         if (isNearbyClicked) {
             // Re calculate and sort distance to all stops
             setStopList(getStopListSortedByDistance(data['stop_data'], 1));
