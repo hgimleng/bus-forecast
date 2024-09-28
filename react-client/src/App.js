@@ -10,7 +10,7 @@ import useAppData from "./utilities/useAppData";
 import {useGeolocated} from "react-geolocated";
 
 function App() {
-  const [activeTab, setActiveTab] = useState('countdown');
+  const [activeTab, setActiveTab] = useState('map');
   const { data, getDataLastUpdated, downloadData, settings, updateSettings, updateLastChecked } = useAppData()
   const [compassDirection, setCompassDirection] = useState(null);
   const { coords, getPosition, isGeolocationEnabled } =
