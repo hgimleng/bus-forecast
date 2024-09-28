@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Forecast from './pages/Forecast';
 import Countdown from './pages/Countdown';
+import Map from './pages/Map';
 import Settings from './pages/Settings';
 
 import 'font-awesome/css/font-awesome.min.css';
@@ -59,6 +60,11 @@ function App() {
                        coords={coords}
                        getPosition={getPosition}
                        isGeolocationEnabled={isGeolocationEnabled} />
+            <Map active={activeTab === 'map'}
+                 coords={coords}
+                 data={data} settings={settings}
+                 isGeolocationEnabled={isGeolocationEnabled}
+                 compassDirection={compassDirection} />
             <Forecast active={activeTab === 'forecast'} />
             <Settings active={activeTab === 'settings'}
                       lastCheckedTimestamp={data.lastCheckedTimestamp}
@@ -75,6 +81,11 @@ function App() {
                 <div className="col p-0">
                     <button className={`btn w-100 ${activeTab === 'countdown' ? '' : 'text-muted'}`} onClick={() => setActiveTab('countdown')}>
                         <i className={`fa fa-clock-o fa-lg ${activeTab === 'countdown' ? 'text-primary' : 'text-secondary'}`}></i>
+                    </button>
+                </div>
+                <div className="col p-0">
+                    <button className={`btn w-100 ${activeTab === 'map' ? '' : 'text-muted'}`} onClick={() => setActiveTab('map')}>
+                        <i className={`fa fa-map fa-lg ${activeTab === 'map' ? 'text-primary' : 'text-secondary'}`}></i>
                     </button>
                 </div>
                 {settings['forecastDisplay'] && <div className="col p-0">
