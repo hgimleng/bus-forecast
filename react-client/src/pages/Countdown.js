@@ -5,8 +5,9 @@ import TimingDisplay from '../components/Countdown/TimingDisplay';
 import BusSelector from '../components/Countdown/BusSelector';
 import StopSelector from '../components/Countdown/StopSelector';
 import TimingErrorAlert from "../components/Countdown/TimingErrorAlert";
+import MapDisplay from '../components/Countdown/MapDisplay';
 
-function Countdown({ active, data, settings, compassDirection, coords, getPosition, isGeolocationEnabled }) {
+function Countdown({ active, data, settings, compassDirection, coords, getPosition, isGeolocationEnabled, mapMode }) {
     const [timingData, setTimingData] = useState({})
     const [lastUpdateTime, setLastUpdateTime] = useState('')
     const [currentTime, setCurrentTime] = useState(new Date())
@@ -266,7 +267,8 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
         <>
         {hasData() ?
         <div className={`container mt-4 mb-4 ${active ? '' : 'd-none'}`}>
-            <SearchForm busData={data['bus_data']}
+            {!mapMode &&
+                <SearchForm busData={data['bus_data']}
                         setBusList={setBusList}
                         isNearbyClicked={isNearbyClicked}
                         handleSearch={handleSearch}
@@ -274,13 +276,19 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
                         locationEnabled={isGeolocationEnabled}
                         requestLocationPermission={getPosition}
                         defaultSearch={settings.defaultSearch}
-            />
-            {busList.length > 0 &&
+            />}
+            {!mapMode && busList.length > 0 &&
                 <BusSelector busData={data['bus_data']}
                              busList={busList}
                              selectedBus={selectedBus}
                              selectedDirection={selectedDirection}
                              handleBusSelect={handleBusSelect}
+                />}
+            {mapMode && 
+                <MapDisplay coords={coords}
+                    stopData={data['stop_data']}
+                    setSelectedStop={fetchStopInfo}
+                    selectedStop={selectedStop}
                 />}
             {showStopSelector() &&
                 <StopSelector stopData={data['stop_data']}

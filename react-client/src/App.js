@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Forecast from './pages/Forecast';
 import Countdown from './pages/Countdown';
-import Map from './pages/Map';
 import Settings from './pages/Settings';
 
 import 'font-awesome/css/font-awesome.min.css';
@@ -54,17 +53,13 @@ function App() {
   return (
     <div className="container d-flex flex-column">
         <div className="flex-grow-1 overflow-auto">
-            <Countdown active={activeTab === 'countdown'}
+            <Countdown active={activeTab === 'countdown' || activeTab === 'map'}
                        data={data} settings={settings}
                        compassDirection={compassDirection}
                        coords={coords}
                        getPosition={getPosition}
-                       isGeolocationEnabled={isGeolocationEnabled} />
-            <Map active={activeTab === 'map'}
-                 coords={coords}
-                 data={data} settings={settings}
-                 isGeolocationEnabled={isGeolocationEnabled}
-                 compassDirection={compassDirection} />
+                       isGeolocationEnabled={isGeolocationEnabled}
+                       mapMode={activeTab === 'map'} />
             <Forecast active={activeTab === 'forecast'} />
             <Settings active={activeTab === 'settings'}
                       lastCheckedTimestamp={data.lastCheckedTimestamp}
