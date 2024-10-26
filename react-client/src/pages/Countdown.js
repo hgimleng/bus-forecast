@@ -6,6 +6,7 @@ import BusSelector from '../components/Countdown/BusSelector';
 import StopSelector from '../components/Countdown/StopSelector';
 import TimingErrorAlert from "../components/Countdown/TimingErrorAlert";
 import MapDisplay from '../components/Countdown/MapDisplay';
+import {getDistanceFromLatLonInKm} from "../utilities/utils";
 
 function Countdown({ active, data, settings, compassDirection, coords, getPosition, isGeolocationEnabled, mapMode }) {
     const [timingData, setTimingData] = useState({})
@@ -210,24 +211,6 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
             return null;
         }
 
-        // Get distance from coords to the stop
-        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-            function deg2rad(deg) {
-                return deg * (Math.PI / 180);
-            }
-
-            const R = 6371; // Radius of the earth in km
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            const distance = R * c; // Distance in km
-            return distance;
-        }
-
         return getDistanceFromLatLonInKm(coords.latitude, coords.longitude, lat, lon);
     }
 
@@ -289,6 +272,9 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
                     stopData={data['stop_data']}
                     setSelectedStop={fetchStopInfo}
                     selectedStop={selectedStop}
+                    selectedBus={selectedBus}
+                    selectedDirection={selectedDirection}
+                    stopList={stopList}
                 />}
             {showStopSelector() &&
                 <StopSelector stopData={data['stop_data']}
@@ -321,7 +307,7 @@ function Countdown({ active, data, settings, compassDirection, coords, getPositi
             </div>
         </div> :
         <div className="container mt-4 mb-4 spinner-border"
-             style={{display: 'flex', alignItems: 'center', justifyContent: 'center',}} />}
+             style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} />}
         </>
     )
 }

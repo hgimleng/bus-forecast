@@ -3,6 +3,7 @@ import BDIcon from "../Icon/BDIcon";
 import SDIcon from "../Icon/SDIcon";
 import DDIcon from "../Icon/DDIcon";
 import DirectionIcon from "../Icon/DirectionIcon";
+import { getDistanceFromLatLonInKm } from "../../utilities/utils";
 
 function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stopLatLon, busLatLon, settings, getDirection, visitInfo}) {
     function convertToTimeDisplay(dateString) {
@@ -68,22 +69,6 @@ function BusArrivalCellDisplay({time, type, load, prevBusTime, currentTime, stop
     }
 
     function getDistance(latLon1, latLon2) {
-        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
-            function deg2rad(deg) {
-              return deg * (Math.PI / 180);
-            }
-        
-            const R = 6371; // Radius of the earth in km
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a =
-                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c; // Distance in km
-        }
-
         if (latLon2[0] === 0 || latLon2[1] === 0) {
             return '';
         }
