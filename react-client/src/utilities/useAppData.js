@@ -13,6 +13,7 @@ function useAppData() {
         userDecisionTimeout: 10000,
       });
   const [settings, setSettings] = useState({
+    homePage: 'countdown',
     forecastDisplay: false,
     sortBy: 'Bus number',
     arrivalDisplay: 'Countdown',

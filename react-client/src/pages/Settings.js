@@ -21,6 +21,10 @@ function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateDa
         await updateSettings('forecastDisplay', newForecastDisplayValue);
     }
 
+    async function handleHomePageClick(selected) {
+        await updateSettings('homePage', selected);
+    }
+
     async function handleSortByClick(selected) {
         await updateSettings('sortBy', selected);
     }
@@ -52,6 +56,8 @@ function Settings({ active, lastCheckedTimestamp, lastUpdatedTimestamp, updateDa
                             <strong>Update Data</strong> (Last checked: {getLastUpdated(lastCheckedTimestamp)}, Last
                             updated: {getLastUpdated(lastUpdatedTimestamp)})
                         </button>
+                        <MultiSelection title="Home Page" selections={["countdown", "map", "forecast"]}
+                                        selected={settings["homePage"]} handleSelection={handleHomePageClick}/>
                         {!isGeolocationEnabled &&
                             <button
                                 onClick={getPosition}

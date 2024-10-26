@@ -9,8 +9,8 @@ import useAppData from "./utilities/useAppData";
 import {useGeolocated} from "react-geolocated";
 
 function App() {
-  const [activeTab, setActiveTab] = useState('countdown');
   const { data, getDataLastUpdated, downloadData, settings, updateSettings, updateLastChecked } = useAppData()
+  const [selectedTab, setSelectedTab] = useState(null);
   const [compassDirection, setCompassDirection] = useState(null);
   const { coords, getPosition, isGeolocationEnabled } =
       useGeolocated({
@@ -50,18 +50,22 @@ function App() {
       }
   }
 
+  function getActiveTab() {
+      return selectedTab === null ? settings.homePage : selectedTab;
+  }
+
   return (
     <div className="container d-flex flex-column">
         <div className="flex-grow-1 overflow-auto">
-            <Countdown active={activeTab === 'countdown' || activeTab === 'map'}
+            <Countdown active={getActiveTab() === 'countdown' || getActiveTab() === 'map'}
                        data={data} settings={settings}
                        compassDirection={compassDirection}
                        coords={coords}
                        getPosition={getPosition}
                        isGeolocationEnabled={isGeolocationEnabled}
-                       mapMode={activeTab === 'map'} />
-            <Forecast active={activeTab === 'forecast'} />
-            <Settings active={activeTab === 'settings'}
+                       mapMode={getActiveTab() === 'map'} />
+            <Forecast active={getActiveTab() === 'forecast'} />
+            <Settings active={getActiveTab() === 'settings'}
                       lastCheckedTimestamp={data.lastCheckedTimestamp}
                       lastUpdatedTimestamp={data.lastUpdatedTimestamp}
                       updateData={updateData}
@@ -74,24 +78,24 @@ function App() {
         <div className="container-fluid position-fixed bg-light shadow-sm p-2 border-top" style={{ bottom: 0, left: 0, right: 0 }}>
             <div className="row m-0">
                 <div className="col p-0">
-                    <button className={`btn w-100 ${activeTab === 'countdown' ? '' : 'text-muted'}`} onClick={() => setActiveTab('countdown')}>
-                        <i className={`fa fa-clock-o fa-lg ${activeTab === 'countdown' ? 'text-primary' : 'text-secondary'}`}></i>
+                    <button className={`btn w-100 ${getActiveTab() === 'countdown' ? '' : 'text-muted'}`} onClick={() => setSelectedTab('countdown')}>
+                        <i className={`fa fa-clock-o fa-lg ${getActiveTab() === 'countdown' ? 'text-primary' : 'text-secondary'}`}></i>
                     </button>
                 </div>
                 <div className="col p-0">
-                    <button className={`btn w-100 ${activeTab === 'map' ? '' : 'text-muted'}`} onClick={() => setActiveTab('map')}>
-                        <i className={`fa fa-map fa-lg ${activeTab === 'map' ? 'text-primary' : 'text-secondary'}`}></i>
+                    <button className={`btn w-100 ${getActiveTab() === 'map' ? '' : 'text-muted'}`} onClick={() => setSelectedTab('map')}>
+                        <i className={`fa fa-map fa-lg ${getActiveTab() === 'map' ? 'text-primary' : 'text-secondary'}`}></i>
                     </button>
                 </div>
                 {settings['forecastDisplay'] && <div className="col p-0">
-                    <button className={`btn w-100 ${activeTab === 'forecast' ? '' : 'text-muted'}`}
-                            onClick={() => setActiveTab('forecast')}>
-                        <i className={`fa fa-cloud fa-lg ${activeTab === 'forecast' ? 'text-primary' : 'text-secondary'}`}></i>
+                    <button className={`btn w-100 ${getActiveTab() === 'forecast' ? '' : 'text-muted'}`}
+                            onClick={() => setSelectedTab('forecast')}>
+                        <i className={`fa fa-cloud fa-lg ${getActiveTab() === 'forecast' ? 'text-primary' : 'text-secondary'}`}></i>
                     </button>
                 </div>}
                 <div className="col p-0">
-                    <button className={`btn w-100 ${activeTab === 'settings' ? '' : 'text-muted'}`} onClick={() => setActiveTab('settings')}>
-                        <i className={`fa fa-cogs fa-lg ${activeTab === 'settings' ? 'text-primary' : 'text-secondary'}`}></i>
+                    <button className={`btn w-100 ${getActiveTab() === 'settings' ? '' : 'text-muted'}`} onClick={() => setSelectedTab('settings')}>
+                        <i className={`fa fa-cogs fa-lg ${getActiveTab() === 'settings' ? 'text-primary' : 'text-secondary'}`}></i>
                     </button>
                 </div>
             </div>
