@@ -14,9 +14,9 @@ user = os.getenv("DB_USER")
 password = os.getenv("DB_PASSWORD")
 database = os.getenv("DB_NAME")
 api_key = os.getenv("LTA_API_KEY")
-URL_ROUTES = "http://datamall2.mytransport.sg/ltaodataservice/BusRoutes?$skip="
-URL_STOPS = "http://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip="
-URL_SERVICES = "http://datamall2.mytransport.sg/ltaodataservice/BusServices?$skip="
+URL_ROUTES = "https://datamall2.mytransport.sg/ltaodataservice/BusRoutes?$skip="
+URL_STOPS = "https://datamall2.mytransport.sg/ltaodataservice/BusStops?$skip="
+URL_SERVICES = "https://datamall2.mytransport.sg/ltaodataservice/BusServices?$skip="
 
 # Services/directions that are not in operation
 DEFUNCT_SERVICES = [("359", 2), ("382", 1), ("382", 2), ("812T", 1)]
@@ -183,7 +183,7 @@ def fetch_all_records(url: str, headers: Dict[str, str]):
                 records.extend(new_records)
                 skip += len(new_records)
         except requests.exceptions.RequestException as e:
-            print(f"Error fetching {url}: {e}")
+            print(f"Error fetching {url+str(skip)}: {e}")
             return records
 
 
